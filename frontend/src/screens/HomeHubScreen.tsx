@@ -17,21 +17,35 @@ import { useUserStore } from '../store/useUserStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import Logo from '../components/ui/Logo';
 
-// The AnimationStation home hub — the app's front door. A neon hero
-// ("Imagine. Create. Transcend."), a primary "Start Creating" CTA, and the two
-// headline creation modes (AI Image / AI Video), followed by the value props.
-// The social feed lives on the Community tab; saved work on Library.
-export default function HomeHubScreen() {
+// The AnimationStation hub — the neon hero ("Imagine. Create. Transcend."), a
+// primary "Start Creating" CTA, the two headline creation modes (AI Image /
+// Video), and the value props. It is used ONLY as the admin-toggleable welcome
+// splash now (the Home tab is the global feed). In splash mode it renders a
+// close button + a "Do not display at next login" checkbox, and every action
+// dismisses the splash before navigating.
+export interface HubSplashProps {
+  onDismiss: () => void;
+  dontShowAgain: boolean;
+  onToggleDontShow: () => void;
+}
+
+export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const user = useUserStore((s) => s.user);
   const unread = useNotificationStore((s) => s.unreadCount);
   const isGuest = user?.isGuest === true;
 
-  const goCreate = () => navigation.navigate('Create');
-  const goImage = () => navigation.navigate('TryOn');
-  const goVideo = () => navigation.navigate('Video');
-  const goDesign = () => navigation.navigate('Design');
+  // In splash mode, dismiss the overlay before navigating so the destination
+  // isn't rendered underneath the modal.
+  const go = (fn: () => void) => {
+    if (splash) splash.onDismiss();
+    fn();
+  };
+  const goCreate = () => go(() => navigation.navigate('Create'));
+  const goImage = () => go(() => navigation.navigate('TryOn'));
+  const goVideo = () => go(() => navigation.navigate('Video'));
+  const goDesign = () => go(() => navigation.navigate('Design'));
 
   return (
     <View style={styles.root}>
@@ -49,30 +63,40 @@ export default function HomeHubScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header: wordmark + notifications/profile */}
+        {/* Header: wordmark + (splash) close, or notifications/profile */}
         <View style={styles.header}>
           <Logo height={26} />
-          <View style={styles.headerRight}>
+          {splash ? (
             <TouchableOpacity
               style={styles.iconBtn}
-              onPress={() => navigation.navigate(isGuest ? 'Profile' : 'Inbox')}
-              accessibilityLabel="Notifications"
+              onPress={splash.onDismiss}
+              accessibilityLabel="Close"
             >
-              <Ionicons name="notifications-outline" size={20} color={Colors.textPrimary} />
-              {!isGuest && unread > 0 ? <View style={styles.dot} /> : null}
+              <Ionicons name="close" size={22} color={Colors.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.avatarBtn}
-              onPress={() => navigation.navigate('Profile')}
-              accessibilityLabel="Profile"
-            >
-              <LinearGradient colors={Gradients.primary} style={styles.avatarRing}>
-                <View style={styles.avatarInner}>
-                  <Ionicons name="person" size={16} color={Colors.textPrimary} />
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+          ) : (
+            <View style={styles.headerRight}>
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => navigation.navigate(isGuest ? 'Profile' : 'Inbox')}
+                accessibilityLabel="Notifications"
+              >
+                <Ionicons name="notifications-outline" size={20} color={Colors.textPrimary} />
+                {!isGuest && unread > 0 ? <View style={styles.dot} /> : null}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.avatarBtn}
+                onPress={() => navigation.navigate('Profile')}
+                accessibilityLabel="Profile"
+              >
+                <LinearGradient colors={Gradients.primary} style={styles.avatarRing}>
+                  <View style={styles.avatarInner}>
+                    <Ionicons name="person" size={16} color={Colors.textPrimary} />
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Hero */}
@@ -161,6 +185,34 @@ export default function HomeHubScreen() {
             desc="Your creations stay yours."
           />
         </View>
+
+        {splash ? (
+          <View style={styles.splashFooter}>
+            <TouchableOpacity
+              style={styles.dontShowRow}
+              onPress={splash.onToggleDontShow}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: splash.dontShowAgain }}
+            >
+              <Ionicons
+                name={splash.dontShowAgain ? 'checkbox' : 'square-outline'}
+                size={20}
+                color={splash.dontShowAgain ? Colors.accentCyan : Colors.textSecondary}
+              />
+              <Text style={styles.dontShowText}>Do not display at next login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.9} onPress={splash.onDismiss} style={styles.continueBtn}>
+              <LinearGradient
+                colors={Gradients.primary}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.continueFill}
+              >
+                <Text style={styles.continueText}>Continue to app</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -435,6 +487,16 @@ const styles = StyleSheet.create({
   },
   techTitle: { color: Colors.textPrimary, fontSize: Typography.fontSizeSM, fontWeight: '700' },
   techDesc: { color: Colors.textSecondary, fontSize: 11, lineHeight: 14, marginTop: 2 },
+  splashFooter: { marginTop: Spacing.xl, gap: Spacing.md },
+  dontShowRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, alignSelf: 'center' },
+  dontShowText: { color: Colors.textSecondary, fontSize: Typography.fontSizeSM },
+  continueBtn: { borderRadius: Radius.full, overflow: 'hidden' },
+  continueFill: { paddingVertical: 15, alignItems: 'center', borderRadius: Radius.full },
+  continueText: {
+    color: Colors.textInverse,
+    fontWeight: Typography.fontWeightBold,
+    fontSize: Typography.fontSizeMD,
+  },
 });
 
 // Small helper so the CTA glow lives with the token system without importing the

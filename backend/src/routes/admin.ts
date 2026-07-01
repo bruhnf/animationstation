@@ -44,6 +44,8 @@ import {
   DEFAULT_VIDEO_CREDIT_COST,
   MIN_VIDEO_CREDIT_COST,
   MAX_VIDEO_CREDIT_COST,
+  getWelcomeSplashEnabled,
+  setWelcomeSplashEnabled,
 } from '../services/appSettingsService';
 import {
   getThrottleConfig,
@@ -622,6 +624,7 @@ router.get('/settings', async (_req: Request, res: Response) => {
     referralCreditGrant,
     referralMaxPerWindow,
     videoCreditCost,
+    welcomeSplashEnabled,
     throttleConfig,
   ] = await Promise.all([
     getGuestCreditGrant(),
@@ -629,6 +632,7 @@ router.get('/settings', async (_req: Request, res: Response) => {
     getReferralCreditGrant(),
     getReferralMaxPerWindow(),
     getVideoCreditCost(),
+    getWelcomeSplashEnabled(),
     getThrottleConfig(),
   ]);
   res.json({
@@ -649,6 +653,7 @@ router.get('/settings', async (_req: Request, res: Response) => {
     defaultVideoCreditCost: DEFAULT_VIDEO_CREDIT_COST,
     minVideoCreditCost: MIN_VIDEO_CREDIT_COST,
     maxVideoCreditCost: MAX_VIDEO_CREDIT_COST,
+    welcomeSplashEnabled,
     throttleConfig,
     defaultThrottleConfig: DEFAULT_THROTTLE_CONFIG,
     throttleBounds: {
@@ -722,6 +727,17 @@ router.patch('/settings/video-cost', async (req: Request, res: Response) => {
   } catch (err) {
     res.status(400).json({ error: (err as Error).message });
   }
+});
+
+// Toggle the client-side welcome splash screen. Body: { enabled: boolean }.
+router.patch('/settings/welcome-splash', async (req: Request, res: Response) => {
+  const { enabled } = req.body as { enabled?: unknown };
+  if (typeof enabled !== 'boolean') {
+    res.status(400).json({ error: 'enabled must be a boolean' });
+    return;
+  }
+  const saved = await setWelcomeSplashEnabled(enabled);
+  res.json({ welcomeSplashEnabled: saved });
 });
 
 // Update the soft try-on throttle config. Body: the full config object

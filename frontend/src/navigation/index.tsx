@@ -19,7 +19,6 @@ import SignupScreen from '../screens/SignupScreen';
 import OnboardingPhotoScreen from '../screens/OnboardingPhotoScreen';
 import AboutScreen from '../screens/AboutScreen';
 import HomeScreen from '../screens/HomeScreen';
-import HomeHubScreen from '../screens/HomeHubScreen';
 import TryOnScreen from '../screens/TryOnScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import FriendsScreen from '../screens/FriendsScreen';
@@ -43,6 +42,7 @@ import CleanUpScreen from '../screens/CleanUpScreen';
 import DesignScreen from '../screens/DesignScreen';
 import SignupCTA from '../components/ui/SignupCTA';
 import SplashAnnouncementModal from '../components/SplashAnnouncementModal';
+import WelcomeSplash from '../components/WelcomeSplash';
 import { navigationRef } from './navigationRef';
 
 export type AuthStackParams = {
@@ -56,15 +56,15 @@ export type AuthStackParams = {
 };
 
 export type MainTabParams = {
-  // Home hub (neon landing: hero + creation modes). The social feed moved to
-  // the Community tab; saved creations to the Library tab.
+  // Home is the global feed — a continuous scroll of every user's public
+  // creations. (The neon hub that used to live here is now the admin-toggleable
+  // welcome splash.)
   Home: undefined;
-  Community: undefined;
-  // Center FAB → the Create hub, the single landing spot for every creation
-  // feature (Image, Design, Video, Clean-Up, Library). Replaces the old
-  // separate Design/Video/TryOn tabs.
-  Create: undefined;
   Library: { picker?: boolean } | undefined;
+  // Center FAB → the Create hub, the single landing spot for every creation
+  // feature (Image, Design, Video, Clean-Up, Library).
+  Create: undefined;
+  Inbox: undefined;
   Profile: undefined;
 };
 
@@ -88,8 +88,6 @@ export type RootStackParams = {
   AdminConsole: undefined;
   Purchase: undefined;
   Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean };
-  // Notifications inbox — reachable from the Home hub header (moved off the tab bar).
-  Inbox: undefined;
   PublicProfile: { username: string };
   BlockedUsers: undefined;
   ChangePassword: undefined;
@@ -175,7 +173,7 @@ function InboxTabForGuest() {
 }
 
 function MainTabs() {
-  const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
   const isGuest = useUserStore((s) => s.user?.isGuest === true);
 
   useEffect(() => {
@@ -207,18 +205,16 @@ function MainTabs() {
     >
       <Tab.Screen
         name="Home"
-        component={HomeHubScreen}
+        component={HomeScreen}
         options={{
           tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tab.Screen
-        name="Community"
-        component={HomeScreen}
+        name="Library"
+        component={ClosetScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="images" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -230,21 +226,26 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Library"
-        component={ClosetScreen}
+        name="Inbox"
+        component={isGuest ? InboxTabForGuest : InboxScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="images" size={size} color={color} />
+            <Ionicons name="notifications" size={size} color={color} />
           ),
+          tabBarBadge:
+            !isGuest && unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: Colors.accentMagenta,
+            color: Colors.white,
+            fontSize: 10,
+          },
         }}
       />
       <Tab.Screen
         name="Profile"
         component={isGuest ? GuestProfileScreen : ProfileScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
     </Tab.Navigator>
@@ -347,17 +348,11 @@ export default function AppNavigator() {
           component={TryOnCommentsScreen}
           options={{ presentation: 'card', headerShown: false }}
         />
-        {/* Moved off the tab bar (mockup tabs are Home/Community/Create/Library/
-            Profile). Still reachable: Friends from Community/Profile links,
-            Inbox from the Home hub header. */}
+        {/* Friends (following/followers) lives off the tab bar — reached from the
+            feed and Profile links. Inbox is a tab again (see MainTabs). */}
         <Stack.Screen
           name="Friends"
           component={FriendsScreen}
-          options={{ presentation: 'card', headerShown: false }}
-        />
-        <Stack.Screen
-          name="Inbox"
-          component={isGuest ? InboxTabForGuest : InboxScreen}
           options={{ presentation: 'card', headerShown: false }}
         />
         <Stack.Screen
@@ -471,6 +466,10 @@ export default function AppNavigator() {
           Mounted once per cold start, over the whole app, for guests and real
           users alike. Renders nothing when no splash is published. */}
       <SplashAnnouncementModal />
+      {/* Admin-toggleable welcome hub splash (the neon "Imagine. Create.
+          Transcend." screen). Gated on the welcomeSplashEnabled config flag +
+          the user's local opt-out. Renders nothing when off. */}
+      <WelcomeSplash />
     </NavigationContainer>
   );
 }

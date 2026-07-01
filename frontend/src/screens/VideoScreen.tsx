@@ -24,7 +24,7 @@ import { useUserStore } from '../store/useUserStore';
 import { useConfigStore } from '../store/useConfigStore';
 import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { useVideoJobStore } from '../store/useVideoJobStore';
-import { TryOnJob } from '../types';
+import { TryOnJob, ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import CreditDisplay from '../components/CreditDisplay';
 import HeaderMenu from '../components/HeaderMenu';
@@ -54,6 +54,15 @@ type Source =
   | { type: 'tryon'; jobId: string; previewUrl: string }
   | { type: 'body'; which: 'full' | 'medium'; previewUrl: string };
 
+// A pickable past creation for the "Use a Creation" picker — unified across both
+// generation collections so a video can start from ANY image the user has made:
+//   • tryon  → a transform-image job (sent to the server as sourceJobId)
+//   • closet → a Design image (sent as a `photo` source; its remote URL is
+//     fetched + processed at submit time)
+type PickerItem =
+  | { key: string; previewUrl: string; source: 'tryon'; job: TryOnJob }
+  | { key: string; previewUrl: string; source: 'closet'; imageUrl: string };
+
 export default function VideoScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
@@ -78,7 +87,7 @@ export default function VideoScreen() {
   const [activeJob, setActiveJob] = useState<TryOnJob | null>(null);
   const [aiConsentVisible, setAiConsentVisible] = useState(false);
   const [tryOnPickerVisible, setTryOnPickerVisible] = useState(false);
-  const [pickerJobs, setPickerJobs] = useState<TryOnJob[]>([]);
+  const [pickerItems, setPickerItems] = useState<PickerItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   // True while we check the global store for an in-flight job on mount, so we
   // show a brief loader instead of flashing the empty form (and can't double-
@@ -227,26 +236,54 @@ export default function VideoScreen() {
 
   async function openTryOnPicker(slot: 1 | 2) {
     try {
-      const { data } = await api.get<{ jobs: TryOnJob[] }>('/tryon/history');
-      const usable = (data.jobs || []).filter(
-        (j) => j.kind !== 'VIDEO' && (j.resultFullBodyUrl || j.resultMediumUrl),
-      );
-      if (usable.length === 0) {
+      // Merge BOTH generation collections so any image the user has made is a
+      // valid video source: transform-image jobs (/tryon/history, excluding
+      // videos) + Design images (/closet). Newest-first.
+      const [jobsRes, closetRes] = await Promise.allSettled([
+        api.get<{ jobs: TryOnJob[] }>('/tryon/history'),
+        api.get<{ items: ClosetItem[] }>('/closet'),
+      ]);
+      const items: (PickerItem & { createdAt: string })[] = [];
+      if (jobsRes.status === 'fulfilled') {
+        for (const j of jobsRes.value.data.jobs || []) {
+          if (j.kind === 'VIDEO') continue;
+          const previewUrl = j.resultFullBodyUrl || j.resultMediumUrl;
+          if (!previewUrl) continue;
+          items.push({ key: `tryon:${j.id}`, previewUrl, source: 'tryon', job: j, createdAt: j.createdAt });
+        }
+      }
+      if (closetRes.status === 'fulfilled') {
+        for (const c of closetRes.value.data.items || []) {
+          items.push({
+            key: `closet:${c.id}`,
+            previewUrl: c.imageUrl,
+            source: 'closet',
+            imageUrl: c.imageUrl,
+            createdAt: c.createdAt,
+          });
+        }
+      }
+      items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+      if (items.length === 0) {
         Alert.alert('No creations yet', 'Generate an image first, then you can animate it.');
         return;
       }
       // The picker is a separate modal, so remember which box it targets.
       setPickerSlot(slot);
-      setPickerJobs(usable);
+      setPickerItems(items.map(({ createdAt: _c, ...rest }) => rest));
       setTryOnPickerVisible(true);
     } catch {
       Alert.alert('Error', 'Could not load your creations.');
     }
   }
 
-  function pickTryOn(job: TryOnJob) {
-    const previewUrl = (job.resultFullBodyUrl || job.resultMediumUrl)!;
-    applySource(pickerSlot, { type: 'tryon', jobId: job.id, previewUrl });
+  function pickItem(item: PickerItem) {
+    if (item.source === 'tryon') {
+      applySource(pickerSlot, { type: 'tryon', jobId: item.job.id, previewUrl: item.previewUrl });
+    } else {
+      // Design images have no job id; send as a photo (URL fetched at submit).
+      applySource(pickerSlot, { type: 'photo', uri: item.imageUrl });
+    }
     setTryOnPickerVisible(false);
   }
 
@@ -570,17 +607,13 @@ export default function VideoScreen() {
             </TouchableOpacity>
           </View>
           <FlatList
-            data={pickerJobs}
-            keyExtractor={(j) => j.id}
+            data={pickerItems}
+            keyExtractor={(i) => i.key}
             numColumns={3}
             contentContainerStyle={{ padding: Spacing.sm }}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.pickerCell} onPress={() => pickTryOn(item)}>
-                <RetryableImage
-                  uri={(item.resultFullBodyUrl || item.resultMediumUrl)!}
-                  style={styles.pickerImg}
-                  resizeMode="cover"
-                />
+              <TouchableOpacity style={styles.pickerCell} onPress={() => pickItem(item)}>
+                <RetryableImage uri={item.previewUrl} style={styles.pickerImg} resizeMode="cover" />
               </TouchableOpacity>
             )}
           />

@@ -73,6 +73,7 @@ export default function CreateHubScreen() {
           icon="color-wand"
           title="Transform an Image"
           subtitle="Upload a reference image and a prompt to reimagine it."
+          highlight
           onPress={() => navigation.navigate('TryOn')}
         />
         <View style={{ height: Spacing.md }} />
@@ -80,6 +81,7 @@ export default function CreateHubScreen() {
           icon="image"
           title="Clean Up a Photo"
           subtitle="Turn a messy screenshot into a clean, polished image."
+          highlight
           onPress={() => navigation.navigate('CleanUp')}
         />
         <View style={{ height: Spacing.md }} />
@@ -87,6 +89,7 @@ export default function CreateHubScreen() {
           icon="images"
           title="My Library"
           subtitle="Your saved creations, ready to revisit anytime."
+          highlight
           onPress={() => navigation.navigate('Closet', undefined)}
         />
 
@@ -159,17 +162,19 @@ const styles = StyleSheet.create({
   },
   upsell: {
     marginTop: Spacing.xl,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
   },
   upsellTitle: {
-    color: Colors.white,
+    color: Colors.textPrimary,
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightHeavy,
   },
   upsellText: {
-    color: Colors.gray200,
+    color: Colors.textSecondary,
     fontSize: Typography.fontSizeSM,
     marginTop: Spacing.xs,
     marginBottom: Spacing.md,
