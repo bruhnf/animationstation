@@ -324,6 +324,17 @@ app.get('/health', async (_req, res) => {
   });
 });
 
+// Marketing + account website (static HTML/CSS/JS). Served at the site root so
+// animationstation.bruhnfreeman.com shows the site, while /api/* stays the API.
+// Mounted AFTER every /api route and the health/share/admin/verified routes so
+// it can never shadow them — only otherwise-unmatched GETs fall through to a
+// static file. `extensions: ['html']` gives clean URLs (/login → login.html).
+// The directory is bind-mounted from ./website in docker-compose (not baked into
+// the image), so site edits deploy without a backend rebuild.
+const websiteDir = path.join(__dirname, '../website');
+app.use(express.static(websiteDir, { extensions: ['html'], index: false }));
+app.get('/', (_req, res) => res.sendFile(path.join(websiteDir, 'index.html')));
+
 // 404 handler
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });

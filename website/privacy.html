@@ -45,7 +45,7 @@
 
     <div class="summary">
       <p><strong>At a glance.</strong></p>
-      <p>&bull; The Service uses third-party AI (xAI's Grok Imagine API) to generate try-on images from photos you upload. We obtain your explicit in-app consent before any photo is sent.</p>
+      <p>&bull; The Service uses third-party AI (xAI's Grok Imagine API) to generate AI images and videos from photos you upload. We obtain your explicit in-app consent before any photo is sent.</p>
       <p>&bull; We <strong>do not</strong> use your photos or AI-generated results to train any AI model &mdash; ours or anyone else's.</p>
       <p>&bull; We <strong>do not</strong> sell your data, do not show third-party ads, do not include analytics or tracking SDKs, and do not track you across other companies' apps or websites.</p>
       <p>&bull; You can delete all your photos, export your data, and permanently delete your account in-app from Settings &rarr; Privacy &amp; Data.</p>
@@ -58,16 +58,16 @@
     <ul>
       <li><strong>Account information.</strong> Email address, username, password (stored as a one-way bcrypt hash), and optional first name, last name, bio, city, and state.</li>
       <li><strong>Mobile phone number.</strong> Collected only if you opt in to our SMS program (see Section 16). Used solely to send transactional text messages (account notifications, security alerts, and one-time passcodes).</li>
-      <li><strong>Body photos.</strong> Up to three photos you choose to upload: a close-up profile photo, a full-body front photo, and a medium (waist-up) photo.</li>
-      <li><strong>Clothing photos.</strong> Photos of clothing items you photograph for try-on.</li>
-      <li><strong>Try-on results.</strong> AI-generated images produced from your body photos and clothing photos.</li>
+      <li><strong>Source &amp; reference photos.</strong> Photos you choose to upload or capture as the basis for a creation (for example, a source image to animate into a video, or a reference photo to guide an image).</li>
+      <li><strong>Prompts.</strong> The text prompts and creation settings you enter to describe the image or video you want.</li>
+      <li><strong>Creations.</strong> AI-generated images and videos produced from your photos and prompts.</li>
       <li><strong>Communications.</strong> Messages, comments, follows, likes, reports, and other content you create within the app.</li>
-      <li><strong>AI processing consent.</strong> The timestamp of your most recent affirmative in-app consent to send body and clothing photos to our AI provider.</li>
+      <li><strong>AI processing consent.</strong> The timestamp of your most recent affirmative in-app consent to send photos and prompts to our AI provider.</li>
     </ul>
 
     <h3>Information collected automatically</h3>
     <ul>
-      <li><strong>Usage data.</strong> Try-on counts, session activity, in-app navigation, and basic crash reports captured by the operating system.</li>
+      <li><strong>Usage data.</strong> Creation counts, session activity, in-app navigation, and basic crash reports captured by the operating system.</li>
       <li><strong>Device data.</strong> Device model, operating system version, app version, and approximate IP-based location (country, region, city). We do not collect precise GPS location.</li>
       <li><strong>Login locations.</strong> The IP address and approximate location of each login and session-token refresh, used for security alerts. We retain only the most recent ten records per account.</li>
     </ul>
@@ -82,15 +82,15 @@
     <table>
       <thead><tr><th>Permission</th><th>Purpose</th><th>Optional?</th></tr></thead>
       <tbody>
-        <tr><td>Camera</td><td>To photograph clothing items for virtual try-on. Clothing photos are processed by AI to generate images of you wearing them.</td><td>Yes &mdash; without it, you can still upload clothing photos from your photo library.</td></tr>
-        <tr><td>Photo Library</td><td>To upload body and clothing photos. Body photos are processed by AI (xAI Grok) to generate try-on images. You can delete them at any time from Settings.</td><td>Required to use the try-on feature.</td></tr>
+        <tr><td>Camera</td><td>To capture photos to use as the source or reference for a creation. These photos are processed by AI to generate your images and videos.</td><td>Yes &mdash; without it, you can still upload photos from your photo library.</td></tr>
+        <tr><td>Photo Library</td><td>To upload source and reference photos. These photos are processed by AI (xAI Grok) to generate your images and videos. You can delete them at any time from Settings.</td><td>Required to use the AI creation feature.</td></tr>
       </tbody>
     </table>
     <p>The Service does <strong>not</strong> request access to your contacts, calendar, microphone, motion sensors, health data, or precise location.</p>
 
     <h2>3. How We Use Your Information</h2>
     <ul>
-      <li>Provide the core try-on feature, including processing your body photos through AI to generate try-on images.</li>
+      <li>Provide the core AI creation feature, including processing your photos and prompts through AI to generate images and videos.</li>
       <li>Maintain your account, authenticate logins, and detect suspicious activity.</li>
       <li>Process subscriptions and credit purchases via Apple In-App Purchase.</li>
       <li>Send transactional emails such as account verification, password reset, and security alerts. We do not send marketing emails.</li>
@@ -103,48 +103,48 @@
     <h2>4. Legal Bases for Processing (EEA / UK)</h2>
     <p>If you are in the European Economic Area or the United Kingdom, our legal bases under the GDPR / UK GDPR for processing your personal data are:</p>
     <ul>
-      <li><strong>Performance of a contract</strong> (Art. 6(1)(b)) &mdash; for providing the Service, creating your account, and operating try-on, comments, follows, and likes.</li>
-      <li><strong>Consent</strong> (Art. 6(1)(a)) &mdash; for transmitting body and clothing photos to our third-party AI provider (xAI). You give this consent through the in-app consent dialog described in Section 5, and you may withdraw it at any time in Settings &rarr; Privacy &amp; Data.</li>
+      <li><strong>Performance of a contract</strong> (Art. 6(1)(b)) &mdash; for providing the Service, creating your account, and operating creation, comments, follows, and likes.</li>
+      <li><strong>Consent</strong> (Art. 6(1)(a)) &mdash; for transmitting photos and prompts to our third-party AI provider (xAI). You give this consent through the in-app consent dialog described in Section 5, and you may withdraw it at any time in Settings &rarr; Privacy &amp; Data.</li>
       <li><strong>Legitimate interests</strong> (Art. 6(1)(f)) &mdash; for security alerts and suspicious-login detection, anti-abuse measures, and aggregated product analytics. Our interest is preventing fraud, abuse, and account takeover; we have assessed that this does not override your privacy interests because the data used (IP, approximate location) is minimal and retention is short.</li>
       <li><strong>Legal obligation</strong> (Art. 6(1)(c)) &mdash; for retaining transaction records required by tax or consumer-protection law, and for responding to lawful requests from authorities.</li>
     </ul>
-    <p>We do not engage in automated decision-making (including profiling) that produces legal or similarly significant effects on you. AI try-on generation is initiated by you, is cosmetic, and has no legal effect.</p>
+    <p>We do not engage in automated decision-making (including profiling) that produces legal or similarly significant effects on you. AI image and video generation is initiated by you, is cosmetic, and has no legal effect.</p>
 
-    <h2>5. AI Processing of Body Photos</h2>
-    <p>When you initiate a try-on, the Service sends your body photo (full-body and/or medium) and the clothing photo you supplied to <strong>xAI, Inc.</strong> via the Grok Imagine API, a third-party AI image-generation service. The result is returned to us, stored on our infrastructure, and made available to you in the app.</p>
+    <h2>5. AI Processing of Your Photos</h2>
+    <p>When you initiate a creation, the Service sends your source photo and prompt (and any reference photo you supplied) to <strong>xAI, Inc.</strong> via the Grok Imagine API, a third-party AI image-generation service. The result is returned to us, stored on our infrastructure, and made available to you in the app.</p>
     <ul>
       <li>The close-up / profile photo is <strong>never</strong> sent to AI services. It is used only as your profile picture inside the app.</li>
-      <li>Before any photo is transmitted to xAI, the app shows an explicit in-app consent dialog that names xAI, lists exactly what data will be sent, and requires you to tap "I Agree and Continue." Try-on requests are blocked server-side until that consent is on file.</li>
-      <li>You may revoke this consent at any time from Settings &rarr; Privacy &amp; Data &rarr; Revoke AI Processing Consent. Revoking blocks future try-ons until you re-confirm; previously generated results are not affected.</li>
-      <li>You may also delete your body photos and any AI-generated derivatives at any time from Settings.</li>
+      <li>Before any photo is transmitted to xAI, the app shows an explicit in-app consent dialog that names xAI, lists exactly what data will be sent, and requires you to tap "I Agree and Continue." Creation requests are blocked server-side until that consent is on file.</li>
+      <li>You may revoke this consent at any time from Settings &rarr; Privacy &amp; Data &rarr; Revoke AI Processing Consent. Revoking blocks future creations until you re-confirm; previously generated results are not affected.</li>
+      <li>You may also delete your photos and any AI-generated derivatives at any time from Settings.</li>
       <li>xAI's processing of these images is governed by xAI's own privacy policy, available at <a href="https://x.ai/legal/privacy-policy">x.ai/legal/privacy-policy</a>.</li>
     </ul>
 
     <h3>5.1 We do not use your photos to train AI</h3>
-    <p>We do not use your body photos, clothing photos, or AI-generated results to train, fine-tune, evaluate, or develop any AI or machine-learning model &mdash; ours or anyone else's. The photos exist solely to generate the try-on result you requested and to be displayed back to you (and, only if you choose, to other users via the community feed).</p>
+    <p>We do not use your photos, prompts, or AI-generated results to train, fine-tune, evaluate, or develop any AI or machine-learning model &mdash; ours or anyone else's. The photos exist solely to generate the creation you requested and to be displayed back to you (and, only if you choose, to other users via the community feed).</p>
 
     <h3>5.2 Generative AI labeling and safety</h3>
     <p>Consistent with App Store Review Guideline 4.0 (Design &mdash; AI-Generated Content) and 5.1.8 (Privacy &mdash; Generative AI), every AI-generated image surfaced in the Service is clearly labeled with an "AI-generated" badge. We also provide in-app reporting and blocking tools so users can flag content for human review (see Section 14).</p>
 
     <h2>6. Face Data</h2>
-    <p>Because the photos you upload (close-up profile, full-body, and waist-up) and the AI-generated try-on results all visually depict your face, this section describes how we treat that face data specifically.</p>
+    <p>Because the photos you upload, and the AI-generated creations produced from them, may visually depict a human face (for example, if you upload a selfie or a portrait as a source or reference image), this section describes how we treat that face data specifically.</p>
 
     <h3>What face data we collect</h3>
-    <p>The only "face data" the Service collects is the photographic images themselves: the photos you choose to upload and the AI-generated try-on results derived from them. <strong>We do not perform face recognition, face detection, facial geometry mapping, biometric identification, or any other automated analysis of facial features.</strong> We do not extract or store face templates, embeddings, landmarks, or any biometric descriptors derived from your photos. We do not use ARKit Face APIs, the iOS Vision framework's face APIs, TrueDepth APIs, FaceID, or any other facial-analysis API.</p>
+    <p>The only "face data" the Service collects is the photographic images themselves: the photos you choose to upload and the AI-generated creations derived from them. <strong>We do not perform face recognition, face detection, facial geometry mapping, biometric identification, or any other automated analysis of facial features.</strong> We do not extract or store face templates, embeddings, landmarks, or any biometric descriptors derived from your photos. We do not use ARKit Face APIs, the iOS Vision framework's face APIs, TrueDepth APIs, FaceID, or any other facial-analysis API.</p>
 
     <h3>How we use face data</h3>
-    <p>The photos you upload are used for exactly three purposes, and nothing else:</p>
+    <p>The photos you upload are used for exactly these purposes, and nothing else:</p>
     <ul>
-      <li><strong>Profile display.</strong> The close-up photo is shown as your profile picture inside the app. The full-body and waist-up photos are visible to you on your Profile screen so you can manage them.</li>
-      <li><strong>AI try-on generation.</strong> The full-body and waist-up photos are sent to xAI's Grok Imagine API together with a clothing photo you provide. The AI generates a new image of you wearing that clothing. The close-up photo is <strong>never</strong> sent to the AI service.</li>
-      <li><strong>Try-on history.</strong> AI-generated try-on results are saved to your account so you can view past try-ons, and&mdash;if you choose to make them public&mdash;display them on the in-app community feed under your username. Each result is also clearly labeled as AI-generated.</li>
+      <li><strong>Profile display.</strong> A profile photo you choose is shown as your profile picture inside the app. Your uploaded source and reference photos are visible to you in the app so you can manage them.</li>
+      <li><strong>AI image and video generation.</strong> The source and reference photos you provide are sent to xAI's Grok Imagine API together with your prompt. The AI generates a new image or video based on your inputs. Your chosen profile photo is <strong>never</strong> sent to the AI service.</li>
+      <li><strong>Creation history.</strong> AI-generated creations are saved to your account so you can view past creations, and&mdash;if you choose to make them public&mdash;display them on the in-app community feed under your username. Each result is also clearly labeled as AI-generated.</li>
     </ul>
     <p>We do <strong>not</strong> use face data for marketing, advertising, behavioral profiling, training our own or anyone else's machine-learning models, targeting recommendations, or analytics. We do not sell face data.</p>
 
     <h3>Third parties that receive face data</h3>
     <p>Face data is shared only with the service providers strictly required to operate the Service:</p>
     <ul>
-      <li><strong>xAI, Inc. (Grok Imagine API).</strong> Receives your full-body and/or waist-up photo together with a clothing photo each time you initiate a try-on. xAI uses these images solely to generate the requested try-on result; their handling is governed by xAI's own privacy policy at <a href="https://x.ai/legal/privacy-policy">x.ai/legal/privacy-policy</a>. The close-up profile photo is never sent to xAI.</li>
+      <li><strong>xAI, Inc. (Grok Imagine API).</strong> Receives your source photo (and any reference photo) together with your prompt each time you initiate a creation. xAI uses these images solely to generate the requested creation; their handling is governed by xAI's own privacy policy at <a href="https://x.ai/legal/privacy-policy">x.ai/legal/privacy-policy</a>. The close-up profile photo is never sent to xAI.</li>
       <li><strong>Amazon Web Services (S3).</strong> Stores all uploaded photos and AI-generated results in a private S3 bucket with Block Public Access enabled. The Service does not make these objects publicly readable; the app retrieves them through short-lived presigned URLs.</li>
     </ul>
     <p>No other third party receives face data. We do not share face data with advertising networks, analytics providers, social networks, or data brokers.</p>
@@ -157,21 +157,21 @@
 
     <h3>How long face data is retained</h3>
     <ul>
-      <li>Uploaded photos (close-up, full-body, waist-up) are retained until you delete them in Settings, replace them, or delete your account.</li>
-      <li>AI-generated try-on results are retained until you delete the individual result in the app or delete your account.</li>
+      <li>Uploaded photos (source and reference images) are retained until you delete them in Settings, replace them, or delete your account.</li>
+      <li>AI-generated creations are retained until you delete the individual result in the app or delete your account.</li>
       <li>When you delete your account, your face data (all uploaded photos and all AI-generated results) is removed from our database and from our S3 storage within 30 days of the account-deletion request. Aggregated, non-identifying analytics may be retained.</li>
       <li>There is no automatic expiration; nothing happens to your photos until you take an explicit action.</li>
     </ul>
 
     <h3>Your control over face data</h3>
-    <p>From the in-app Settings &gt; Privacy &amp; Data screen, you can at any time: delete all body photos, export all your data including face data, revoke AI processing consent, or permanently delete your account (which deletes all face data).</p>
+    <p>From the in-app Settings &gt; Privacy &amp; Data screen, you can at any time: delete all uploaded photos, export all your data including face data, revoke AI processing consent, or permanently delete your account (which deletes all face data).</p>
 
     <h2>7. How We Share Information</h2>
     <p>We share information only with the service providers required to operate the Service:</p>
     <table>
       <thead><tr><th>Provider</th><th>Purpose</th><th>Data shared</th></tr></thead>
       <tbody>
-        <tr><td>xAI, Inc. (Grok Imagine)</td><td>AI try-on image generation</td><td>Body photo (full-body or medium), clothing photo</td></tr>
+        <tr><td>xAI, Inc. (Grok Imagine)</td><td>AI image and video generation</td><td>Source photo, any reference photo, prompt</td></tr>
         <tr><td>Amazon Web Services (S3, SES)</td><td>Image storage and transactional email</td><td>All user content; account email</td></tr>
         <tr><td>Apple, Inc.</td><td>In-app purchase processing and App Store Server Notifications</td><td>Apple Account identifier, transaction metadata</td></tr>
         <tr><td>ip-api.com</td><td>IP-based geolocation for security alerts</td><td>IP address only</td></tr>
@@ -196,11 +196,11 @@
     <h2>9. Data Retention</h2>
     <ul>
       <li><strong>Account data</strong> is retained for as long as your account is active.</li>
-      <li><strong>Body photos and AI-generated try-on results</strong> are retained until you delete them in Settings or delete your account.</li>
+      <li><strong>Uploaded photos and AI-generated creations</strong> are retained until you delete them in Settings or delete your account.</li>
       <li><strong>Login location records</strong> are pruned to the last ten entries per account automatically.</li>
       <li><strong>Server logs</strong> containing IP addresses are retained for up to 30 days for security investigation, then deleted.</li>
       <li><strong>Apple purchase records</strong> are retained for as long as required by tax and consumer-protection law (typically 7 years).</li>
-      <li><strong>After account deletion,</strong> we delete your account record, body photos, AI results, and personal data within 30 days. Aggregated, non-identifying analytics may be retained.</li>
+      <li><strong>After account deletion,</strong> we delete your account record, uploaded photos, AI results, and personal data within 30 days. Aggregated, non-identifying analytics may be retained.</li>
     </ul>
 
     <h2>10. Your Privacy Rights</h2>
@@ -210,8 +210,8 @@
     <ul>
       <li><strong>Access</strong> the personal data we hold about you by tapping <em>Export My Data (GDPR/CCPA)</em>. The export is delivered as a JSON file you can save or share.</li>
       <li><strong>Correct</strong> account information from your profile.</li>
-      <li><strong>Delete</strong> your body photos, individual try-on results, or your entire account from Settings &rarr; Privacy &amp; Data. Account deletion is permanent and removes all personal data within 30 days as described in Section 9.</li>
-      <li><strong>Withdraw consent</strong> to AI processing at any time by tapping <em>Revoke AI Processing Consent</em>. Future try-ons will be blocked until you re-confirm consent.</li>
+      <li><strong>Delete</strong> your uploaded photos, individual creations, or your entire account from Settings &rarr; Privacy &amp; Data. Account deletion is permanent and removes all personal data within 30 days as described in Section 9.</li>
+      <li><strong>Withdraw consent</strong> to AI processing at any time by tapping <em>Revoke AI Processing Consent</em>. Future creations will be blocked until you re-confirm consent.</li>
       <li><strong>Block</strong> other users to make their content invisible to you and yours invisible to them.</li>
     </ul>
 
@@ -225,7 +225,7 @@
       <li><strong>Right to delete</strong> personal information we have collected from you, subject to certain legal exceptions.</li>
       <li><strong>Right to correct</strong> inaccurate personal information.</li>
       <li><strong>Right to opt-out of the sale or sharing</strong> of personal information. <strong>We do not sell your personal information and we do not "share" it for cross-context behavioral advertising</strong>, so there is no opt-out link to provide.</li>
-      <li><strong>Right to limit the use and disclosure of sensitive personal information</strong>. We use sensitive personal information (the photos you upload) only for the limited purposes described in Section 5 (AI try-on generation, profile display, and try-on history) &mdash; uses that fall within the exceptions in Cal. Civ. Code § 1798.121(a) &mdash; so no further limitation right applies.</li>
+      <li><strong>Right to limit the use and disclosure of sensitive personal information</strong>. We use sensitive personal information (the photos you upload) only for the limited purposes described in Section 5 (AI image and video generation, profile display, and creation history) &mdash; uses that fall within the exceptions in Cal. Civ. Code § 1798.121(a) &mdash; so no further limitation right applies.</li>
       <li><strong>Right to non-discrimination</strong> for exercising any of these rights.</li>
     </ul>
     <p>To exercise these rights, contact <a href="mailto:privacy@animationstation.bruhnfreeman.com">privacy@animationstation.bruhnfreeman.com</a>. We will verify your request using your account email and may ask for additional information to confirm your identity. Authorized agents may submit requests on your behalf with written authorization.</p>
@@ -264,9 +264,9 @@
     <h2>14. Content Moderation, Reporting, and Account Deletion</h2>
     <p>Consistent with App Store Review Guidelines 1.2 (User-Generated Content) and 5.1.1(v) (Account Deletion):</p>
     <ul>
-      <li><strong>In-app reporting and blocking</strong> are available from the three-dot menu on any try-on result, comment, or user profile. Reports are reviewed by us within 24 hours, and we may remove content, suspend accounts, or take other action.</li>
-      <li><strong>Account deletion</strong> is available in-app from Settings &rarr; Privacy &amp; Data &rarr; Delete Account. Deletion is permanent and removes all body photos, try-on results, personal data, comments, likes, follows, and Apple purchase records (subject to Section 9 retention exceptions). You do not need to email us to delete your account.</li>
-      <li><strong>AI-generated content labeling.</strong> Every AI-generated try-on result image is visibly labeled with an "AI-generated" badge whenever it is displayed in the Service.</li>
+      <li><strong>In-app reporting and blocking</strong> are available from the three-dot menu on any creation, comment, or user profile. Reports are reviewed by us within 24 hours, and we may remove content, suspend accounts, or take other action.</li>
+      <li><strong>Account deletion</strong> is available in-app from Settings &rarr; Privacy &amp; Data &rarr; Delete Account. Deletion is permanent and removes all uploaded photos, creations, personal data, comments, likes, follows, and Apple purchase records (subject to Section 9 retention exceptions). You do not need to email us to delete your account.</li>
+      <li><strong>AI-generated content labeling.</strong> Every AI-generated creation is visibly labeled with an "AI-generated" badge whenever it is displayed in the Service.</li>
     </ul>
 
     <h2>15. Changes to This Policy</h2>

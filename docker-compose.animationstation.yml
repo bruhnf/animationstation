@@ -64,6 +64,10 @@ services:
     volumes:
       - backend_logs:/var/log/animationstation
       - ./backend/splash:/app/splash
+      # Marketing + account website, served by the backend at the site root.
+      # Bind-mounted (not baked into the image) so site edits deploy without a
+      # backend rebuild — just re-sync ./website and the container serves it.
+      - ./website:/app/website:ro
     depends_on:
       postgres:
         condition: service_healthy
