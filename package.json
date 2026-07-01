@@ -1,0 +1,18 @@
+{
+  "name": "tryon-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Root scripts for the TryOn monorepo. Backend and frontend each have their own package.json under their respective folders.",
+  "scripts": {
+    "build:docs": "node scripts/build-docs.js",
+    "format": "prettier --write \"backend/src/**/*.ts\" \"frontend/**/*.{ts,tsx}\" \"*.{js,json}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"backend/src/**/*.ts\" \"frontend/**/*.{ts,tsx}\" \"*.{js,json}\" \".github/**/*.yml\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "prettier": "^3.8.4"
+  }
+}

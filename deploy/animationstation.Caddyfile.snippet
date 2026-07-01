@@ -1,0 +1,17 @@
+# ── AnimationStation (dev/test) — append to /srv/proxy/Caddyfile on the box ──
+# Then reload Caddy:
+#   docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+#
+# Uses the app-appropriate header set (NOT the static-site `security_headers`
+# snippet, whose strict CSP would block the app/API). The backend serves the API
+# under /api plus /health; Caddy provisions TLS automatically once DNS for the
+# host resolves to this box (it already does → 3.223.180.176).
+animationstation.bruhnfreeman.com {
+	import app_headers
+	encode gzip zstd
+	# Uploads (multipart images) — allow generous bodies for source photos.
+	request_body {
+		max_size 25MB
+	}
+	reverse_proxy animationstation-api:3000
+}

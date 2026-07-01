@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RELEASE NOTES — TryOn Docs</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="index.html" class="brand">TryOn Docs</a>
+  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html">CLAUDE</a><a href="deployment.html">DEPLOYMENT</a><a href="contributing.html">CONTRIBUTING</a><a href="todos.html">TODOS</a><a href="release-notes.html" class="active">RELEASE NOTES</a><a href="testflight-checklist.html">TESTFLIGHT CHECKLIST</a></nav>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <h2 class="toc-title">On this page</h2>
+    <ul class="toc"><li><a href="#v130-develop-pending-build">v1.3.0 (develop) — pending build</a></li><li><a href="#v120-2026-06-13-app-store-build-34">v1.2.0 — 2026-06-13 (App Store build 34)</a></li><li><a href="#v110-superseded-by-v120-testflight-only-never-shipped-to-the-app-store">v1.1.0 — superseded by v1.2.0 (TestFlight only; never shipped to the App Store)</a></li><li><a href="#v1017-2026-06-10">v1.0.17 — 2026-06-10</a><ul><li><a href="#late-additions-that-rode-the-1017-build-2026-06-09-06-11-store-build-28">Late additions that rode the 1.0.17 build (2026-06-09 → 06-11, store build #28)</a></li></ul></li><li><a href="#v1016-2026-06-07">v1.0.16 — 2026-06-07</a><ul><li><a href="#new-guest-mode-browse-try-before-signup">New: Guest Mode (browse &amp;amp; try before signup)</a></li><li><a href="#content-moderation-fashion-only-policy-tos-54">Content moderation: fashion-only policy (ToS §5.4)</a></li><li><a href="#try-on-results-reliability-quality">Try-on results: reliability &amp;amp; quality</a></li><li><a href="#account-session-robustness">Account &amp;amp; session robustness</a></li><li><a href="#security-infrastructure-hardening">Security &amp;amp; infrastructure hardening</a></li><li><a href="#pre-ship-fixes">Pre-ship fixes</a></li><li><a href="#app-store-build">App Store / build</a></li><li><a href="#database-migrations">Database migrations</a></li></ul></li><li><a href="#v1015-2026-05-26">v1.0.15 — 2026-05-26</a><ul><li><a href="#rebrand">Rebrand</a></li><li><a href="#apple-in-app-purchases">Apple In-App Purchases</a></li><li><a href="#billing-correctness">Billing correctness</a></li><li><a href="#admin-dashboard">Admin dashboard</a></li><li><a href="#reliability">Reliability</a></li><li><a href="#security">Security</a></li><li><a href="#app-store-reviewer-prep">App Store reviewer prep</a></li></ul></li><li><a href="#v1014-2026-05-20">v1.0.14 — 2026-05-20</a><ul><li><a href="#apple-in-app-purchases-storekit">Apple In-App Purchases (StoreKit)</a></li><li><a href="#admin-dashboard-1">Admin Dashboard</a></li><li><a href="#docs">Docs</a></li></ul></li><li><a href="#v1013-not-released">v1.0.13 — not released</a></li><li><a href="#v1012-2026-05-14">v1.0.12 — 2026-05-14</a><ul><li><a href="#why-this-release-exists">Why this release exists</a></li><li><a href="#new-ai-processing-consent">New: AI Processing Consent</a></li><li><a href="#ux-fix-clothing-photo-picker-permission-flow">UX fix: Clothing-photo picker permission flow</a></li><li><a href="#privacy-policy-rewrite-websiteprivacyhtml">Privacy Policy rewrite (website/privacy.html)</a></li><li><a href="#eula-rewrite-websitetermshtml">EULA rewrite (website/terms.html)</a></li><li><a href="#documentation">Documentation</a></li><li><a href="#app-store-review-information-paste-into-app-store-connect">App Store Review Information (paste into App Store Connect)</a></li><li><a href="#deployment-checklist-for-this-release">Deployment checklist for this release</a></li></ul></li></ul>
+  </aside>
+  <main class="content">
+<h1 id="release-notes" tabindex="-1"><a class="header-anchor" href="#release-notes" aria-hidden="true">#</a> Release Notes</h1>
+<h2 id="v130-develop-pending-build" tabindex="-1"><a class="header-anchor" href="#v130-develop-pending-build" aria-hidden="true">#</a> v1.3.0 (develop) — pending build</h2>
+<p><strong>Theme:</strong> AI <strong>Video</strong> (image-to-video), a bottom-nav expansion, plus the try-on captions / web-gallery / anti-farming work from the 1.2.0→1.3.0 window.</p>
+<blockquote>
+<p>⚠️ <strong>Native rebuild required.</strong> This version adds <code>expo-video</code> (a native module) for video playback — a JS reload will NOT pick it up; cut a fresh dev-client / EAS build to test. <strong>Backend migrations:</strong> <code>add_tryon_title</code>, <code>add_email_normalized</code>, <strong><code>add_video_jobs</code></strong> (adds <code>tryon_jobs.kind</code>/<code>videoUrl</code>/<code>motionPrompt</code>, makes <code>clothingPhoto1Url</code> nullable). Run <code>prisma migrate deploy</code> as usual.</p>
+</blockquote>
+<p><strong>AI Video (image-to-video)</strong></p>
+<ul>
+<li><strong>New &quot;Video&quot; screen + tab.</strong> Animate a source image — a completed try-on, a camera-roll photo, or a profile body photo — into a short clip via a motion prompt (&quot;wave and smile&quot;, &quot;do a slow spin&quot;, &quot;morph into a cat&quot;). Add a caption, keep it public or private — same rules as still images, with the ✨ AI-generated badge. Powered by xAI Grok Imagine video (<code>POST /v1/videos/generations</code>, polled to completion).</li>
+<li><strong>Bottom bar expanded to 7 items:</strong> Home, Friends, <strong>Design</strong> | TryOn | <strong>Video</strong>, Inbox, Profile. &quot;Design&quot; opens the Closet / Outfit Designer. &quot;Animate a Photo (Video)&quot; also added to the 3-dot menu everywhere. Guests get a sign-up prompt on Design/Video.</li>
+<li>Public videos appear in the <strong>Home feed</strong> and on <strong>profiles</strong> with a ▶ play overlay (poster = the source image); tap to play full-screen. Shareable via the <code>/t/&lt;id&gt;</code> page (renders an inline <code>&lt;video&gt;</code> + OG video meta).</li>
+<li><strong>Economics:</strong> each video costs <strong>2 credits</strong> by default (admin-tunable via Admin → Settings → Video Credit Cost, min 1). The live cost is shown right on the <strong>&quot;Create Video · N credits&quot;</strong> button (served via the public <code>/api/config</code>, no rebuild to change). Failures refund the charged credits; xAI moderation blocks reuse the try-on strike/grace policy.</li>
+<li><strong>Transition between two images.</strong> A second, optional source-image picker sits beside the first; add one and describe the transition (e.g. &quot;morph from the first outfit into the second&quot;). With two images we use Grok's <strong>reference-to-video</strong> mode (both images in <code>reference_images</code>, prompt-driven); a single image uses <strong>image-to-video</strong>. The two modes are mutually exclusive (xAI has no literal first→last-frame interpolation).</li>
+<li><strong>Fixes:</strong> the ✨AI-generated badge is centered over the video so it no longer covers the native player's fullscreen/cast/scrubber controls; and a moderation false-positive that discarded <strong>every</strong> successful video (a substring match on the normal <code>respect_moderation</code> field) was fixed — detection is now structural + unit-tested.</li>
+</ul>
+<p><strong>New features (web/app)</strong></p>
+<ul>
+<li><strong>Name your try-on.</strong> An optional caption field on the try-on screen (≤140 chars). The caption shows under the result image on the community feed, on the web &quot;My Try-Ons&quot; cards, and leads the link preview on the public share page. Editable after the fact via <code>PATCH /api/tryon/:jobId/title</code>.</li>
+<li><strong>Web &quot;My Try-Ons&quot; redesign.</strong> Each session card now shows just <strong>two thumbnails</strong> — your body photo and the clothing item. Tap either (or &quot;View all&quot;) to open a <strong>full-screen carousel</strong> that pages through every image in the session, inputs and AI results alike, with arrow/keyboard navigation and the ✨ AI-generated badge on results.</li>
+</ul>
+<p><strong>Security audit (credits + subscriptions)</strong></p>
+<ul>
+<li>Reviewed the Guest Welcome, Welcome-Bonus (join offer), and Referral credit paths plus the Apple IAP/subscription pipeline for double-grant, race, and injection bugs. <strong>No SQL injection surface</strong> — every query is a Prisma parameterized call or a tagged-template <code>$queryRaw</code>. Grant paths are atomic + idempotent (conditional token consume, <code>updateMany</code> claims, <code>FOR UPDATE</code> locks). Findings logged in TODOS.md §0.5.</li>
+</ul>
+<p><strong>Credit-farming hardening (anti-abuse)</strong></p>
+<ul>
+<li><strong>Email normalization at signup/claim.</strong> New <code>User.emailNormalized</code> column (migration <code>add_email_normalized</code> + backfill) canonicalizes addresses (lowercase, strip <code>+tag</code>, remove Gmail dots) so one inbox can't register many aliased accounts to farm welcome + referral credits. Display/transactional mail still uses the verbatim address; login/forgot-password are unchanged.</li>
+<li><strong>Per-referrer cap.</strong> A referrer can earn at most <code>referralMaxPerWindow</code> rewarded referrals per rolling 30-day window (admin-tunable, default 20, 0 = unlimited); past the cap the referrer's payout is withheld but the invitee still gets their join bonus. Plus an hourly referral-velocity alert to admins.</li>
+<li><strong>Guest welcome grant now requires a real <code>deviceId</code>.</strong> Web/simulator/pre-rebuild clients (null deviceId) get a working guest but 0 credits, closing the easiest guest-credit farm. Real iOS devices are unaffected.</li>
+<li>Investigated a prod report of one user appearing from both IPv4 and IPv6 (&quot;two cities&quot;): confirmed <strong>identity is never IP-based</strong> (it's token + deviceId), so this is a cosmetic geo-display artifact only — <strong>severity LOW</strong>, no action taken.</li>
+</ul>
+<p><strong>Fixes &amp; polish</strong></p>
+<ul>
+<li><strong>Keyboard no longer covers text inputs.</strong> Fixed the comment box (<code>TryOnCommentsScreen</code>), the try-on caption field (<code>TryOnScreen</code>), the Report sheet's details box, and the Admin-console key field — each kept its input above the keyboard (manual keyboard-height tracking / <code>automaticallyAdjustKeyboardInsets</code> / <code>KeyboardAvoidingView</code> as appropriate). Audited all 10 text-input surfaces.</li>
+<li><strong>Try-on screen spotlights the Outfit Designer.</strong> The tiny &quot;My Closet&quot; text link is now a bold gold-on-black <strong>&quot;Design Your Own Outfit&quot;</strong> card (with a NEW badge + CTA) below the privacy toggle; the helper line moved beneath the clothing photos.</li>
+</ul>
+<h2 id="v120-2026-06-13-app-store-build-34" tabindex="-1"><a class="header-anchor" href="#v120-2026-06-13-app-store-build-34" aria-hidden="true">#</a> v1.2.0 — 2026-06-13 (App Store build 34)</h2>
+<p><strong>Theme:</strong> The big creative-features release. The public App Store jumps <strong>1.0.17 → 1.2.0</strong> (1.1.0 only ever reached TestFlight), so this build carries the <strong>Outfit Designer / Closet</strong> work <em>and</em> a new engagement/growth batch, plus admin-controlled promotions and several correctness/security fixes.</p>
+<blockquote>
+<p>✅ <strong>Live on the App Store (approved 2026-06-14) and the prod backend is cut over</strong> (verified 2026-06-15): prod runs the 1.2.0 backend with <code>add_referrals</code> + <code>add_saved_looks</code> applied and nginx force-recreated for the <code>/t/</code> share-page proxy. Original cutover runbook retained in DEPLOYMENT.md → &quot;1.2.0 production cutover.&quot;</p>
+</blockquote>
+<p><strong>New features</strong></p>
+<ul>
+<li><strong>Outfit Designer / &quot;My Closet.&quot;</strong> Describe an outfit in words and AI generates a catalog-style product shot, saved to your Closet and tried on like a photographed item (1 credit/generation). Includes a <strong>&quot;Surprise me&quot;</strong> button and style/occasion chips to remove the blank-box friction. (From the 1.1.0 line; ships to the public here.)</li>
+<li><strong>&quot;Clean Up a Photo.&quot;</strong> Upload a messy clothing photo — a website screenshot full of text/prices, or a cluttered scene — and AI turns it into a clean product shot you can try on. Directly addresses &quot;I uploaded a screenshot and the try-on looked wrong&quot;; the photo tips now warn about screenshots too.</li>
+<li><strong>Share a try-on.</strong> Every public try-on gets a shareable web page (<code>/t/&lt;id&gt;</code>) with rich link previews (OpenGraph/Twitter) for iMessage/social; share button on feed cards and Saved Looks.</li>
+<li><strong>Saved Looks.</strong> Bookmark any try-on (yours or a public one) and revisit them; the bookmark turns yellow when saved. Save from the feed, the Saved Looks screen, or next to &quot;Save All&quot; in the full-screen detail view.</li>
+<li><strong>Compare Looks.</strong> Pick two of your completed try-ons and view them side by side.</li>
+<li><strong>Invite Friends (referral program).</strong> Share your code; you and your friend each get free credits when they join and verify (admin-tunable; can be disabled).</li>
+<li><strong>Designer entry on Profile</strong> + Saved Looks / Compare Looks added to the feed dropdown menu (previously only on Profile).</li>
+<li><strong>Own-post quick actions.</strong> The 3-dot menu on your own feed post now offers Make Private, Share, and Delete (it used to be empty).</li>
+</ul>
+<p><strong>Admin / promotions</strong></p>
+<ul>
+<li><strong>Limited-time &quot;free credits when you join&quot; offer is now admin-controlled.</strong> The welcome-bonus amount is editable from the Admin Dashboard (⚙️ Settings) and can be raised, lowered, or turned off without an app update; the app shows &quot;Limited time offer: N free credits when you join&quot; dynamically (and hides it when off). The Free-tier card on the purchase screen was reworded to a 4-bullet layout (&quot;No credit card or subscription required&quot;, etc.). Referral reward amount is admin-controlled too.</li>
+</ul>
+<p><strong>Fixes &amp; hardening</strong></p>
+<ul>
+<li><strong>In-app purchases: refunded credit packs now correctly claw back credits.</strong> A consumable-refund handler ordering bug meant the claw-back was effectively dead code (a user could refund a credit pack and keep the credits); now fixed and made concurrency-safe (security audit).</li>
+<li><strong>Admin &quot;create user&quot; validates email format.</strong> A missing TLD (e.g. <code>name@host</code> with no <code>.com</code>) used to save silently and then login / forgot-password could never match it; the endpoint now rejects malformed emails.</li>
+<li><strong>Saved Looks privacy/GDPR.</strong> Saved looks re-check visibility at read time (a look saved while public stops serving once the owner makes it private or blocks you) and never expose the original's input photos; data export now includes saved looks + referrals.</li>
+<li><strong>Join-offer config is no longer cached</strong> (<code>/api/config</code> is <code>no-store</code>), so an admin change shows on the next app launch.</li>
+</ul>
+<h2 id="v110-superseded-by-v120-testflight-only-never-shipped-to-the-app-store" tabindex="-1"><a class="header-anchor" href="#v110-superseded-by-v120-testflight-only-never-shipped-to-the-app-store" aria-hidden="true">#</a> v1.1.0 — superseded by v1.2.0 (TestFlight only; never shipped to the App Store)</h2>
+<ul>
+<li><strong>Rebrand: the product is now &quot;TryOn Mirror&quot; on the domain <code>tryon-mirror.ai</code></strong> (previously &quot;TryOn&quot; by evoFaceFlow on <code>evofaceflow.com</code>). The website, legal documents (Privacy Policy / Terms), transactional emails, and in-app legal links all use the new brand + domain. The app now talks to <code>api.tryon-mirror.ai</code>; the legacy <code>api.evofaceflow.com</code> keeps serving so existing 1.0.17 installs are unaffected, and the old website 301-redirects to the new domain (except <code>sms.html</code>, kept serving for the pending toll-free SMS registration). The iOS bundle id and IAP product ids keep their <code>com.evofaceflow.tryon.*</code> prefix — Apple makes these permanent; they're invisible to users. Spare domains <code>tryon-mirror.{com,net,app}</code> 301 to the main site.</li>
+<li><em>(plus the in-progress 1.1.0 features: Outfit Designer / Closet, fixed TryOn header, full-screen outfit viewer — notes to be finalized at release)</em></li>
+</ul>
+<h2 id="v1017-2026-06-10" tabindex="-1"><a class="header-anchor" href="#v1017-2026-06-10" aria-hidden="true">#</a> v1.0.17 — 2026-06-10</h2>
+<p><strong>Theme:</strong> Fast-follow after the v1.0.16 App Store launch (1.0.16 is live) — a release-only carousel bug fix, frontend dependency security hardening + SDK-54 patch alignment, mobile crash reporting groundwork, and backend auth/admin hardening.</p>
+<ul>
+<li>
+<p><strong>Mobile crash reporting (Sentry) — LIVE in the production build.</strong> <code>@sentry/react-native</code> is integrated and gated on <code>EXPO_PUBLIC_SENTRY_DSN</code> (<code>sendDefaultPii:false</code>, errors-only, no tracing). The DSN + source-map upload are set via EAS production env vars, so crash + stack-trace reporting is <strong>active</strong> in the 1.0.17 store build (local dev clients without the env var stay dark). Privacy Policy §7/§8 updated to disclose Sentry as a diagnostics-only processor (2026-06-11); declare <strong>Diagnostics → Crash Data</strong> on the App Store Connect privacy label.</p>
+</li>
+<li>
+<p><strong>Backend: refresh-token rotation is now live (security hardening).</strong> Each session refresh now rotates the refresh token with reuse detection, so a stolen/captured token is invalidated as soon as the real device refreshes (previously a leaked token stayed valid for its full 30 days). A server-side grace makes this safe across app force-closes — no spurious logouts. Backend + infra only; speeds nothing but meaningfully hardens account security for all app versions.</p>
+</li>
+<li>
+<p><strong>Admin/ops:</strong> the guest welcome-credit grant is now editable from the Admin Dashboard (⚙️ Settings) without a redeploy, and a &quot;Clear History&quot; button wipes a user's stored login-location history. Internal tooling only.</p>
+</li>
+<li>
+<p><strong>Fixed: full-screen carousel images opening &quot;out of frame.&quot;</strong> Tapping a try-on in the Home feed to open the full-screen image carousel could show one or more images shifted off-center — most often the clothing photo (carousel slot 3), whose shopping-screenshot aspect ratio differs most from the body/result images — until you swiped to recenter. Root cause: a nested zoomable <code>ScrollView</code> (added in v1.0.16 for pinch-to-zoom) raced the layout in optimized <strong>release</strong> builds, so it reproduced on the App Store build but <strong>not</strong> the Expo dev client. The viewer now renders each image directly. <strong>Pinch-to-zoom is temporarily removed</strong> and will return via a <code>react-native-gesture-handler</code> + <code>reanimated</code> implementation (gated so the carousel only pages at scale 1). No backend or schema changes — frontend only.</p>
+</li>
+<li>
+<p><strong>Performance: try-on generation is ~2× faster.</strong> The two result perspectives (full-body + waist-up) now generate <strong>concurrently</strong> on the backend instead of sequentially — a measured 2-photo generation dropped from <strong>~25s → ~12s</strong>. The app also polls for the result every <strong>2.5s</strong> (was 5s), so it appears promptly once ready. Two robustness fixes ride along: a retry of a partially-failed multi-perspective job now <strong>skips</strong> the perspective that already succeeded (no double Grok charge), and a queue-enqueue failure after a credit is spent now <strong>refunds + asks the user to retry</strong> instead of stranding the job. (The backend half deploys independently and speeds up all app versions, incl. live 1.0.16; the poll-interval change ships in the app.)</p>
+</li>
+<li>
+<p><strong>Security: patched all critical- and high-severity frontend dependency advisories.</strong> Non-breaking <code>npm audit fix</code>: <strong>axios</strong> 1.15.2 → 1.17.0 (six high-severity CVEs — proxy-credential leak across HTTP→HTTPS redirects, MITM via prototype pollution in <code>config.proxy</code>, cookie-name ReDoS, and related), <strong>shell-quote</strong> 1.8.3 → 1.8.4 (critical), plus <code>ws</code> / <code>brace-expansion</code> / <code>expo-dev-launcher</code>. Frontend audit dropped from <strong>28 critical / 1 high / 28 moderate → 0 / 0 / 17</strong> (the remaining moderates are Expo SDK-54 build tooling, fixable only by jumping to expo@56 — deliberately not done). axios is the app's HTTP client, so this is a genuine runtime improvement shipping to users. <code>package.json</code> unchanged (axios <code>^1.6.8</code> still satisfied); no Expo package versions changed by the audit fix.</p>
+</li>
+<li>
+<p><strong>Admin: fixed the &quot;Frontend (NPM)&quot; vulnerability scan.</strong> It had errored with &quot;package.json not found in directory&quot; on dev + prod — the backend container (built from the <code>./backend</code> context) couldn't reach the sibling <code>frontend/</code>. The frontend manifests are now bind-mounted into the backend container (with <code>group_add</code> so the non-root user can read them under umask 007) and audited via <code>npm audit --package-lock-only</code>. Backend change only.</p>
+</li>
+<li>
+<p><strong>Chore: aligned Expo packages to the SDK 54 expected patches.</strong> <code>expo install --fix</code> bumped <code>expo</code> → ~54.0.35, <code>expo-file-system</code> → ~19.0.23, <code>expo-font</code> → ~14.0.12, clearing the <code>expo-doctor</code> &quot;packages out of date&quot; warning in the EAS build log. All within SDK 54.</p>
+</li>
+</ul>
+<h3 id="late-additions-that-rode-the-1017-build-2026-06-09-06-11-store-build-28" tabindex="-1"><a class="header-anchor" href="#late-additions-that-rode-the-1017-build-2026-06-09-06-11-store-build-28" aria-hidden="true">#</a> Late additions that rode the 1.0.17 build (2026-06-09 → 06-11, store build #28)</h3>
+<ul>
+<li><strong>Simplified sign-up.</strong> Account creation now asks for email + password only — no username field. A username is generated server-side (a claiming guest keeps their <code>user#######</code> handle) and stays renameable in Edit Profile. Body-photo screens gained upload tips, and the clothing/body pickers warn when a selected photo is low-resolution (longest side &lt; 1024px) so users know why a result may look soft.</li>
+<li><strong>Partial-result delivery.</strong> A multi-perspective try-on that loses one perspective no longer discards the survivor: a transient loss (Grok 5xx/S3) completes with the surviving image <strong>and auto-refunds the credit</strong>; a single-perspective moderation block completes with the survivor, with no strike and no refund (a passing sibling perspective is evidence of a filter false positive). Total losses keep the previous terminal behavior.</li>
+<li><strong>Honest purchase status.</strong> When a StoreKit purchase succeeds but backend receipt verification is deferred (e.g. network blip), the purchase screen now reports the true pending state instead of a premature success/failure.</li>
+<li><strong>Case-insensitive account identity.</strong> Email and username uniqueness + lookups are case-insensitive end-to-end (Postgres <code>citext</code>); duplicate-signup races map to 409 instead of 500. Profile data auto-refreshes when screens regain focus.</li>
+<li><strong>Session-expiry fix.</strong> <code>sessionExpired</code> handling is idempotent and the session kind is read before bootstrap, removing a stale-token retry loop.</li>
+<li><strong>Fixed: permanent &quot;Tap to reload&quot; on older feed posts (resubmitted build).</strong> Replacing or deleting a body photo removed its S3 object while historical try-on jobs still referenced it as their &quot;original body&quot; carousel slide — the slide then failed forever (404 NoSuchKey) with a retry button that couldn't work. Three-part fix: (a) backend — replacing/deleting a body photo now <strong>detaches the references</strong> on that user's historical jobs first (matches bare-key and legacy-URL rows; verified against both forms), so the slide is cleanly omitted instead of dead; (b) data — the three recoverable deleted photos were <strong>restored from S3 versioning</strong> (delete-marker removal) and the one past the 30-day window had its 2 references nulled; (c) client — <code>RetryableImage</code> now probes an exhausted-retries failure with a 1-byte ranged GET and shows a quiet <strong>&quot;Image unavailable&quot;</strong> for permanent failures (403/404/410) instead of a tap-to-reload that lies; transient failures keep the retry button. Unit-tested (<code>imageFailure.test.ts</code>).</li>
+<li><strong>Backend (deployed 2026-06-11, server-side only):</strong> closed three credit-accounting concurrency holes — the email-verification welcome bonus could be granted more than once under concurrent clicks (now a conditional token consume); parallel submissions could overshoot the weekly try-on cap with free sessions (submission gate now serializes per user via a row lock + in-transaction recount); refund idempotency check-then-create gap closed. Verified with empirical race tests (<code>backend/scripts/raceChecks.mjs</code>).</li>
+</ul>
+<hr>
+<h2 id="v1016-2026-06-07" tabindex="-1"><a class="header-anchor" href="#v1016-2026-06-07" aria-hidden="true">#</a> v1.0.16 — 2026-06-07</h2>
+<p><strong>Theme:</strong> First feature release after the v1.0.15 App Store launch. Headlined by <strong>Guest Mode</strong> (browse and try the app before creating an account), plus content-moderation policy enforcement, try-on result reliability and quality improvements, and a round of backend/security hardening.</p>
+<blockquote>
+<p><strong>Migration required on deploy</strong> — run <code>npx prisma migrate deploy</code>. Two new migrations (see <em>Database migrations</em> below).</p>
+</blockquote>
+<hr>
+<h3 id="new-guest-mode-browse-try-before-signup" tabindex="-1"><a class="header-anchor" href="#new-guest-mode-browse-try-before-signup" aria-hidden="true">#</a> New: Guest Mode (browse &amp; try before signup)</h3>
+<p>New users open straight into the browsable feed instead of a sign-in wall — they can scroll the feed, view public profiles, read comment threads, and run a couple of free try-ons before creating an account. Favorable under App Store Guideline 5.1.1(v).</p>
+<ul>
+<li><strong>Anonymous accounts:</strong> first app open mints a real but anonymous <code>User</code> (<code>isGuest=true</code>, <code>email</code>/<code>passwordHash</code> null, <code>verified=true</code>) with a small welcome credit grant (2 credits). <code>POST /api/auth/guest</code>.</li>
+<li><strong>Device-scoped reuse:</strong> the client sends its device identifier (iOS <code>identifierForVendor</code>) so logout/reopen reuses the same guest row instead of churning a new one — the welcome grant and the sign-up metric happen once per device, not on every open.</li>
+<li><strong>Write gating:</strong> guests can read everything, but social writes (like, follow, comment, report, block, change-password) return <strong><code>403 GUEST_SIGNUP_REQUIRED</code></strong> to prompt sign-up. Guest try-ons are forced <strong>private</strong> so anonymous accounts never publish public UGC.</li>
+<li><strong>Conversion (claim):</strong> <code>POST /api/auth/claim</code> upgrades the same row in place — the guest's try-ons, credits, and AI consent carry over — then requires email verification. Verifying adds the standard <strong>+10</strong> welcome bonus on top of any remaining guest credits.</li>
+<li><strong>Logout</strong> drops to a 0-credit browsable guest session (no fresh grant — not a farm lever).</li>
+<li><strong>Abuse mitigations:</strong> small grant, re-upload-photo + re-consent friction each cycle, per-IP rate limit on <code>/auth/guest</code> (10/hour), an hourly abuse-monitor that emails admins past a threshold, and daily cleanup of unconverted guests older than 30 days.</li>
+</ul>
+<p><strong>Mobile app:</strong></p>
+<ul>
+<li>Guest-aware navigation: browsable tabs with the Login/Sign-Up flow presented as a modal; Profile and Inbox replaced by guest profile / prompt screens.</li>
+<li>Guest profile shows credit balance and the guest's own try-on history.</li>
+<li>Fixes for guest navigation dead-ends and a stale-token bootstrap retry loop.</li>
+</ul>
+<p><strong>Admin dashboard:</strong> new guest metrics — <strong>Guests Today</strong>, <strong>Active Guests</strong>, <strong>Guest→User (7d)</strong> conversion rate, and a 7-day sign-up mini-trend.</p>
+<p><strong>Schema:</strong> <code>User.isGuest</code>, <code>User.deviceId</code>, and nullable <code>User.email</code> / <code>User.passwordHash</code>.</p>
+<hr>
+<h3 id="content-moderation-fashion-only-policy-tos-54" tabindex="-1"><a class="header-anchor" href="#content-moderation-fashion-only-policy-tos-54" aria-hidden="true">#</a> Content moderation: fashion-only policy (ToS §5.4)</h3>
+<ul>
+<li>The AI try-on now rejects nude / sexual / revealing content via the provider's content filters; <code>grokService</code> distinguishes a content-moderation block from a transient technical failure.</li>
+<li>Per Terms of Service §5.4, a content-moderation block is <strong>terminal and non-refundable</strong> — it is not retried and the credit is not returned. Genuine technical failures are still retried (3 attempts) and the credit refunded as before. The failed-job view explains the policy to the user.</li>
+<li>Privacy Policy and Terms of Service updated to match.</li>
+</ul>
+<hr>
+<h3 id="try-on-results-reliability-quality" tabindex="-1"><a class="header-anchor" href="#try-on-results-reliability-quality" aria-hidden="true">#</a> Try-on results: reliability &amp; quality</h3>
+<ul>
+<li><strong>Self-healing result images:</strong> fixed the intermittent blank-white-box bug by retrying transient image-load failures; rolled the <code>RetryableImage</code> component out to every remote-image surface.</li>
+<li><strong>Pinch-to-zoom</strong> in the full-screen image viewer (pure JS, no native module).</li>
+<li><strong>Prompt refinement</strong> for e-commerce-catalog quality and modesty, plus a fix so results are <strong>no longer cropped</strong> when the source clothing/outfit photo is itself cropped.</li>
+</ul>
+<hr>
+<h3 id="account-session-robustness" tabindex="-1"><a class="header-anchor" href="#account-session-robustness" aria-hidden="true">#</a> Account &amp; session robustness</h3>
+<ul>
+<li>A returning real user whose session has expired is now routed to <strong>Login</strong> (with a &quot;session expired&quot; banner) instead of being silently demoted to a guest.</li>
+<li><strong>Refresh-token rotation</strong> with reuse-detection, gated behind <code>REFRESH_TOKEN_ROTATION</code> (kept off until a rotation-aware client build is live, so legacy clients aren't logged out).</li>
+<li>Credit balance refreshes on the TryOn screen after each submit.</li>
+</ul>
+<hr>
+<h3 id="security-infrastructure-hardening" tabindex="-1"><a class="header-anchor" href="#security-infrastructure-hardening" aria-hidden="true">#</a> Security &amp; infrastructure hardening</h3>
+<ul>
+<li><strong>Auth hardening:</strong> admin-output XSS escaping, refresh tokens stored <strong>hashed</strong> (a DB leak can't replay them), and closed account-enumeration vectors on signup / login / forgot-password / resend-verification (constant-time, generic responses).</li>
+<li><strong>Deep <code>/health</code>:</strong> probes Postgres + Redis in parallel and returns <code>503</code> when degraded; a shallow <code>/health/live</code> backs the Docker liveness probe.</li>
+<li>Redis <code>maxmemory-policy=noeviction</code> for BullMQ safety; raised backend container memory; documented swap configuration.</li>
+<li><strong>Boot guard:</strong> the backend refuses to start if <code>APP_URL</code> disagrees with <code>APPLE_ENVIRONMENT</code>.</li>
+<li><strong>Admin surface</strong> IP-allowlisted at nginx on production (defense-in-depth on top of <code>X-Admin-Key</code>).</li>
+<li><strong>Server OS hardening</strong> (dev + prod): UFW, host fail2ban, SSH hardening, sysctl, auditd, Docker log rotation, and locked-down secret-file permissions — see <code>scripts/harden-server.sh</code>.</li>
+</ul>
+<hr>
+<h3 id="pre-ship-fixes" tabindex="-1"><a class="header-anchor" href="#pre-ship-fixes" aria-hidden="true">#</a> Pre-ship fixes</h3>
+<ul>
+<li><strong>Uploads</strong> now return clean 4xx (<code>413</code> too large / <code>400</code> too many or wrong field / <code>415</code> unsupported type) instead of an opaque <code>500</code>.</li>
+<li><strong>Credit deduction</strong> is a conditional, atomic decrement — concurrent submissions can't double-spend into a negative balance.</li>
+<li><strong><code>verify-receipt</code></strong> treats a duplicate-transaction race as already-processed instead of <code>500</code>ing (it still never double-grants).</li>
+<li><strong>Blocks</strong> are enforced inside comment threads — a blocked user's comments/replies are hidden from the blocker in both directions, and commenting / replying / liking across a block returns <code>404</code>.</li>
+<li>Fixed a <code>404</code> on the email-verification success page.</li>
+</ul>
+<hr>
+<h3 id="app-store-build" tabindex="-1"><a class="header-anchor" href="#app-store-build" aria-hidden="true">#</a> App Store / build</h3>
+<ul>
+<li>Removed <code>NSUserTrackingUsageDescription</code> from <code>app.json</code> — App Store Connect treats the string's mere presence as an App Tracking Transparency declaration, and the app does not call <code>ATTrackingManager</code> or track users.</li>
+</ul>
+<hr>
+<h3 id="database-migrations" tabindex="-1"><a class="header-anchor" href="#database-migrations" aria-hidden="true">#</a> Database migrations</h3>
+<p>Two new migrations — <strong>run <code>npx prisma migrate deploy</code> on deploy</strong>:</p>
+<ul>
+<li><code>20260605233658_guest_mode_nullable_email_passwordhash</code></li>
+<li><code>20260606161454_add_user_device_id</code></li>
+</ul>
+<hr>
+<h2 id="v1015-2026-05-26" tabindex="-1"><a class="header-anchor" href="#v1015-2026-05-26" aria-hidden="true">#</a> v1.0.15 — 2026-05-26</h2>
+<p><strong>Theme:</strong> First public <strong>App Store</strong> release, under the new name <strong>TryOn Mirror</strong>. Focused on Apple In-App Purchase robustness, admin subscription tooling, billing correctness, and App Store reviewer preparation.</p>
+<h3 id="rebrand" tabindex="-1"><a class="header-anchor" href="#rebrand" aria-hidden="true">#</a> Rebrand</h3>
+<ul>
+<li>App renamed to <strong>TryOn Mirror</strong> (display name and store metadata).</li>
+</ul>
+<h3 id="apple-in-app-purchases" tabindex="-1"><a class="header-anchor" href="#apple-in-app-purchases" aria-hidden="true">#</a> Apple In-App Purchases</h3>
+<ul>
+<li>Fixed the purchase spinner hanging after repeated credit purchases, including the &quot;stuck on the 4th purchase&quot; case — stale StoreKit transactions are now flushed on mount.</li>
+<li>Removed the unused server-side <code>/restore-purchases</code> endpoint; Restore Purchases is fully StoreKit-driven (each available receipt is re-verified).</li>
+<li>Reissued Product SKUs to clear an App Store Connect &quot;needs attention&quot; state.</li>
+<li>Fixed <code>downgradeIfNoActiveEntitlement</code> incorrectly dropping a user to FREE.</li>
+<li>The Apple Server API now returns a <code>503</code> JSON response on a file-not-found error instead of crashing to an HTML error page.</li>
+</ul>
+<h3 id="billing-correctness" tabindex="-1"><a class="header-anchor" href="#billing-correctness" aria-hidden="true">#</a> Billing correctness</h3>
+<ul>
+<li>A try-on credit is charged <strong>only when the job row is created</strong>, so an upload/enqueue failure can no longer bill the user. (Further hardened against concurrency in v1.0.16.)</li>
+</ul>
+<h3 id="admin-dashboard" tabindex="-1"><a class="header-anchor" href="#admin-dashboard" aria-hidden="true">#</a> Admin dashboard</h3>
+<ul>
+<li>Added stale-subscription cleanup: delete a single stale test subscription, or delete-all with a count of how many are stale.</li>
+<li>Admin user-delete now also cleans up the user's S3 objects; added an orphan-object scan with a weekly email alert.</li>
+</ul>
+<h3 id="reliability" tabindex="-1"><a class="header-anchor" href="#reliability" aria-hidden="true">#</a> Reliability</h3>
+<ul>
+<li>The token-refresh interceptor no longer strands in-flight requests when a refresh fails.</li>
+<li>Expired refresh tokens are purged on login and a <code>User</code> index was added.</li>
+<li>Memoized the Discover feed list to cut wasted re-renders.</li>
+</ul>
+<h3 id="security" tabindex="-1"><a class="header-anchor" href="#security" aria-hidden="true">#</a> Security</h3>
+<ul>
+<li>Locked local Redis and Postgres to loopback only (not published on the host's public interface); Postgres remains reachable for admin tooling via an SSH tunnel.</li>
+</ul>
+<h3 id="app-store-reviewer-prep" tabindex="-1"><a class="header-anchor" href="#app-store-reviewer-prep" aria-hidden="true">#</a> App Store reviewer prep</h3>
+<ul>
+<li>Reviewer demo accounts switched to the Free tier; consent and throttle behavior clarified for review.</li>
+<li>De-duplicated the iOS permission strings in <code>app.json</code>.</li>
+<li>Stopped tracking <code>AppReviewerSummary.md</code> (it contained demo-account passwords) and <code>.claude/settings.local.json</code>; brought <code>CLAUDE.md</code> into the repo.</li>
+</ul>
+<hr>
+<h2 id="v1014-2026-05-20" tabindex="-1"><a class="header-anchor" href="#v1014-2026-05-20" aria-hidden="true">#</a> v1.0.14 — 2026-05-20</h2>
+<p><strong>Theme:</strong> Apple In-App Purchase (StoreKit) integration and Admin Dashboard subscription tooling. Pre–App Store build — the first public App Store release was v1.0.15.</p>
+<h3 id="apple-in-app-purchases-storekit" tabindex="-1"><a class="header-anchor" href="#apple-in-app-purchases-storekit" aria-hidden="true">#</a> Apple In-App Purchases (StoreKit)</h3>
+<ul>
+<li>Integrated the App Store IAP path: the client posts the signed StoreKit transaction to the backend, which verifies it and applies the entitlement (tier or credits); App Store Server Notifications cover renewals and refunds. This is the foundation later refined in v1.0.16.</li>
+</ul>
+<h3 id="admin-dashboard-1" tabindex="-1"><a class="header-anchor" href="#admin-dashboard-1" aria-hidden="true">#</a> Admin Dashboard</h3>
+<ul>
+<li>Added per-user subscription-status tooling to the admin dashboard.</li>
+<li>Fixed a bug that prevented access to the admin panel.</li>
+</ul>
+<h3 id="docs" tabindex="-1"><a class="header-anchor" href="#docs" aria-hidden="true">#</a> Docs</h3>
+<ul>
+<li>Created the repository <code>RELEASE_NOTES.md</code>.</li>
+</ul>
+<hr>
+<h2 id="v1013-not-released" tabindex="-1"><a class="header-anchor" href="#v1013-not-released" aria-hidden="true">#</a> v1.0.13 — not released</h2>
+<p>Version skipped. The app version went directly from 1.0.12 to 1.0.14 (commit <code>a2774e7</code>); there was never a 1.0.13 build in <code>app.json</code>/<code>package.json</code> or a 1.0.13 submission. This placeholder exists only to keep the changelog numbering continuous.</p>
+<hr>
+<h2 id="v1012-2026-05-14" tabindex="-1"><a class="header-anchor" href="#v1012-2026-05-14" aria-hidden="true">#</a> v1.0.12 — 2026-05-14</h2>
+<p><strong>Theme:</strong> App Store resubmission. Implements the explicit in-app AI-processing consent required by App Store Review Guidelines 5.1.1(i) and 5.1.2(i), and rewrites the Privacy Policy and EULA to satisfy 3.1.2(c) and the App-Review-mandated AI-data-disclosure language. Includes a UX fix to the clothing-photo picker that contributed to the original rejection.</p>
+<h3 id="why-this-release-exists" tabindex="-1"><a class="header-anchor" href="#why-this-release-exists" aria-hidden="true">#</a> Why this release exists</h3>
+<p>App Store reviewer feedback (rejection of v1.0.11) under Guidelines 5.1.1(i) / 5.1.2(i):</p>
+<blockquote>
+<p>The app appears to share the user's personal data with a third-party AI service but the app does not clearly explain what data is sent, identify who the data is sent to, and ask the user's permission before sharing the data. Only including this information in the app's Terms of Service or Privacy Policy is not sufficient.</p>
+</blockquote>
+<p>A separate finding under 3.1.2(c) called out missing functional EULA links in App Store Connect metadata.</p>
+<p>This release closes both findings end-to-end: a dedicated in-app consent dialog, server-side enforcement, surfaces to grant and revoke, and a full Privacy Policy + EULA rewrite to bring the policy documents into line with Apple's &quot;same or equal protection&quot; language and other current App-Review expectations.</p>
+<hr>
+<h3 id="new-ai-processing-consent" tabindex="-1"><a class="header-anchor" href="#new-ai-processing-consent" aria-hidden="true">#</a> New: AI Processing Consent</h3>
+<p>A new explicit opt-in is required before any body or clothing photo can be transmitted to xAI's Grok Imagine API. The modal names xAI by full legal name, lists exactly what data is sent, what is explicitly <strong>not</strong> sent (close-up profile photo), and links to both our and xAI's privacy policies. An affirmative &quot;I Agree and Continue&quot; tap is required.</p>
+<p><strong>Schema:</strong></p>
+<ul>
+<li>New <code>User.aiProcessingConsentAt: DateTime?</code> column. <code>NULL</code> means consent has not been granted, or has been revoked.</li>
+<li>Migration: <code>backend/prisma/migrations/20260516000000_add_ai_processing_consent/</code></li>
+<li><strong>Migration required on deploy</strong> — run <code>npx prisma migrate deploy</code> per the standard checklist.</li>
+</ul>
+<p><strong>Backend:</strong></p>
+<ul>
+<li><code>POST /api/profile/me/ai-consent</code> — records consent (sets timestamp to <code>NOW()</code>).</li>
+<li><code>DELETE /api/profile/me/ai-consent</code> — revokes consent (sets to <code>NULL</code>).</li>
+<li><code>POST /api/tryon</code> now returns <strong><code>403 { error: 'AI_CONSENT_REQUIRED' }</code></strong> when consent is missing. The check runs <strong>before</strong> any S3 upload or credit deduction, so an unconsented submission costs the user nothing.</li>
+<li><code>aiProcessingConsentAt</code> is included in <code>GET /profile/me</code>, the login response, and <code>GET /api/admin/users</code> / <code>GET /api/admin/user/:id</code>.</li>
+</ul>
+<p><strong>Mobile app:</strong></p>
+<ul>
+<li>New <code>AiConsentModal</code> component (<a href="frontend/src/components/AiConsentModal.tsx">frontend/src/components/AiConsentModal.tsx</a>).</li>
+<li><code>TryOnScreen.handleSubmit</code> opens the modal when <code>user.aiProcessingConsentAt</code> is <code>null</code>. On agree, the client posts the consent endpoint, updates the local user store, and retries the submit.</li>
+<li>If the server returns <code>AI_CONSENT_REQUIRED</code> (stale client cache, e.g. after server-side reset), the modal re-opens automatically.</li>
+<li>Settings → Privacy &amp; Data → <strong>AI Processing Consent</strong> row shows current status (&quot;Granted&quot; / &quot;Not granted&quot;); when granted, a <strong>Revoke AI Processing Consent</strong> button appears below.</li>
+</ul>
+<p><strong>Admin dashboard:</strong></p>
+<ul>
+<li>Users table — new <strong>AI Consent</strong> column. Green &quot;Granted M/D/YY&quot; badge (hover for full timestamp) or muted &quot;Not granted&quot; badge.</li>
+<li>User-detail modal — new &quot;AI Processing Consent&quot; row showing <code>✓ Granted &lt;full timestamp&gt;</code> or <code>✗ Not granted</code>.</li>
+</ul>
+<hr>
+<h3 id="ux-fix-clothing-photo-picker-permission-flow" tabindex="-1"><a class="header-anchor" href="#ux-fix-clothing-photo-picker-permission-flow" aria-hidden="true">#</a> UX fix: Clothing-photo picker permission flow</h3>
+<p><code>TryOnScreen.pickClothingPhoto</code> previously requested iOS Camera permission <strong>immediately and unconditionally</strong> on tap, before the user had said whether they wanted to use the camera or the library. On denial, the app silently fell through to the library picker with no feedback.</p>
+<p>This was almost certainly a contributing factor to the original 5.1.1(i) rejection: the reviewer's screen capture shows them stuck at the camera permission prompt, which presented <code>NSCameraUsageDescription</code>'s &quot;Photos are processed by AI...&quot; text as the <em>only</em> AI-data-sharing disclosure they saw. Apple explicitly says permission-string text is not sufficient.</p>
+<p><strong>Fixed in this release:</strong></p>
+<ul>
+<li>Action sheet (&quot;Take Photo / Choose from Library / Cancel&quot;) now appears <strong>first</strong>.</li>
+<li>Camera permission is requested only when the user explicitly picks &quot;Take Photo&quot; — Apple HIG-compliant (ask in context).</li>
+<li>Denial routes to a helpful three-button alert: <strong>Choose from Library</strong> / <strong>Open Settings</strong> (deep-link to iOS Settings) / <strong>Cancel</strong>.</li>
+</ul>
+<p>See <a href="frontend/src/screens/TryOnScreen.tsx#L64-L100">frontend/src/screens/TryOnScreen.tsx</a>.</p>
+<hr>
+<h3 id="privacy-policy-rewrite-websiteprivacyhtml" tabindex="-1"><a class="header-anchor" href="#privacy-policy-rewrite-websiteprivacyhtml" aria-hidden="true">#</a> Privacy Policy rewrite (<a href="website/privacy.html">website/privacy.html</a>)</h3>
+<p>Full rewrite to satisfy App Review's recent privacy expectations and to reach parity with comparable AI-image apps (Lensa, FaceApp, Reface).</p>
+<p><strong>New / expanded sections:</strong></p>
+<ul>
+<li>At-a-glance plain-language summary at the top (no AI training; no tracking/ads/analytics; in-app delete; explicit consent named).</li>
+<li><strong>§2 iOS Permissions</strong> — table mirrors the <code>NSCameraUsageDescription</code> and <code>NSPhotoLibraryUsageDescription</code> strings from <code>frontend/app.json</code>.</li>
+<li><strong>§4 Legal Bases for Processing (GDPR Art. 6)</strong> — contract / consent / legitimate interests / legal obligation, per processing activity. Also explicit no-automated-decision-making (Art. 22) statement.</li>
+<li><strong>§5.1 No AI training</strong> — explicit &quot;we do not use your photos to train any AI model&quot; commitment.</li>
+<li><strong>§5.2 Generative AI labeling</strong> — cites App Store Guidelines 4.0 and 5.1.8 by number.</li>
+<li><strong>§6 State biometric laws</strong> — Illinois BIPA / Texas CUBI / Washington defensive boilerplate.</li>
+<li><strong>§7 &quot;Same or equal protection&quot; language</strong> — exact phrase from Apple's rejection text now in the policy.</li>
+<li><strong>§8 App Tracking, Analytics, Advertising</strong> — explicit &quot;no&quot; list, including ATT non-participation, no IDFA, no third-party analytics or attribution SDKs (Sentry, Crashlytics, Amplitude, etc.).</li>
+<li><strong>§10 Privacy Rights</strong> — enumerated CCPA/CPRA rights with 12-category personal-information table, GDPR rights cited by Article number, other-state-law acknowledgement (CO, CT, VA, UT, TX, OR, MT, TN, IA, IN).</li>
+<li><strong>§13 International Transfers</strong> — strengthened with Standard Contractual Clauses / UK IDTA / EU-U.S. Data Privacy Framework references (replaces post-Schrems-II-unenforceable &quot;you consent&quot; language).</li>
+<li><strong>§14 Content Moderation, Reporting, and Account Deletion</strong> — cites Guidelines 1.2 and 5.1.1(v), confirms in-app deletion is available.</li>
+<li><strong>§16 Contact</strong> — full postal address.</li>
+</ul>
+<p>The Face Data section (§6 in the new layout) is preserved as the strongest defensive language in the policy.</p>
+<hr>
+<h3 id="eula-rewrite-websitetermshtml" tabindex="-1"><a class="header-anchor" href="#eula-rewrite-websitetermshtml" aria-hidden="true">#</a> EULA rewrite (<a href="website/terms.html">website/terms.html</a>)</h3>
+<p>Full rewrite to add the Apple-mandated minimum EULA clauses (per Schedule 1 of the Developer Program License Agreement) and AI-specific clauses comparable to peer AI-image apps.</p>
+<p><strong>Apple-mandated clauses now present:</strong></p>
+<ul>
+<li>§1 Acknowledgement that the EULA is between user and developer (not Apple); Apple + subsidiaries as third-party beneficiaries with enforcement rights.</li>
+<li>§10 Scope of License — limited to Apple-branded products the user owns/controls, per App Store Usage Rules.</li>
+<li>§11 Maintenance &amp; Support — developer-only obligation.</li>
+<li>§14 Warranty disclaimer + Apple-refund mechanism (notify Apple, Apple refunds).</li>
+<li>§15 Product Claims — developer responsibility.</li>
+<li>§16 IP infringement claims — developer responsibility.</li>
+<li>§19 Legal Compliance — US embargo / denied-parties warranty.</li>
+<li>§20 Third-party terms compliance (xAI + Apple Media Services).</li>
+<li>§24 Developer name and full postal address: <strong>evoFaceFlow</strong> (sole proprietorship of Bruhn Freeman) / 2767 Route 44/55 / Gardiner, NY 12525.</li>
+</ul>
+<p><strong>AI-specific clauses added:</strong></p>
+<ul>
+<li>§5.1 Output ownership (user owns try-on outputs subject to acceptable use).</li>
+<li>§5.2 No-reliance + body-image / no-medical-advice disclaimer.</li>
+<li>§5.3 Prohibited uses of AI features: non-consensual intimate imagery, deepfakes of others, minor depictions, disinformation, model-training using outputs, AI resale, automated abuse.</li>
+<li>§8 DMCA-style copyright takedown process (notice format and <code>dmca@evofaceflow.com</code> contact).</li>
+</ul>
+<p><strong>Other:</strong></p>
+<ul>
+<li>§17 Liability cap with floor (greater of $50 or 12 months of fees).</li>
+<li>§22 Governing law: New York state courts, with EEA/UK consumer-protection carve-out.</li>
+<li>§23 Severability, entire agreement, assignment, no-waiver boilerplate.</li>
+</ul>
+<hr>
+<h3 id="documentation" tabindex="-1"><a class="header-anchor" href="#documentation" aria-hidden="true">#</a> Documentation</h3>
+<ul>
+<li><code>CLAUDE.md</code> updated to v1.0.12. Corrects a stale nginx-restart claim about HTML file changes (the website is bind-mounted; <code>git pull</code> is sufficient — no container rebuild needed for HTML-only edits), adds the new AI consent endpoints to the routes list, documents <code>AiConsentModal</code>, updates the SettingsScreen description, clarifies the Onboarding consent vs. AI consent distinction, and documents the camera-permission UX pattern with a warning not to revert it.</li>
+<li>Privacy Policy and EULA changes are also reflected in the rebuilt HTML at <code>docs/</code> via <code>npm run build:docs</code>.</li>
+</ul>
+<hr>
+<h3 id="app-store-review-information-paste-into-app-store-connect" tabindex="-1"><a class="header-anchor" href="#app-store-review-information-paste-into-app-store-connect" aria-hidden="true">#</a> App Store Review Information (paste into App Store Connect)</h3>
+<p><strong>Required by Apple's reply-to-rejection.</strong> Paste verbatim into App Store Connect → App Review Information → Notes:</p>
+<blockquote>
+<p><strong>AI processing consent flow:</strong> The test account is pre-loaded with body photos. To see the AI consent dialog (required by Guidelines 5.1.1(i) / 5.1.2(i)):</p>
+<ol>
+<li>Sign in with the credentials above.</li>
+<li>Tap the center camera button in the bottom tab bar.</li>
+<li>Tap the empty clothing-photo slot. A choice appears: Take Photo / Choose from Library / Cancel. Pick either.</li>
+<li>After selecting a clothing photo, tap <strong>&quot;Generate Try-On&quot;</strong>.</li>
+<li><strong>The AI Processing Consent dialog appears</strong>, naming xAI, Inc., listing exactly what is sent (full-body and/or waist-up photo + clothing photo), what is NOT sent (close-up profile photo), with links to both our and xAI's privacy policies, and an explicit &quot;I Agree and Continue&quot; button.</li>
+<li>Consent can be revoked at any time in Settings → Privacy &amp; Data → Revoke AI Processing Consent.</li>
+</ol>
+<p>Server-side enforcement: the <code>/api/tryon</code> endpoint refuses requests with HTTP 403 <code>AI_CONSENT_REQUIRED</code> if consent is not on file, so a tampered client cannot bypass the dialog. Privacy policy at https://evofaceflow.com/privacy.html §5 details what is sent, to whom, retention, and how to revoke. Privacy policy §7 confirms third-party providers are contractually required to provide equivalent data protection.</p>
+</blockquote>
+<p>Also required for resubmission:</p>
+<ul>
+<li>A screen recording showing: tap clothing slot → pick from library → tap Generate → consent modal appears with xAI clearly visible → tap I Agree → try-on proceeds. Attach this to the Resolution Center reply.</li>
+<li>App Store Connect → App Information → <strong>License Agreement</strong> — paste the new <code>terms.html</code> content as a custom EULA, or add <code>Terms of Use: https://evofaceflow.com/terms.html</code> to the App Description. This satisfies the 3.1.2(c) finding.</li>
+<li>Verify the <strong>Privacy Policy URL</strong> field on App Information is set to <code>https://evofaceflow.com/privacy.html</code>.</li>
+</ul>
+<hr>
+<h3 id="deployment-checklist-for-this-release" tabindex="-1"><a class="header-anchor" href="#deployment-checklist-for-this-release" aria-hidden="true">#</a> Deployment checklist for this release</h3>
+<pre><code class="language-bash">ssh ubuntu@&lt;lightsail-ip&gt;
+cd /opt/evofaceflow/TryOn
+git pull
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy   # ⚠️ REQUIRED
+</code></pre>
+<p>The website bind mount picks up the new <code>privacy.html</code> and <code>terms.html</code> immediately on <code>git pull</code> — no nginx restart needed.</p>
+<p><strong>Verify <code>dmca@evofaceflow.com</code> mailbox is configured</strong> (referenced in <code>terms.html</code> §8 and §24, and in <code>privacy.html</code> indirectly). Forward to <code>support@</code> if no dedicated inbox exists.</p>
+<p><strong>Existing users</strong> (including the App Review test account) will all see the consent dialog the next time they tap Generate Try-On, because <code>aiProcessingConsentAt</code> defaults to <code>NULL</code>. This is intentional and is exactly what the reviewer needs to observe.</p>
+
+  </main>
+</div>
+<footer class="footer">
+  <p>Generated from <code>RELEASE_NOTES.md</code>. Run <code>npm run build:docs</code> to regenerate.</p>
+</footer>
+</body>
+</html>

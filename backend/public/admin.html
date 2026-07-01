@@ -1,0 +1,2646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TryOn Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { color: #fff; margin-bottom: 20px; }
+    h2 { color: #888; margin: 20px 0 10px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .auth-form {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: 100px auto;
+      border: 1px solid #333;
+    }
+    .auth-form input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    .auth-form button {
+      width: 100%;
+      padding: 12px;
+      background: #fff;
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .auth-form button:hover { background: #e0e0e0; }
+    
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #333;
+    }
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #fff;
+    }
+    .stat-card .label {
+      color: #666;
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+    
+    .section {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #333;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    th { color: #888; font-weight: 500; font-size: 0.85rem; text-transform: uppercase; }
+    
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      margin-right: 5px;
+      font-weight: 500;
+    }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-danger { background: #ff4757; color: #fff; }
+    .btn-success { background: #2ed573; color: #000; }
+    .btn-secondary { background: #333; color: #fff; }
+    .btn:hover { opacity: 0.85; }
+    
+    .form-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .form-group input, .form-group select {
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    .form-group input { flex: 1; min-width: 150px; }
+    
+    .error { color: #ff4757; margin-top: 10px; }
+    .success { color: #2ed573; margin-top: 10px; }
+    
+    .nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .nav button {
+      padding: 10px 20px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #888;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .nav button.active {
+      border-color: #fff;
+      color: #fff;
+      background: #333;
+    }
+    
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #ff4757;
+      color: #ff4757;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
+      border: 1px solid #333;
+    }
+    .modal h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #fff;
+      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+    }
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    
+    .user-field {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid #333;
+    }
+    .user-field:last-child { border-bottom: none; }
+    .field-label {
+      color: #666;
+      width: 140px;
+      flex-shrink: 0;
+    }
+    .field-value {
+      color: #fff;
+      word-break: break-all;
+    }
+    .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+    .modal-footer {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .username-link {
+      color: #fff;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .username-link:hover { color: #ccc; }
+    
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-success { background: #2ed573; color: #000; }
+    .badge-warning { background: #ffa502; color: #000; }
+    .badge-danger { background: #ff4757; color: #fff; }
+    .badge-info { background: #3742fa; color: #fff; }
+    .badge-muted { background: #333; color: #888; }
+    
+    .credits-input {
+      width: 80px !important;
+      min-width: 80px !important;
+      flex: none !important;
+    }
+
+    /* Resizable columns for jobs table */
+    #jobsTable {
+      table-layout: fixed;
+    }
+    #jobsTable th, #jobsTable td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .resizable-th {
+      position: relative;
+    }
+    .col-resize-handle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      background: transparent;
+      z-index: 1;
+      user-select: none;
+    }
+    .col-resize-handle:hover, .col-resize-handle.dragging {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    /* User-detail Try-On Sessions gallery */
+    #userModal .modal { max-width: 880px; }
+    .tryon-session {
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #0f0f0f;
+    }
+    .tryon-session-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      color: #888;
+      font-size: 0.8rem;
+    }
+    .tryon-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+    .tryon-photo { width: 124px; }
+    .tryon-photo .ph-label {
+      color: #666;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tryon-photo img {
+      width: 124px;
+      height: 165px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #000;
+      cursor: zoom-in;
+      display: block;
+    }
+    .tryon-photo .ph-missing {
+      width: 124px;
+      height: 165px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #333;
+      border-radius: 8px;
+      color: #444;
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
+    /* Splash preview in Settings */
+    .splash-preview {
+      max-width: 240px;
+      max-height: 420px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      display: block;
+      margin: 10px 0;
+    }
+
+    /* Pagination controls */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pagination-bar .btn-secondary:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Form -->
+    <div class="auth-form" id="authForm">
+      <h1 style="text-align: center; margin-bottom: 20px;">👗 TryOn Admin</h1>
+      <input type="password" id="apiKey" placeholder="Admin API Key">
+      <button onclick="login()">Login</button>
+      <div class="error" id="authError"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+      <button class="logout-btn" onclick="logout()">Logout</button>
+      <h1>👗 TryOn Admin Dashboard</h1>
+      
+      <div class="nav">
+        <button class="active" onclick="showTab('stats')">Dashboard</button>
+        <button onclick="showTab('diagnostics')">🩺 Diagnostics</button>
+        <button onclick="showTab('users')">Users</button>
+        <button onclick="showTab('jobs')">Try-On Jobs</button>
+        <button onclick="showTab('security')">Security</button>
+        <button onclick="showTab('vulnerabilities')">Vulnerabilities</button>
+        <button onclick="showTab('storage')">Storage</button>
+        <button onclick="showTab('settings')">⚙️ Settings</button>
+      </div>
+
+      <!-- Stats Tab -->
+      <div id="stats-tab">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="value" id="totalUsers">-</div>
+            <div class="label">Total Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="totalJobs">-</div>
+            <div class="label">Total Try-Ons</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="completedJobs">-</div>
+            <div class="label">Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="subscriberCount">-</div>
+            <div class="label">Subscribers</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="totalCredits">-</div>
+            <div class="label">Credits Outstanding</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #5352ed;">
+            <div class="value" id="guestsToday">-</div>
+            <div class="label">Guests Today</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #5352ed;">
+            <div class="value" id="activeGuests">-</div>
+            <div class="label">Active Guests</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #2ed573;">
+            <div class="value" id="guestConversion">-</div>
+            <div class="label" id="guestConversionLabel">Guest&rarr;User (7d)</div>
+          </div>
+        </div>
+        <div class="stat-card" style="text-align: left;">
+          <div class="label" style="margin-bottom: 12px;">Guest sign-ups — last 7 days</div>
+          <div id="guestTrend" style="display: flex; align-items: flex-end; gap: 8px; height: 90px;"></div>
+        </div>
+      </div>
+
+      <!-- Diagnostics Tab -->
+      <div id="diagnostics-tab" style="display: none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <span id="diagGeneratedAt" style="color:#666; font-size:0.85rem;">—</span>
+          <button class="btn btn-secondary" onclick="loadDiagnostics()">↻ Refresh</button>
+        </div>
+        <div id="diagBody"><p style="color:#666;">Loading diagnostics…</p></div>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="users-tab" style="display: none;">
+        <div class="section">
+          <h2>Create Test User</h2>
+          <div class="form-group">
+            <input type="text" id="newFirstName" placeholder="First Name">
+            <input type="text" id="newLastName" placeholder="Last Name">
+            <input type="text" id="newUsername" placeholder="Username">
+            <input type="email" id="newEmail" placeholder="Email">
+            <input type="password" id="newPassword" placeholder="Password">
+            <button class="btn btn-success" onclick="createUser()">Create User</button>
+          </div>
+          <div id="createUserMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Users</h2>
+          <table id="usersTable">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Verified</th>
+                <th>Tier</th>
+                <th>Subscription</th>
+                <th>Credits</th>
+                <th>Try-Ons</th>
+                <th>AI Consent</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Jobs Tab -->
+      <div id="jobs-tab" style="display: none;">
+        <div class="section">
+          <h2>Recent Try-On Jobs</h2>
+          <!-- Search / filter / bulk-action bar -->
+          <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="jobSearch" placeholder="Search username or job ID…"
+                   style="flex: 1; min-width: 200px; padding: 8px 10px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff;"
+                   oninput="onJobSearchInput()">
+            <select id="jobStatusFilter" onchange="loadJobs(1)"
+                    style="padding: 8px 10px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff;">
+              <option value="">All Statuses</option>
+              <option value="COMPLETE">Complete</option>
+              <option value="PENDING">Pending</option>
+              <option value="PROCESSING">Processing</option>
+              <option value="FAILED">Failed</option>
+            </select>
+            <select id="jobPageSize" onchange="loadJobs(1)"
+                    style="padding: 8px 10px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff;">
+              <option value="25">25 / page</option>
+              <option value="50">50 / page</option>
+              <option value="100">100 / page</option>
+            </select>
+            <button class="btn btn-danger" id="deleteSelectedBtn" onclick="deleteSelectedJobs()" style="display: none;">Delete Selected (<span id="selectedCount">0</span>)</button>
+            <span id="deleteResult"></span>
+          </div>
+          <!-- Jobs table (resizable columns) -->
+          <div style="overflow-x: auto;">
+            <table id="jobsTable">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"><input type="checkbox" id="selectAllJobs" onchange="toggleSelectAll(this)"></th>
+                  <th class="resizable-th" style="width: 100px;">ID</th>
+                  <th class="resizable-th" style="width: 120px;">User</th>
+                  <th class="resizable-th" style="width: 105px;">Status</th>
+                  <th class="resizable-th" style="width: 80px;">Privacy</th>
+                  <th class="resizable-th" style="width: 130px;">Perspectives</th>
+                  <th class="resizable-th" style="width: 72px;">Credits</th>
+                  <th class="resizable-th" style="width: 165px;">Created</th>
+                  <th class="resizable-th" style="width: 210px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jobsBody"></tbody>
+            </table>
+          </div>
+          <!-- Pagination -->
+          <div class="pagination-bar">
+            <span id="jobsPageInfo" style="color: #666; font-size: 0.85rem;"></span>
+            <div style="display: flex; gap: 5px; align-items: center;">
+              <button class="btn btn-secondary" id="jobsFirstBtn" onclick="loadJobs(1)">«</button>
+              <button class="btn btn-secondary" id="jobsPrevBtn" onclick="loadJobs(jobsCurrentPage - 1)">‹</button>
+              <span id="jobsPageNum" style="padding: 6px 12px; color: #aaa; font-size: 0.85rem; min-width: 80px; text-align: center;"></span>
+              <button class="btn btn-secondary" id="jobsNextBtn" onclick="loadJobs(jobsCurrentPage + 1)">›</button>
+              <button class="btn btn-secondary" id="jobsLastBtn" onclick="loadJobs(jobsTotalPages)">»</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div id="security-tab" style="display: none;">
+        <div class="stats-grid">
+          <div class="stat-card" style="border-left: 3px solid #ff4757;">
+            <div class="value" id="suspicious24h" style="color: #ff4757;">-</div>
+            <div class="label">Suspicious (24h)</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #ffa502;">
+            <div class="value" id="suspicious7d" style="color: #ffa502;">-</div>
+            <div class="label">Suspicious (7d)</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="suspiciousTotal">-</div>
+            <div class="label">Total Flagged</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="suspiciousUsers">-</div>
+            <div class="label">Unique Users</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>🚨 Suspicious Login Attempts</h2>
+          <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
+            Logins flagged when user appears to travel &gt;500 km in under 2 hours
+          </p>
+          <table id="suspiciousTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Location</th>
+                <th>Distance</th>
+                <th>IP</th>
+              </tr>
+            </thead>
+            <tbody id="suspiciousBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Vulnerabilities Tab -->
+      <div id="vulnerabilities-tab" style="display: none;">
+        <div class="stats-grid">
+          <div class="stat-card" style="border-left: 3px solid #ff4757;">
+            <div class="value" id="vulnCritical" style="color: #ff4757;">-</div>
+            <div class="label">Critical</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #ff6348;">
+            <div class="value" id="vulnHigh" style="color: #ff6348;">-</div>
+            <div class="label">High</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #ffa502;">
+            <div class="value" id="vulnModerate" style="color: #ffa502;">-</div>
+            <div class="label">Moderate</div>
+          </div>
+          <div class="stat-card" style="border-left: 3px solid #f1c40f;">
+            <div class="value" id="vulnLow" style="color: #f1c40f;">-</div>
+            <div class="label">Low</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>🛡️ System Vulnerability Status</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <p style="color: #666; font-size: 0.9rem;">
+              Last scan: <strong id="lastScanTime">Never</strong>
+            </p>
+            <div>
+              <button class="btn btn-primary" onclick="triggerVulnerabilityScan()">🔄 Scan Now</button>
+              <button class="btn btn-secondary" onclick="loadVulnerabilities()">Refresh</button>
+            </div>
+          </div>
+          <div id="scanStatus" style="margin-bottom: 15px;"></div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px;">
+            <!-- Backend NPM -->
+            <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+              <h3 style="color: #fff; font-size: 0.95rem; margin-bottom: 10px;">📦 Backend (NPM)</h3>
+              <div id="backendVulnSummary" style="color: #888; font-size: 0.85rem;">No data</div>
+            </div>
+
+            <!-- Frontend NPM -->
+            <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+              <h3 style="color: #fff; font-size: 0.95rem; margin-bottom: 10px;">📱 Frontend (NPM)</h3>
+              <div id="frontendVulnSummary" style="color: #888; font-size: 0.85rem;">No data</div>
+            </div>
+
+            <!-- System Packages -->
+            <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+              <h3 style="color: #fff; font-size: 0.95rem; margin-bottom: 10px;">🖥️ System Packages</h3>
+              <div id="systemVulnSummary" style="color: #888; font-size: 0.85rem;">No data</div>
+            </div>
+
+            <!-- SSL Certificate -->
+            <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+              <h3 style="color: #fff; font-size: 0.95rem; margin-bottom: 10px;">🔒 SSL Certificate</h3>
+              <div id="sslVulnSummary" style="color: #888; font-size: 0.85rem;">No data</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>📊 Recent Scan History</h2>
+          <table id="vulnHistoryTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Total</th>
+                <th>Critical</th>
+                <th>High</th>
+                <th>Moderate</th>
+                <th>Low</th>
+                <th>Fix Available</th>
+                <th>Duration</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vulnHistoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Storage / S3 Orphan Tab -->
+      <div id="storage-tab" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+          <h2 style="margin: 0;">S3 Orphan Scanner</h2>
+          <button class="btn btn-secondary" onclick="runOrphanScan()">Scan Now</button>
+          <button class="btn btn-danger" id="deleteOrphansBtn" style="display:none;" onclick="deleteOrphans()">Delete Orphans</button>
+        </div>
+        <p style="color: #888; margin-bottom: 20px;">
+          Full reconciliation of the TryOn S3 prefixes (body-photos, clothing-photos, tryon-results) against the database:
+          any object no User or TryOnJob row references is orphaned — leftovers of deleted users <em>and</em> of deleted jobs / replaced photos
+          belonging to live accounts. Objects uploaded in the last hour are ignored (in-flight uploads).
+          The weekly automated scan emails you if any are found. Run "Scan Now" to check immediately.
+        </p>
+        <div id="orphanScanResult" style="display:none;">
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card">
+              <div class="value" id="orphanTotalObjects">-</div>
+              <div class="label">Total S3 Objects</div>
+            </div>
+            <div class="stat-card" style="border-left: 3px solid #ff4757;">
+              <div class="value" id="orphanOrphanedObjects" style="color: #ff4757;">-</div>
+              <div class="label">Orphaned Objects</div>
+            </div>
+            <div class="stat-card">
+              <div class="value" id="orphanAffectedUsers">-</div>
+              <div class="label">Affected Accounts</div>
+            </div>
+            <div class="stat-card">
+              <div class="value" id="orphanBytes">-</div>
+              <div class="label">Orphaned Storage</div>
+            </div>
+          </div>
+          <div id="orphanDetail"></div>
+        </div>
+        <div id="orphanScanStatus" style="color:#888;"></div>
+      </div>
+
+      <!-- Settings Tab -->
+      <div id="settings-tab" style="display: none;">
+        <div class="section">
+          <h2>Guest Welcome Credits</h2>
+          <p style="color: #888; margin-bottom: 20px;">
+            Number of free credits granted to a brand-new guest account the first time someone
+            opens the app on a device (before they sign up). Set to 0 to give guests no free
+            try-ons. Does not affect existing guests — only applies to newly created guest sessions.
+          </p>
+          <div class="form-group" style="align-items: center;">
+            <input type="number" id="guestCreditGrant" min="0" step="1" style="max-width: 160px;">
+            <button class="btn btn-success" onclick="saveGuestCredits()">Save</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 8px;" id="guestCreditHint">&nbsp;</p>
+          <div id="settingsMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Welcome Bonus Credits (join offer)</h2>
+          <p style="color: #888; margin-bottom: 20px;">
+            Free credits granted <strong>once</strong> when a real account verifies its email
+            (the "Free Credits when you join" offer). Raise it for a limited-time promotion, lower it,
+            or set it to <strong>0</strong> to discontinue the offer entirely. Takes effect immediately
+            for newly verified accounts — no redeploy and no app rebuild. The app reads this value to
+            show "Limited time offer — N Free Credits when you join" (and hides the offer when 0).
+          </p>
+          <div class="form-group" style="align-items: center;">
+            <input type="number" id="signupCreditGrant" min="0" step="1" style="max-width: 160px;">
+            <button class="btn btn-success" onclick="saveSignupCredits()">Save</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 8px;" id="signupCreditHint">&nbsp;</p>
+          <div id="signupSettingsMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Referral Reward Credits</h2>
+          <p style="color: #888; margin-bottom: 20px;">
+            Credits granted to <strong>both</strong> the referrer and the new user when a referred
+            account verifies its email. Set to <strong>0</strong> to disable the referral reward
+            (codes still work, just no payout). Takes effect immediately — no redeploy or app rebuild.
+          </p>
+          <div class="form-group" style="align-items: center;">
+            <input type="number" id="referralCreditGrant" min="0" step="1" style="max-width: 160px;">
+            <button class="btn btn-success" onclick="saveReferralCredits()">Save</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 8px;" id="referralCreditHint">&nbsp;</p>
+          <div id="referralSettingsMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Referral Anti-Farming Cap</h2>
+          <p style="color: #888; margin-bottom: 20px;">
+            Max number of <strong>rewarded</strong> referrals a single referrer can earn within the
+            rolling window (<span id="referralWindowDays">30</span> days). Past the cap, the
+            <strong>referrer's</strong> payout is withheld (the new user still gets their join bonus).
+            Set to <strong>0</strong> for unlimited. Takes effect immediately.
+          </p>
+          <div class="form-group" style="align-items: center;">
+            <input type="number" id="referralMaxPerWindow" min="0" step="1" style="max-width: 160px;">
+            <button class="btn btn-success" onclick="saveReferralMax()">Save</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 8px;" id="referralMaxHint">&nbsp;</p>
+          <div id="referralMaxMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Video Credit Cost</h2>
+          <p style="color: #888; margin-bottom: 20px;">
+            Credits charged to generate one AI video (image-to-video). Video costs more to
+            generate than a still image, so this defaults higher than a try-on's 1 credit.
+            Minimum 1. Takes effect immediately.
+          </p>
+          <div class="form-group" style="align-items: center;">
+            <input type="number" id="videoCreditCost" min="1" step="1" style="max-width: 160px;">
+            <button class="btn btn-success" onclick="saveVideoCost()">Save</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 8px;" id="videoCostHint">&nbsp;</p>
+          <div id="videoCostMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Try-On Throttle (Soft Queue)</h2>
+          <p style="color: #888; margin-bottom: 12px;">
+            Paces rapid-fire try-on submissions so a burst doesn't spike AI cost — it never
+            rejects a try-on, it just places the extra ones in a short queue. Each user gets a
+            <strong>free burst</strong> (no wait) within the rolling window; past that, each
+            further submission steps down the <strong>delay ladder</strong>. Higher tiers get a
+            bigger burst (faster queues for subscribers). Buying credits / subscribing instantly
+            clears a user's queue position. Takes effect on the next submission; no redeploy.
+          </p>
+          <div class="form-group" style="align-items: center; flex-wrap: wrap; gap: 12px;">
+            <label style="color:#aaa;">Window (min)
+              <input type="number" id="throttleWindowMin" min="1" step="1" style="max-width: 90px; margin-left:6px;">
+            </label>
+            <label style="color:#aaa;">Burst FREE
+              <input type="number" id="throttleBurstFree" min="0" step="1" style="max-width: 80px; margin-left:6px;">
+            </label>
+            <label style="color:#aaa;">BASIC
+              <input type="number" id="throttleBurstBasic" min="0" step="1" style="max-width: 80px; margin-left:6px;">
+            </label>
+            <label style="color:#aaa;">PREMIUM
+              <input type="number" id="throttleBurstPremium" min="0" step="1" style="max-width: 80px; margin-left:6px;">
+            </label>
+          </div>
+          <div class="form-group" style="align-items: center; margin-top: 10px;">
+            <label style="color:#aaa;">Delay ladder (seconds, comma-separated)
+              <input type="text" id="throttleLadderSec" placeholder="10, 20, 30, 40" style="max-width: 220px; margin-left:6px;">
+            </label>
+            <button class="btn btn-success" onclick="saveThrottleConfig()">Save</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin-top: 8px;" id="throttleHint">&nbsp;</p>
+          <div id="throttleMsg"></div>
+        </div>
+
+        <div class="section">
+          <h2>Splash / Announcement Screen</h2>
+          <p style="color: #888; margin-bottom: 12px;">
+            When a splash image is published here, the mobile app shows it full-screen on launch
+            (promotions, the app logo, service-degradation notices) and the user must tap OK to
+            continue. From the second launch onward they can opt out of the current splash.
+            Publishing a <strong>new</strong> image resets that — everyone sees it at least once.
+            No image published = the app starts normally. Changes take effect immediately;
+            no app rebuild or backend redeploy needed.
+          </p>
+          <div id="splashStatus" style="color:#888; margin-bottom: 10px;">Loading…</div>
+          <div class="form-group" style="align-items: center;">
+            <input type="file" id="splashFile" accept="image/jpeg,image/png,image/webp"
+                   style="flex:1; min-width:220px; padding:8px; border:1px solid #333; border-radius:6px; background:#0a0a0a; color:#fff;">
+            <button class="btn btn-success" id="splashPublishBtn" onclick="publishSplashImage()">Publish</button>
+            <button class="btn btn-danger" id="splashRemoveBtn" style="display:none;" onclick="removeSplashImage()">Remove Splash</button>
+          </div>
+          <p style="color: #666; font-size: 0.85rem;">
+            JPEG, PNG, or WebP, max 10&nbsp;MB. Portrait ~1080×1920 fills a phone screen best.
+          </p>
+          <div id="splashMsg"></div>
+        </div>
+      </div>
+
+      <!-- User Details Modal -->
+      <div class="modal-overlay" id="userModal">
+        <div class="modal">
+          <button class="modal-close" onclick="closeUserModal()">&times;</button>
+          <h2>User Details</h2>
+          <div id="userModalContent"></div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" onclick="closeUserModal()">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credits Modal -->
+      <div class="modal-overlay" id="creditsModal">
+        <div class="modal" style="max-width: 400px;">
+          <button class="modal-close" onclick="closeCreditsModal()">&times;</button>
+          <h2>Adjust Credits</h2>
+          <div id="creditsModalContent">
+            <p style="color: #888; margin-bottom: 15px;">User: <span id="creditsUsername"></span></p>
+            <p style="color: #888; margin-bottom: 15px;">Current balance: <strong id="currentCredits"></strong></p>
+            <div class="form-group" style="flex-direction: column;">
+              <input type="number" id="creditsAmount" placeholder="Amount (positive to add, negative to deduct)">
+              <input type="text" id="creditsReason" placeholder="Reason (optional)">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeCreditsModal()">Cancel</button>
+            <button class="btn btn-success" onclick="submitCredits()">Apply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let apiKey = localStorage.getItem('adminApiKey') || '';
+    let pendingCreditsUserId = null;
+    const API_BASE = window.location.origin + '/api/admin';
+
+    // HTML-escape user-controlled values before interpolating them into innerHTML.
+    // Free-text fields (bio, first/last name, address, etc.) are otherwise a
+    // stored-XSS vector: a malicious value would execute in this dashboard's
+    // origin, which holds the admin API key.
+    function esc(v) {
+      return String(v == null ? '' : v).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+
+    // Check if already logged in
+    if (apiKey) {
+      checkAuth();
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        if (res.ok) {
+          showDashboard();
+          loadStats();
+        } else {
+          logout();
+        }
+      } catch (e) {
+        logout();
+      }
+    }
+
+    async function login() {
+      apiKey = document.getElementById('apiKey').value;
+      const errEl = document.getElementById('authError');
+      errEl.textContent = 'Logging in...';
+      
+      if (!apiKey) {
+        errEl.textContent = 'Please enter an API key';
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE}/stats`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        
+        if (res.ok) {
+          localStorage.setItem('adminApiKey', apiKey);
+          showDashboard();
+          loadStats();
+        } else {
+          errEl.textContent = `Invalid API key (${res.status})`;
+        }
+      } catch (e) {
+        errEl.textContent = 'Connection error: ' + e.message;
+      }
+    }
+
+    function logout() {
+      apiKey = '';
+      localStorage.removeItem('adminApiKey');
+      document.getElementById('authForm').style.display = 'block';
+      document.getElementById('dashboard').classList.remove('active');
+    }
+
+    function showDashboard() {
+      document.getElementById('authForm').style.display = 'none';
+      document.getElementById('dashboard').classList.add('active');
+    }
+
+    const TAB_ORDER = ['stats', 'diagnostics', 'users', 'jobs', 'security', 'vulnerabilities', 'storage', 'settings'];
+    function showTab(tab) {
+      TAB_ORDER.forEach(t => {
+        document.getElementById(t + '-tab').style.display = t === tab ? 'block' : 'none';
+      });
+      document.querySelectorAll('.nav button').forEach((btn, i) => {
+        btn.classList.toggle('active', TAB_ORDER[i] === tab);
+      });
+
+      if (tab === 'diagnostics') loadDiagnostics();
+      if (tab === 'users') loadUsers();
+      if (tab === 'jobs') loadJobs();
+      if (tab === 'security') loadSecurity();
+      if (tab === 'vulnerabilities') loadVulnerabilities();
+      if (tab === 'settings') loadSettings();
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const data = await res.json();
+        
+        document.getElementById('totalUsers').textContent = data.userCount;
+        document.getElementById('totalJobs').textContent = data.jobCount;
+        document.getElementById('completedJobs').textContent = data.completedJobs;
+        document.getElementById('subscriberCount').textContent = data.subscriberCount;
+        document.getElementById('totalCredits').textContent = data.totalCreditsOutstanding;
+        document.getElementById('guestsToday').textContent = data.guestsToday ?? 0;
+        document.getElementById('activeGuests').textContent = data.activeGuests ?? 0;
+        document.getElementById('guestConversion').textContent = (data.guestConversionRate ?? 0) + '%';
+        document.getElementById('guestConversionLabel').textContent =
+          data.guestSignups7d
+            ? `Guest→User 7d (${data.guestConversions7d}/${data.guestSignups7d})`
+            : 'Guest→User (7d)';
+        renderGuestTrend(data.guestSignups7dByDay);
+      } catch (e) {
+        console.error('Failed to load stats', e);
+      }
+    }
+
+    // Render the "guest sign-ups, last 7 days" mini bar chart. `series` is an
+    // array of { date: 'YYYY-MM-DD', count } oldest→newest from /stats.
+    function renderGuestTrend(series) {
+      const el = document.getElementById('guestTrend');
+      if (!el) return;
+      series = series || [];
+      const max = Math.max(1, ...series.map(d => d.count));
+      el.innerHTML = series.map(d => {
+        const h = Math.max(2, Math.round((d.count / max) * 64));
+        const day = new Date(d.date + 'T00:00:00Z');
+        const label = day.toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' });
+        return `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+            <div style="font-size:12px; color:#aaa;">${d.count}</div>
+            <div title="${d.date}: ${d.count} sign-up(s)" style="width:100%; max-width:36px; height:${h}px; background:#5352ed; border-radius:4px 4px 0 0;"></div>
+            <div style="font-size:11px; color:#666;">${label}</div>
+          </div>`;
+      }).join('');
+    }
+
+
+    // ===== Settings tab =====
+    let settingsBounds = { defaultGuestCreditGrant: 2, maxGuestCreditGrant: 1000 };
+
+    async function loadSettings() {
+      const hint = document.getElementById('guestCreditHint');
+      const msg = document.getElementById('settingsMsg');
+      msg.textContent = '';
+      try {
+        const res = await fetch(`${API_BASE}/settings`, { headers: { 'X-Admin-Key': apiKey } });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load settings');
+        settingsBounds = data;
+        document.getElementById('guestCreditGrant').value = data.guestCreditGrant;
+        hint.textContent = `Default ${data.defaultGuestCreditGrant} · max ${data.maxGuestCreditGrant}`;
+        document.getElementById('signupCreditGrant').value = data.signupCreditGrant;
+        document.getElementById('signupCreditHint').textContent =
+          `Default ${data.defaultSignupCreditGrant} · max ${data.maxSignupCreditGrant} · 0 = offer discontinued`;
+        document.getElementById('referralCreditGrant').value = data.referralCreditGrant;
+        document.getElementById('referralCreditHint').textContent =
+          `Default ${data.defaultReferralCreditGrant} · max ${data.maxReferralCreditGrant} · per side · 0 = reward disabled`;
+        document.getElementById('referralMaxPerWindow').value = data.referralMaxPerWindow;
+        document.getElementById('referralWindowDays').textContent = data.referralRewardWindowDays;
+        document.getElementById('referralMaxHint').textContent =
+          `Default ${data.defaultReferralMaxPerWindow} · per ${data.referralRewardWindowDays}-day window · 0 = unlimited`;
+        document.getElementById('videoCreditCost').value = data.videoCreditCost;
+        document.getElementById('videoCostHint').textContent =
+          `Default ${data.defaultVideoCreditCost} · min ${data.minVideoCreditCost} · max ${data.maxVideoCreditCost}`;
+        if (data.throttleConfig && data.throttleBounds) {
+          const tc = data.throttleConfig;
+          const tb = data.throttleBounds;
+          document.getElementById('throttleWindowMin').value = Math.round(tc.windowMs / 60000);
+          document.getElementById('throttleBurstFree').value = tc.burst.FREE;
+          document.getElementById('throttleBurstBasic').value = tc.burst.BASIC;
+          document.getElementById('throttleBurstPremium').value = tc.burst.PREMIUM;
+          document.getElementById('throttleLadderSec').value = tc.ladderMs
+            .map((ms) => Math.round(ms / 1000))
+            .join(', ');
+          const d = data.defaultThrottleConfig;
+          document.getElementById('throttleHint').textContent =
+            `Default: window ${Math.round(d.windowMs / 60000)} min · burst ${d.burst.FREE}/${d.burst.BASIC}/${d.burst.PREMIUM} · ladder ${d.ladderMs.map((ms) => ms / 1000).join('/')}s` +
+            ` · max wait ${Math.round(tb.maxLadderMs / 1000)}s · up to ${tb.maxLadderRungs} rungs`;
+        }
+      } catch (e) {
+        hint.textContent = '';
+        msg.className = 'error';
+        msg.textContent = 'Failed to load settings: ' + e.message;
+      }
+      loadSplashStatus();
+    }
+
+    // ===== SPLASH / ANNOUNCEMENT SCREEN =====
+
+    async function loadSplashStatus() {
+      const statusEl = document.getElementById('splashStatus');
+      const removeBtn = document.getElementById('splashRemoveBtn');
+      try {
+        const res = await fetch(`${API_BASE}/splash`, { headers: { 'X-Admin-Key': apiKey } });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load splash status');
+        if (data.active) {
+          statusEl.innerHTML = `
+            <span class="badge badge-success">LIVE</span>
+            published ${new Date(data.publishedAt).toLocaleString()}
+            · ${(data.sizeBytes / 1024).toFixed(0)} KB · ${esc(data.contentType)}
+            · id <code>${esc(data.id)}</code>
+            <img class="splash-preview" src="${esc(data.imageUrl)}" alt="Current splash">`;
+          removeBtn.style.display = 'inline-block';
+        } else {
+          statusEl.innerHTML = '<span class="badge badge-muted">NONE</span> No splash published — the app launches normally.';
+          removeBtn.style.display = 'none';
+        }
+      } catch (e) {
+        statusEl.innerHTML = `<span class="error">Failed to load splash status: ${esc(e.message)}</span>`;
+      }
+    }
+
+    async function publishSplashImage() {
+      const msg = document.getElementById('splashMsg');
+      const input = document.getElementById('splashFile');
+      const btn = document.getElementById('splashPublishBtn');
+      const file = input.files && input.files[0];
+      if (!file) {
+        msg.className = 'error';
+        msg.textContent = 'Choose an image file first.';
+        return;
+      }
+      msg.className = '';
+      msg.textContent = 'Publishing…';
+      btn.disabled = true;
+      try {
+        const form = new FormData();
+        form.append('photo', file);
+        const res = await fetch(`${API_BASE}/splash`, {
+          method: 'POST',
+          headers: { 'X-Admin-Key': apiKey },
+          body: form,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Publish failed');
+        msg.className = 'success';
+        msg.textContent = 'Splash published — every user will see it on their next launch.';
+        input.value = '';
+        loadSplashStatus();
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Publish failed: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function removeSplashImage() {
+      if (!confirm('Remove the current splash? The app will launch normally again.')) return;
+      const msg = document.getElementById('splashMsg');
+      try {
+        const res = await fetch(`${API_BASE}/splash`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Remove failed');
+        msg.className = 'success';
+        msg.textContent = 'Splash removed.';
+        loadSplashStatus();
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Remove failed: ' + e.message;
+      }
+    }
+
+    async function saveGuestCredits() {
+      const msg = document.getElementById('settingsMsg');
+      const value = parseInt(document.getElementById('guestCreditGrant').value, 10);
+      if (!Number.isInteger(value) || value < 0) {
+        msg.className = 'error';
+        msg.textContent = 'Enter a whole number ≥ 0';
+        return;
+      }
+      msg.className = '';
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API_BASE}/settings/guest-credits`, {
+          method: 'PATCH',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        msg.className = 'success';
+        msg.textContent = `Saved — new guests now receive ${data.guestCreditGrant} credit(s).`;
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Save failed: ' + e.message;
+      }
+    }
+
+    async function saveSignupCredits() {
+      const msg = document.getElementById('signupSettingsMsg');
+      const value = parseInt(document.getElementById('signupCreditGrant').value, 10);
+      if (!Number.isInteger(value) || value < 0) {
+        msg.className = 'error';
+        msg.textContent = 'Enter a whole number ≥ 0';
+        return;
+      }
+      msg.className = '';
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API_BASE}/settings/signup-credits`, {
+          method: 'PATCH',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        msg.className = 'success';
+        msg.textContent = data.signupCreditGrant > 0
+          ? `Saved — newly verified accounts now receive ${data.signupCreditGrant} credit(s).`
+          : 'Saved — the welcome bonus is now discontinued (0 credits).';
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Save failed: ' + e.message;
+      }
+    }
+
+    async function saveReferralCredits() {
+      const msg = document.getElementById('referralSettingsMsg');
+      const value = parseInt(document.getElementById('referralCreditGrant').value, 10);
+      if (!Number.isInteger(value) || value < 0) {
+        msg.className = 'error';
+        msg.textContent = 'Enter a whole number ≥ 0';
+        return;
+      }
+      msg.className = '';
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API_BASE}/settings/referral-credits`, {
+          method: 'PATCH',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        msg.className = 'success';
+        msg.textContent = data.referralCreditGrant > 0
+          ? `Saved — each side now earns ${data.referralCreditGrant} credit(s) per referral.`
+          : 'Saved — the referral reward is now disabled (0 credits).';
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Save failed: ' + e.message;
+      }
+    }
+
+    async function saveReferralMax() {
+      const msg = document.getElementById('referralMaxMsg');
+      const value = parseInt(document.getElementById('referralMaxPerWindow').value, 10);
+      if (!Number.isInteger(value) || value < 0) {
+        msg.className = 'error';
+        msg.textContent = 'Enter a whole number ≥ 0';
+        return;
+      }
+      msg.className = '';
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API_BASE}/settings/referral-max`, {
+          method: 'PATCH',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        msg.className = 'success';
+        msg.textContent = data.referralMaxPerWindow > 0
+          ? `Saved — a referrer can earn at most ${data.referralMaxPerWindow} rewarded referral(s) per window.`
+          : 'Saved — the per-referrer cap is now disabled (unlimited).';
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Save failed: ' + e.message;
+      }
+    }
+
+    async function saveVideoCost() {
+      const msg = document.getElementById('videoCostMsg');
+      const value = parseInt(document.getElementById('videoCreditCost').value, 10);
+      if (!Number.isInteger(value) || value < 1) {
+        msg.className = 'error';
+        msg.textContent = 'Enter a whole number ≥ 1';
+        return;
+      }
+      msg.className = '';
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API_BASE}/settings/video-cost`, {
+          method: 'PATCH',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        msg.className = 'success';
+        msg.textContent = `Saved — each video now costs ${data.videoCreditCost} credit(s).`;
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Save failed: ' + e.message;
+      }
+    }
+
+    async function saveThrottleConfig() {
+      const msg = document.getElementById('throttleMsg');
+      const windowMin = parseInt(document.getElementById('throttleWindowMin').value, 10);
+      const free = parseInt(document.getElementById('throttleBurstFree').value, 10);
+      const basic = parseInt(document.getElementById('throttleBurstBasic').value, 10);
+      const premium = parseInt(document.getElementById('throttleBurstPremium').value, 10);
+      const ladderMs = document
+        .getElementById('throttleLadderSec')
+        .value.split(',')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .map((s) => Math.round(parseFloat(s) * 1000));
+
+      if ([windowMin, free, basic, premium].some((n) => !Number.isInteger(n) || n < 0)) {
+        msg.className = 'error';
+        msg.textContent = 'Window and burst values must be whole numbers ≥ 0.';
+        return;
+      }
+      if (ladderMs.length < 1 || ladderMs.some((ms) => !Number.isInteger(ms) || ms < 0)) {
+        msg.className = 'error';
+        msg.textContent = 'Ladder must be one or more non-negative numbers of seconds.';
+        return;
+      }
+      const config = {
+        windowMs: windowMin * 60000,
+        burst: { FREE: free, BASIC: basic, PREMIUM: premium },
+        ladderMs,
+      };
+      msg.className = '';
+      msg.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API_BASE}/settings/throttle`, {
+          method: 'PATCH',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify(config),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        const tc = data.throttleConfig;
+        msg.className = 'success';
+        msg.textContent =
+          `Saved — burst ${tc.burst.FREE}/${tc.burst.BASIC}/${tc.burst.PREMIUM}, ladder ` +
+          `${tc.ladderMs.map((ms) => ms / 1000).join('/')}s over a ${Math.round(tc.windowMs / 60000)}-min window.`;
+      } catch (e) {
+        msg.className = 'error';
+        msg.textContent = 'Save failed: ' + e.message;
+      }
+    }
+
+    // Render a subscription-status badge from the backend's `subscriptionStatus`
+    // object. Returns "—" for FREE users (no ApplePurchase row).
+    function renderSubscriptionStatus(s) {
+      if (!s) return '<span class="badge badge-muted">—</span>';
+      const ends = s.expiresAt ? new Date(s.expiresAt) : null;
+      const endsShort = ends ? ends.toLocaleDateString() : '?';
+      const endsFull = ends ? ends.toLocaleString() : 'unknown';
+      switch (s.state) {
+        case 'ACTIVE':
+          return `<span class="badge badge-success" title="Auto-renews on ${endsFull}">Active · renews ${endsShort}</span>`;
+        case 'PENDING_CANCELLATION':
+          return `<span class="badge badge-info" title="User turned off auto-renew. Entitlement ends ${endsFull}.">Pending cancel · ends ${endsShort}</span>`;
+        case 'BILLING_RETRY':
+          return `<span class="badge badge-danger" title="Apple is retrying the user's payment method. Likely to churn.">Billing retry</span>`;
+        case 'GRACE_PERIOD':
+          return `<span class="badge badge-info" title="Payment failed but entitlement preserved through ${endsFull}.">Grace period · ends ${endsShort}</span>`;
+        case 'EXPIRED':
+          return `<span class="badge badge-muted" title="Subscription expired ${endsFull}">Expired ${endsShort}</span>`;
+        case 'REVOKED':
+          return `<span class="badge badge-muted" title="Refunded or revoked by Apple">Revoked</span>`;
+        case 'UNKNOWN':
+        default:
+          return `<span class="badge badge-muted" title="Subscription on file but auto-renew state not yet reported by Apple. Will populate on next renewal or status-change webhook, or click Refresh from Apple.">Unknown${ends ? ' · ends ' + endsShort : ''}</span>`;
+      }
+    }
+
+    // Render the subscription detail block including action buttons.
+    // Pass userId so the buttons can target the right slot and endpoint.
+    // `count` is the total number of ApplePurchase rows for the user — when it
+    // is > 1 only the most-recent row is shown and a "Delete ALL" button appears.
+    function renderSubscriptionDetail(s, userId, count) {
+      count = count || 0;
+      let btns = '';
+      if (userId) {
+        const parts = [`<button class="btn btn-secondary" style="padding:2px 8px;" onclick="refreshSubscriptionFromApple('${userId}')">↻ Refresh from Apple</button>`];
+        if (s && s.purchaseId) {
+          parts.push(`<button class="btn btn-danger" style="margin-left:6px;padding:2px 8px;" onclick="deleteApplePurchase('${userId}','${s.purchaseId}')">🗑 Delete this record</button>`);
+        }
+        if (count > 1) {
+          parts.push(`<button class="btn btn-danger" style="margin-left:6px;padding:2px 8px;" onclick="deleteAllApplePurchases('${userId}',${count})">🗑 Delete ALL ${count} records</button>`);
+        }
+        btns = `<div style="margin-top:6px;">${parts.join('')}</div>`;
+      }
+      const countNote = count > 1
+        ? `<div style="margin-top:4px;font-size:0.8rem;color:#e8a13a;">⚠ This user has ${count} Apple purchase records (sandbox/TestFlight renewals each create one). Only the most recent is shown above — "Refresh" and "Delete this record" act on it alone. Use "Delete ALL" to clear every record.</div>`
+        : '';
+      if (!s) return `(no subscription on file)${countNote}${btns}`;
+      const ends = s.expiresAt ? new Date(s.expiresAt).toLocaleString() : 'n/a';
+      const badge = renderSubscriptionStatus(s);
+      const autoRenew = s.autoRenewStatus === true
+        ? 'on'
+        : s.autoRenewStatus === false
+          ? 'OFF (cancellation pending)'
+          : 'unknown';
+      const syncedLine = s.lastSyncedFromAppleAt
+        ? `<div style="margin-top: 2px; font-size: 0.78rem; color: #666;">Last synced from Apple: ${new Date(s.lastSyncedFromAppleAt).toLocaleString()}</div>`
+        : '<div style="margin-top: 2px; font-size: 0.78rem; color: #666;">Last synced from Apple: never (state derived from webhooks only)</div>';
+      return `${badge}<div style="margin-top: 4px; font-size: 0.85rem; color: #888;">
+        Product: <code>${s.productId}</code> · Expires: ${ends} · Auto-renew: ${autoRenew}
+      </div>${syncedLine}${countNote}${btns}`;
+    }
+
+    async function deleteApplePurchase(userId, purchaseId) {
+      if (!confirm('Delete this Apple purchase record? This cannot be undone.\n\nIf the user has no other subscription records their tier will be reset to FREE.')) return;
+      const slot = document.getElementById(`subscriptionDetail-${userId}`);
+      if (slot) slot.innerHTML = '<em style="color:#888;">Deleting…</em>';
+      try {
+        const res = await fetch(`${API_BASE}/user/${userId}/apple-purchase/${purchaseId}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const body = await res.json();
+        if (!res.ok) {
+          if (slot) slot.innerHTML = `<span style="color:#ff4757;">⚠ Delete failed: ${body.error || res.statusText}</span>${renderSubscriptionDetail(null, userId)}`;
+          return;
+        }
+        // Reload the full modal so Tier field reflects any downgrade
+        showUserDetails(userId);
+      } catch (e) {
+        console.error('Delete purchase failed', e);
+        if (slot) slot.innerHTML = `<span style="color:#ff4757;">⚠ Network error — ${e.message || 'see console'}</span>`;
+      }
+    }
+
+    async function deleteAllApplePurchases(userId, count) {
+      if (!confirm(`Delete ALL ${count} Apple purchase records for this user? This cannot be undone. The user's tier will be reset to FREE.`)) return;
+      const slot = document.getElementById(`subscriptionDetail-${userId}`);
+      if (slot) slot.innerHTML = '<em style="color:#888;">Deleting all records…</em>';
+      try {
+        const res = await fetch(`${API_BASE}/user/${userId}/apple-purchases`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const body = await res.json();
+        if (!res.ok) {
+          if (slot) slot.innerHTML = `<span style="color:#ff4757;">⚠ Delete failed: ${body.error || res.statusText}</span>${renderSubscriptionDetail(null, userId, 0)}`;
+          return;
+        }
+        // Reload the full modal so Tier field reflects the downgrade
+        showUserDetails(userId);
+      } catch (e) {
+        console.error('Delete all purchases failed', e);
+        if (slot) slot.innerHTML = `<span style="color:#ff4757;">⚠ Network error — ${e.message || 'see console'}</span>`;
+      }
+    }
+
+    async function refreshSubscriptionFromApple(userId) {
+      const slot = document.getElementById(`subscriptionDetail-${userId}`);
+      if (slot) slot.innerHTML = '<em style="color: #888;">Contacting Apple…</em>';
+      try {
+        const res = await fetch(`${API_BASE}/user/${userId}/refresh-subscription`, {
+          method: 'POST',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const body = await res.json();
+        if (!res.ok) {
+          if (slot) slot.innerHTML = `<span style="color:#ff4757;">⚠ Refresh failed: ${body.error || res.statusText}</span>${renderSubscriptionDetail(null, userId)}`;
+          return;
+        }
+        if (slot) {
+          slot.innerHTML = renderSubscriptionDetail(body.subscriptionStatus, userId, body.applePurchaseCount);
+          if (body.matched === false) {
+            slot.innerHTML += `<div style="color:#888;margin-top:4px;font-size:0.85rem;">ℹ Apple's Production API has no record of this transaction — this is normal for sandbox/TestFlight test purchases, which only exist in Apple's Sandbox environment. The status shown in our database is accurate for this purchase.</div>`;
+          }
+        }
+      } catch (e) {
+        console.error('Refresh subscription failed', e);
+        if (slot) slot.innerHTML = `<span style="color:#ff4757;">⚠ Network error — ${e.message || 'see console for details.'}</span>${renderSubscriptionDetail(null, userId)}`;
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_BASE}/users`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const users = await res.json();
+
+        const tbody = document.getElementById('usersBody');
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td><span class="username-link" onclick="showUserDetails('${u.id}')">${esc(u.username)}</span>${u.moderationBlockCount > 0 ? ` <span class="badge badge-danger" title="${u.moderationBlockCount} content-moderation block(s)${u.lastModerationBlockAt ? ' — last ' + new Date(u.lastModerationBlockAt).toLocaleString() : ''}">⚠ ${u.moderationBlockCount}</span>` : ''}</td>
+            <td>${esc(u.email)}</td>
+            <td>
+              <span class="badge ${u.verified ? 'badge-success' : 'badge-muted'}">${u.verified ? 'Yes' : 'No'}</span>
+              ${!u.verified ? `<button class="btn btn-secondary" style="margin-left: 5px; padding: 2px 8px;" onclick="verifyUser('${u.id}', true)">Verify</button>` : ''}
+            </td>
+            <td>
+              <span class="badge ${u.tier === 'PREMIUM' ? 'badge-info' : u.tier === 'BASIC' ? 'badge-success' : 'badge-muted'}">${u.tier}</span>
+              <select onchange="setTier('${u.id}', this.value)" style="margin-left: 5px; padding: 2px;">
+                <option value="">Change…</option>
+                <option value="FREE">FREE</option>
+                <option value="BASIC">BASIC</option>
+                <option value="PREMIUM">PREMIUM</option>
+              </select>
+            </td>
+            <td>${renderSubscriptionStatus(u.subscriptionStatus)}</td>
+            <td>
+              ${u.credits}
+              <button class="btn btn-secondary" style="margin-left: 5px; padding: 2px 8px;" onclick="openCreditsModal('${u.id}', '${u.username}', ${u.credits})">±</button>
+            </td>
+            <td style="text-align:right;font-family:monospace;" title="Lifetime successful try-ons">${u.tryOnCount ?? 0}</td>
+            <td>
+              ${u.aiProcessingConsentAt
+                ? `<span class="badge badge-success" title="${new Date(u.aiProcessingConsentAt).toLocaleString()}">Granted ${new Date(u.aiProcessingConsentAt).toLocaleDateString()}</span>`
+                : '<span class="badge badge-muted">Not granted</span>'}
+            </td>
+            <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+            <td>
+              <button class="btn btn-danger" onclick="deleteUser('${u.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load users', e);
+      }
+    }
+
+    // Jobs pagination state
+    let jobsCurrentPage = 1;
+    let jobsTotalPages = 1;
+    let jobsSearchTimer = null;
+    let jobsResizableInitialized = false;
+
+    function onJobSearchInput() {
+      clearTimeout(jobsSearchTimer);
+      jobsSearchTimer = setTimeout(() => loadJobs(1), 350);
+    }
+
+    async function loadJobs(page) {
+      if (page === undefined) page = jobsCurrentPage;
+      jobsCurrentPage = Math.max(1, page);
+
+      const search = (document.getElementById('jobSearch')?.value ?? '').trim();
+      const status = document.getElementById('jobStatusFilter')?.value ?? '';
+      const limit = parseInt(document.getElementById('jobPageSize')?.value ?? '25', 10);
+      const skip = (jobsCurrentPage - 1) * limit;
+
+      const params = new URLSearchParams();
+      params.set('limit', String(limit));
+      params.set('skip', String(skip));
+      if (search) params.set('search', search);
+      if (status) params.set('status', status);
+
+      try {
+        const res = await fetch(`${API_BASE}/jobs?${params}`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(`HTTP ${res.status}: ${err}`);
+        }
+        const data = await res.json();
+        // Support both new { jobs, total } shape and old plain array (backward compat)
+        const jobs = Array.isArray(data) ? data : (data.jobs ?? []);
+        const total = Array.isArray(data) ? jobs.length : (data.total ?? jobs.length);
+
+        jobsTotalPages = Math.max(1, Math.ceil(total / limit));
+
+        // Update pagination info
+        const start = total === 0 ? 0 : skip + 1;
+        const end = Math.min(skip + limit, total);
+        document.getElementById('jobsPageInfo').textContent =
+          total === 0 ? 'No jobs found' : `Showing ${start}–${end} of ${total} jobs`;
+        document.getElementById('jobsPageNum').textContent =
+          `Page ${jobsCurrentPage} of ${jobsTotalPages}`;
+        document.getElementById('jobsFirstBtn').disabled = jobsCurrentPage <= 1;
+        document.getElementById('jobsPrevBtn').disabled = jobsCurrentPage <= 1;
+        document.getElementById('jobsNextBtn').disabled = jobsCurrentPage >= jobsTotalPages;
+        document.getElementById('jobsLastBtn').disabled = jobsCurrentPage >= jobsTotalPages;
+
+        const tbody = document.getElementById('jobsBody');
+        if (!jobs.length) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#666;padding:20px;">No jobs found</td></tr>';
+          document.getElementById('selectAllJobs').checked = false;
+          updateSelectedCount();
+          return;
+        }
+
+        tbody.innerHTML = jobs.map(j => {
+          const statusClass = {
+            'COMPLETE': 'badge-success',
+            'PROCESSING': 'badge-info',
+            'PENDING': 'badge-warning',
+            'FAILED': 'badge-danger'
+          }[j.status] || 'badge-muted';
+
+          let clothingLinks = '';
+          if (j.clothingPhoto1Url) {
+            clothingLinks += `<a href="${j.clothingPhoto1Url}" target="_blank" class="btn btn-primary" style="padding: 2px 8px;">Clothing</a> `;
+          }
+          let resultLinks = '';
+          if (j.resultFullBodyUrl) {
+            resultLinks += `<a href="${j.resultFullBodyUrl}" target="_blank" class="btn btn-secondary" style="padding: 2px 8px;">Full</a> `;
+          }
+          if (j.resultMediumUrl) {
+            resultLinks += `<a href="${j.resultMediumUrl}" target="_blank" class="btn btn-secondary" style="padding: 2px 8px;">Medium</a> `;
+          }
+
+          const creditsDisplay = j.creditsAtTime != null ? j.creditsAtTime : '—';
+
+          return `
+            <tr>
+              <td><input type="checkbox" class="job-checkbox" value="${j.id}" onchange="updateSelectedCount()"></td>
+              <td style="font-family:monospace;font-size:0.75rem;white-space:nowrap;cursor:copy;" title="Click to copy" onclick="navigator.clipboard.writeText('${j.id}')">${j.id}</td>
+              <td><span class="username-link" onclick="showUserDetails('${j.userId}')">${esc(j.user?.username || j.userId.slice(0, 8))}</span></td>
+              <td><span class="badge ${statusClass}">${j.status}</span></td>
+              <td><span class="badge ${j.isPrivate ? 'badge-muted' : 'badge-info'}">${j.isPrivate ? 'Private' : 'Public'}</span></td>
+              <td>${(j.perspectivesUsed || []).join(', ') || '—'}</td>
+              <td style="text-align:right;font-family:monospace;">${creditsDisplay}</td>
+              <td>${new Date(j.createdAt).toLocaleString()}</td>
+              <td>
+                ${clothingLinks}${resultLinks || '—'}
+                <button class="btn btn-danger" style="padding:2px 8px;margin-left:4px;" onclick="deleteJob('${j.id}')">×</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        document.getElementById('selectAllJobs').checked = false;
+        updateSelectedCount();
+
+        // Wire up resizable columns once
+        if (!jobsResizableInitialized) {
+          makeColumnsResizable('jobsTable');
+          jobsResizableInitialized = true;
+        }
+      } catch (e) {
+        console.error('Failed to load jobs', e);
+        const tbody = document.getElementById('jobsBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#ff4757;padding:20px;">
+            ⚠ Error loading jobs: ${e.message}
+          </td></tr>`;
+        }
+      }
+    }
+
+    function makeColumnsResizable(tableId) {
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      table.querySelectorAll('th.resizable-th').forEach(th => {
+        const handle = document.createElement('div');
+        handle.className = 'col-resize-handle';
+        handle.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const startX = e.pageX;
+          const startWidth = th.offsetWidth;
+          handle.classList.add('dragging');
+          const onMove = e => {
+            th.style.width = Math.max(50, startWidth + (e.pageX - startX)) + 'px';
+          };
+          const onUp = () => {
+            handle.classList.remove('dragging');
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+          };
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+        th.appendChild(handle);
+      });
+    }
+
+    async function loadSecurity() {
+      try {
+        const res = await fetch(`${API_BASE}/security/stats`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const stats = await res.json();
+        
+        document.getElementById('suspicious24h').textContent = stats.last24Hours || 0;
+        document.getElementById('suspicious7d').textContent = stats.last7Days || 0;
+        document.getElementById('suspiciousTotal').textContent = stats.total || 0;
+        document.getElementById('suspiciousUsers').textContent = stats.uniqueUsers || 0;
+
+        const logsRes = await fetch(`${API_BASE}/security/suspicious?limit=50`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const logs = await logsRes.json();
+        
+        const tbody = document.getElementById('suspiciousBody');
+        if (!logs.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No suspicious logins detected ✓</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = logs.map(loc => `
+          <tr style="background: rgba(255, 71, 87, 0.1);">
+            <td>${new Date(loc.timestamp).toLocaleString()}</td>
+            <td><span class="username-link" onclick="showUserDetails('${loc.userId}')">${esc(loc.user?.username || 'Unknown')}</span></td>
+            <td>${esc(loc.user?.email || '-')}</td>
+            <td>${esc([loc.city, loc.region, loc.country].filter(Boolean).join(', ') || 'Unknown')}</td>
+            <td style="color: #ff4757; font-weight: bold;">${loc.distanceFromLast ? Math.round(loc.distanceFromLast) + ' km' : '-'}</td>
+            <td style="font-family: monospace; font-size: 0.85rem;">${loc.ip}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error('Failed to load security data', e);
+      }
+    }
+
+    async function createUser() {
+      const firstName = document.getElementById('newFirstName').value.trim();
+      const lastName = document.getElementById('newLastName').value.trim();
+      const username = document.getElementById('newUsername').value.trim();
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value;
+      const msgEarly = document.getElementById('createUserMsg');
+
+      if (!username || !email || !password) {
+        msgEarly.className = 'error';
+        msgEarly.textContent = 'Username, email, and password are required';
+        return;
+      }
+      // Require a real, TLD-bearing email so a missing ".com" can't slip through
+      // and create an account that login/forgot-password can never match.
+      if (!/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email)) {
+        msgEarly.className = 'error';
+        msgEarly.textContent = 'Enter a valid email address (e.g. name@example.com)';
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE}/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': apiKey
+          },
+          body: JSON.stringify({ 
+            firstName: firstName || undefined,
+            lastName: lastName || undefined,
+            username, 
+            email, 
+            password 
+          })
+        });
+        const data = await res.json();
+        
+        const msgEl = document.getElementById('createUserMsg');
+        if (res.ok) {
+          msgEl.className = 'success';
+          msgEl.textContent = `Created user: ${data.username}`;
+          document.getElementById('newFirstName').value = '';
+          document.getElementById('newLastName').value = '';
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newEmail').value = '';
+          document.getElementById('newPassword').value = '';
+          loadUsers();
+          loadStats();
+        } else {
+          msgEl.className = 'error';
+          msgEl.textContent = data.error || 'Failed to create user';
+        }
+      } catch (e) {
+        document.getElementById('createUserMsg').className = 'error';
+        document.getElementById('createUserMsg').textContent = 'Failed to create user';
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (!confirm('Delete this user and all their data?')) return;
+      
+      try {
+        await fetch(`${API_BASE}/user/${userId}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        loadUsers();
+        loadStats();
+      } catch (e) {
+        alert('Failed to delete user');
+      }
+    }
+
+    async function verifyUser(userId, verified) {
+      try {
+        await fetch(`${API_BASE}/user/${userId}/verify`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': apiKey
+          },
+          body: JSON.stringify({ verified })
+        });
+        loadUsers();
+      } catch (e) {
+        alert('Failed to update verification status');
+      }
+    }
+
+    async function setTier(userId, tier) {
+      if (!tier) return;
+      try {
+        await fetch(`${API_BASE}/user/${userId}/subscription`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': apiKey
+          },
+          body: JSON.stringify({ tier })
+        });
+        loadUsers();
+        loadStats();
+      } catch (e) {
+        alert('Failed to update tier');
+      }
+    }
+
+    function openCreditsModal(userId, username, currentCredits) {
+      pendingCreditsUserId = userId;
+      document.getElementById('creditsUsername').textContent = username;
+      document.getElementById('currentCredits').textContent = currentCredits;
+      document.getElementById('creditsAmount').value = '';
+      document.getElementById('creditsReason').value = '';
+      document.getElementById('creditsModal').classList.add('active');
+    }
+
+    function closeCreditsModal() {
+      pendingCreditsUserId = null;
+      document.getElementById('creditsModal').classList.remove('active');
+    }
+
+    async function submitCredits() {
+      const amount = parseInt(document.getElementById('creditsAmount').value);
+      const reason = document.getElementById('creditsReason').value;
+      
+      if (!amount || isNaN(amount)) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      try {
+        await fetch(`${API_BASE}/user/${pendingCreditsUserId}/credits`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': apiKey
+          },
+          body: JSON.stringify({ amount, reason })
+        });
+        closeCreditsModal();
+        loadUsers();
+        loadStats();
+      } catch (e) {
+        alert('Failed to update credits');
+      }
+    }
+
+    async function clearLocations(userId) {
+      if (!confirm('Clear all stored login-location history for this user? This removes suspicious-location flags too.')) return;
+      try {
+        const res = await fetch(`${API_BASE}/user/${userId}/clear-locations`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed');
+        alert(`Cleared ${data.deleted} location record(s).`);
+        showUserDetails(userId); // re-render the modal without the location history
+      } catch (e) {
+        alert('Failed to clear locations: ' + e.message);
+      }
+    }
+
+    async function showUserDetails(userId) {
+      try {
+        const res = await fetch(`${API_BASE}/user/${userId}`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        
+        if (!res.ok) {
+          alert('Failed to load user details');
+          return;
+        }
+        
+        const user = await res.json();
+        
+        const avatarHtml = user.avatarUrl 
+          ? `<img src="${user.avatarUrl}" class="user-avatar" crossorigin="anonymous" alt="Avatar" onerror="this.style.display='none'">`
+          : '';
+        
+        let locationsHtml = '';
+        if (user.locations && user.locations.length > 0) {
+          const hasSuspicious = user.locations.some(loc => loc.suspiciousLocation);
+          locationsHtml = `
+            <h3 style="color: #888; margin-top: 20px; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase;">
+              Login Locations (last ${user.locations.length})
+              ${hasSuspicious ? '<span style="color: #ff4757; margin-left: 10px;">⚠️ Suspicious</span>' : ''}
+              <button class="btn btn-secondary" style="float: right; padding: 2px 10px; font-size: 0.75rem; text-transform: none;" onclick="clearLocations('${user.id}')">Clear History</button>
+            </h3>
+            <table style="width: 100%; font-size: 0.8rem;">
+              <tr style="color: #666;">
+                <th style="padding: 5px;">Date</th>
+                <th style="padding: 5px;">Location</th>
+                <th style="padding: 5px;">Distance</th>
+                <th style="padding: 5px;">IP</th>
+              </tr>
+              ${user.locations.map(loc => `
+                <tr style="border-bottom: 1px solid #333; ${loc.suspiciousLocation ? 'background: rgba(255, 71, 87, 0.15);' : ''}">
+                  <td style="padding: 5px;">${loc.suspiciousLocation ? '🚨 ' : ''}${new Date(loc.timestamp).toLocaleString()}</td>
+                  <td style="padding: 5px;">${esc([loc.city, loc.region, loc.country].filter(Boolean).join(', ') || 'Unknown')}</td>
+                  <td style="padding: 5px; ${loc.suspiciousLocation ? 'color: #ff4757; font-weight: bold;' : ''}">${loc.distanceFromLast ? Math.round(loc.distanceFromLast) + ' km' : '-'}</td>
+                  <td style="padding: 5px;">${loc.ip}</td>
+                </tr>
+              `).join('')}
+            </table>
+          `;
+        }
+        
+        const content = `
+          <div style="text-align: center;">${avatarHtml}</div>
+          <div class="user-field"><span class="field-label">ID:</span><span class="field-value" style="font-family: monospace; font-size: 0.85rem;">${user.id}</span></div>
+          <div class="user-field"><span class="field-label">Username:</span><span class="field-value">${esc(user.username)}</span></div>
+          <div class="user-field"><span class="field-label">First Name:</span><span class="field-value">${esc(user.firstName || '(not set)')}</span></div>
+          <div class="user-field"><span class="field-label">Last Name:</span><span class="field-value">${esc(user.lastName || '(not set)')}</span></div>
+          <div class="user-field"><span class="field-label">Email:</span><span class="field-value">${esc(user.email)}</span></div>
+          <div class="user-field"><span class="field-label">Verified:</span><span class="field-value">${user.verified ? '✓ Yes' : '✗ No'}</span></div>
+          <div class="user-field"><span class="field-label">Tier:</span><span class="field-value">${user.tier}</span></div>
+          <div class="user-field"><span class="field-label">Subscription:</span><span class="field-value" id="subscriptionDetail-${user.id}">${renderSubscriptionDetail(user.subscriptionStatus, user.id, user.applePurchaseCount)}</span></div>
+          <div class="user-field"><span class="field-label">Credits:</span><span class="field-value">${user.credits}</span></div>
+          <div class="user-field"><span class="field-label">Lifetime Try-Ons:</span><span class="field-value">${user.tryOnCount ?? 0}</span></div>
+          <div class="user-field"><span class="field-label">Moderation Blocks:</span><span class="field-value">${(user.moderationBlockCount ?? 0) > 0 ? `<span class="badge badge-danger">⚠ ${user.moderationBlockCount}</span> &nbsp;last ${user.lastModerationBlockAt ? new Date(user.lastModerationBlockAt).toLocaleString() : '—'}` : '0'}</span></div>
+          <div class="user-field"><span class="field-label">AI Processing Consent:</span><span class="field-value">${user.aiProcessingConsentAt ? '✓ Granted ' + new Date(user.aiProcessingConsentAt).toLocaleString() : '✗ Not granted'}</span></div>
+          <div class="user-field"><span class="field-label">Bio:</span><span class="field-value">${esc(user.bio || '(none)')}</span></div>
+          <div class="user-field"><span class="field-label">Address:</span><span class="field-value">${esc(user.address || '(not set)')}</span></div>
+          <div class="user-field"><span class="field-label">City:</span><span class="field-value">${esc(user.city || '(not set)')}</span></div>
+          <div class="user-field"><span class="field-label">State:</span><span class="field-value">${esc(user.state || '(not set)')}</span></div>
+          <div class="user-field"><span class="field-label">Followers:</span><span class="field-value">${user.followersCount}</span></div>
+          <div class="user-field"><span class="field-label">Following:</span><span class="field-value">${user.followingCount}</span></div>
+          <div class="user-field"><span class="field-label">Likes:</span><span class="field-value">${user.likesCount}</span></div>
+          <div class="user-field"><span class="field-label">Full Body Photo:</span><span class="field-value">${user.fullBodyUrl ? '<a href="' + user.fullBodyUrl + '" target="_blank" style="color: #3742fa;">View</a>' : '(not uploaded)'}</span></div>
+          <div class="user-field"><span class="field-label">Medium Photo:</span><span class="field-value">${user.mediumBodyUrl ? '<a href="' + user.mediumBodyUrl + '" target="_blank" style="color: #3742fa;">View</a>' : '(not uploaded)'}</span></div>
+          <div class="user-field"><span class="field-label">Created:</span><span class="field-value">${new Date(user.createdAt).toLocaleString()}</span></div>
+          <div class="user-field"><span class="field-label">Updated:</span><span class="field-value">${user.updatedAt ? new Date(user.updatedAt).toLocaleString() : '-'}</span></div>
+          ${locationsHtml}
+          <h3 style="color: #888; margin-top: 20px; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase;">
+            Try-On Sessions <span id="userJobsCount" style="color:#555; text-transform:none;"></span>
+          </h3>
+          <div id="userJobsGallery"><p style="color:#666;">Loading try-on sessions…</p></div>
+          <div style="text-align:center; margin-top: 8px;">
+            <button class="btn btn-secondary" id="userJobsMoreBtn" style="display:none;" onclick="loadUserJobs()">Show more</button>
+          </div>
+        `;
+
+        document.getElementById('userModalContent').innerHTML = content;
+        document.getElementById('userModal').classList.add('active');
+        loadUserJobs(userId);
+      } catch (e) {
+        console.error('Failed to load user details', e);
+        alert('Failed to load user details');
+      }
+    }
+
+    // ===== Per-user Try-On Sessions gallery (inside the user-detail modal) =====
+    // Each session shows every photo involved: the body photo used as input,
+    // the clothing photo(s), and the generated result(s).
+    let userJobsState = { userId: null, skip: 0, total: 0 };
+    const USER_JOBS_PAGE = 5;
+
+    function tryOnPhoto(label, url) {
+      if (!url) {
+        return `<div class="tryon-photo"><div class="ph-label">${label}</div><div class="ph-missing">missing</div></div>`;
+      }
+      const u = esc(url);
+      return `<div class="tryon-photo"><div class="ph-label">${label}</div>
+        <a href="${u}" target="_blank" title="Open full size"><img src="${u}" loading="lazy" alt="${label}"
+           onerror="this.outerHTML='&lt;div class=&quot;ph-missing&quot;&gt;failed to load&lt;/div&gt;'"></a></div>`;
+    }
+
+    function renderTryOnSession(j) {
+      const statusClass = {
+        'COMPLETE': 'badge-success',
+        'PROCESSING': 'badge-info',
+        'PENDING': 'badge-warning',
+        'FAILED': 'badge-danger'
+      }[j.status] || 'badge-muted';
+
+      const photos = [
+        tryOnPhoto('Body photo', j.bodyPhotoUrl),
+        tryOnPhoto('Clothing', j.clothingPhoto1Url),
+        j.clothingPhoto2Url ? tryOnPhoto('Clothing 2', j.clothingPhoto2Url) : '',
+        tryOnPhoto('Result · full body', j.resultFullBodyUrl),
+        tryOnPhoto('Result · medium', j.resultMediumUrl),
+      ].join('');
+
+      return `
+        <div class="tryon-session">
+          <div class="tryon-session-head">
+            <span>
+              <span class="badge ${statusClass}">${j.status}</span>
+              <span class="badge ${j.isPrivate ? 'badge-muted' : 'badge-info'}">${j.isPrivate ? 'Private' : 'Public'}</span>
+            </span>
+            <span>${new Date(j.createdAt).toLocaleString()}</span>
+            <span style="font-family:monospace; font-size:0.7rem; cursor:copy;" title="Click to copy job ID"
+                  onclick="navigator.clipboard.writeText('${j.id}')">${j.id}</span>
+          </div>
+          <div class="tryon-photos">${photos}</div>
+          ${j.errorMessage ? `<div style="color:#ffa502; font-size:0.78rem; margin-top:8px;">${esc(j.errorMessage)}</div>` : ''}
+        </div>`;
+    }
+
+    async function loadUserJobs(userId) {
+      // Called with a userId to (re)start, or with none to append the next page.
+      if (userId) userJobsState = { userId, skip: 0, total: 0 };
+      const galleryEl = document.getElementById('userJobsGallery');
+      const moreBtn = document.getElementById('userJobsMoreBtn');
+      const countEl = document.getElementById('userJobsCount');
+      if (!galleryEl) return;
+      try {
+        const res = await fetch(
+          `${API_BASE}/user/${userJobsState.userId}/jobs?limit=${USER_JOBS_PAGE}&skip=${userJobsState.skip}`,
+          { headers: { 'X-Admin-Key': apiKey } },
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load try-on sessions');
+        userJobsState.total = data.total;
+        countEl.textContent = data.total ? `(${data.total})` : '';
+        const html = data.jobs.map(renderTryOnSession).join('');
+        if (userJobsState.skip === 0) {
+          galleryEl.innerHTML = html || '<p style="color:#666;">No try-on sessions yet.</p>';
+        } else {
+          galleryEl.insertAdjacentHTML('beforeend', html);
+        }
+        userJobsState.skip += data.jobs.length;
+        moreBtn.style.display = userJobsState.skip < userJobsState.total ? 'inline-block' : 'none';
+        moreBtn.textContent = `Show more (${userJobsState.total - userJobsState.skip} remaining)`;
+      } catch (e) {
+        galleryEl.innerHTML = `<p class="error">Failed to load try-on sessions: ${esc(e.message)}</p>`;
+        moreBtn.style.display = 'none';
+      }
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').classList.remove('active');
+    }
+
+    // Job selection functions
+    function toggleSelectAll(checkbox) {
+      const checkboxes = document.querySelectorAll('.job-checkbox');
+      checkboxes.forEach(cb => cb.checked = checkbox.checked);
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      const checkboxes = document.querySelectorAll('.job-checkbox:checked');
+      const count = checkboxes.length;
+      document.getElementById('selectedCount').textContent = count;
+      document.getElementById('deleteSelectedBtn').style.display = count > 0 ? 'inline-block' : 'none';
+      document.getElementById('deleteResult').textContent = '';
+    }
+
+    function getSelectedJobIds() {
+      const checkboxes = document.querySelectorAll('.job-checkbox:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    async function deleteJob(jobId) {
+      if (!confirm('Delete this job? This cannot be undone.')) return;
+      
+      try {
+        const res = await fetch(`${API_BASE}/job/${jobId}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        
+        if (res.ok) {
+          loadJobs();
+          loadStats();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Failed to delete job');
+        }
+      } catch (e) {
+        alert('Failed to delete job');
+      }
+    }
+
+    async function deleteSelectedJobs() {
+      const jobIds = getSelectedJobIds();
+      if (jobIds.length === 0) return;
+      
+      if (!confirm(`Delete ${jobIds.length} job(s)? This cannot be undone.`)) return;
+      
+      const resultEl = document.getElementById('deleteResult');
+      resultEl.textContent = 'Deleting...';
+      resultEl.className = '';
+      
+      try {
+        const res = await fetch(`${API_BASE}/jobs/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': apiKey
+          },
+          body: JSON.stringify({ jobIds })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          resultEl.textContent = `Deleted ${data.deleted} job(s)`;
+          resultEl.className = 'success';
+          loadJobs();
+          loadStats();
+        } else {
+          resultEl.textContent = data.error || 'Failed to delete jobs';
+          resultEl.className = 'error';
+        }
+      } catch (e) {
+        resultEl.textContent = 'Failed to delete jobs';
+        resultEl.className = 'error';
+      }
+    }
+
+    // Close modals when clicking outside
+    document.getElementById('userModal').addEventListener('click', function(e) {
+      if (e.target === this) closeUserModal();
+    });
+    document.getElementById('creditsModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCreditsModal();
+    });
+
+    // ===== VULNERABILITY FUNCTIONS =====
+    
+    async function runOrphanScan() {
+      const statusEl = document.getElementById('orphanScanStatus');
+      const resultEl = document.getElementById('orphanScanResult');
+      const deleteBtn = document.getElementById('deleteOrphansBtn');
+      statusEl.textContent = 'Scanning S3… this may take a moment.';
+      resultEl.style.display = 'none';
+      deleteBtn.style.display = 'none';
+      try {
+        const res = await fetch(`${API_BASE}/s3/orphan-scan`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const data = await res.json();
+        statusEl.textContent = `Last scan: ${new Date(data.scannedAt).toLocaleString()}`;
+        document.getElementById('orphanTotalObjects').textContent = data.totalS3Objects.toLocaleString();
+        document.getElementById('orphanOrphanedObjects').textContent = data.orphanedObjects.toLocaleString();
+        document.getElementById('orphanAffectedUsers').textContent = data.orphansByUser.length.toLocaleString();
+        document.getElementById('orphanBytes').textContent = ((data.orphanedBytes || 0) / 1024 / 1024).toFixed(1) + ' MB';
+        const detailEl = document.getElementById('orphanDetail');
+        if (data.orphansByUser.length === 0) {
+          detailEl.innerHTML = '<p style="color: #2ecc71;">✓ No orphaned objects found.</p>';
+          deleteBtn.style.display = 'none';
+        } else {
+          let html = '<table class="table"><thead><tr><th>Account</th><th>Why orphaned</th><th>Objects</th><th>Size</th><th>Sample Keys</th></tr></thead><tbody>';
+          for (const entry of data.orphansByUser) {
+            const sample = entry.keys.slice(0, 3).map(esc).join('<br>');
+            const more = entry.keys.length > 3 ? `<br><em>…+${entry.keys.length - 3} more</em>` : '';
+            const who = entry.userExists
+              ? `<span class="username-link" onclick="showUserDetails('${entry.userId}')">${esc(entry.username)}</span>`
+              : `<code>${esc(entry.userId)}</code>`;
+            const why = entry.userExists
+              ? '<span class="badge badge-warning">deleted jobs / replaced photos</span>'
+              : '<span class="badge badge-muted">user deleted</span>';
+            const mb = ((entry.bytes || 0) / 1024 / 1024).toFixed(1) + ' MB';
+            html += `<tr><td>${who}</td><td>${why}</td><td>${entry.keys.length}</td><td>${mb}</td><td style="font-size:11px;color:#888;">${sample}${more}</td></tr>`;
+          }
+          html += '</tbody></table>';
+          detailEl.innerHTML = html;
+          deleteBtn.style.display = 'inline-block';
+        }
+        resultEl.style.display = 'block';
+      } catch (e) {
+        statusEl.textContent = 'Scan failed: ' + e.message;
+      }
+    }
+
+    async function deleteOrphans() {
+      if (!confirm(`Delete all orphaned S3 objects? This cannot be undone.`)) return;
+      const statusEl = document.getElementById('orphanScanStatus');
+      const deleteBtn = document.getElementById('deleteOrphansBtn');
+      deleteBtn.disabled = true;
+      statusEl.textContent = 'Deleting orphaned objects…';
+      try {
+        const res = await fetch(`${API_BASE}/s3/orphan-cleanup`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const data = await res.json();
+        statusEl.textContent = `Done — deleted ${data.deleted} object${data.deleted === 1 ? '' : 's'}${data.failed > 0 ? `, ${data.failed} failed (check server logs)` : ''}.`;
+        document.getElementById('orphanScanResult').style.display = 'none';
+        deleteBtn.style.display = 'none';
+      } catch (e) {
+        statusEl.textContent = 'Cleanup failed: ' + e.message;
+        deleteBtn.disabled = false;
+      }
+    }
+
+    async function loadVulnerabilities() {
+      try {
+        // Load summary
+        const summaryRes = await fetch(`${API_BASE}/vulnerabilities/summary`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const summary = await summaryRes.json();
+        
+        // Update stats
+        document.getElementById('vulnCritical').textContent = summary.totalCritical || 0;
+        document.getElementById('vulnHigh').textContent = summary.totalHigh || 0;
+        document.getElementById('vulnModerate').textContent = summary.totalModerate || 0;
+        document.getElementById('vulnLow').textContent = summary.totalLow || 0;
+        
+        // Update last scan time
+        if (summary.lastScanTime) {
+          const lastScan = new Date(summary.lastScanTime);
+          const now = new Date();
+          const diffMs = now - lastScan;
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
+          
+          let timeAgo;
+          if (diffMins < 60) {
+            timeAgo = `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+          } else if (diffHours < 24) {
+            timeAgo = `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+          } else {
+            timeAgo = `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+          }
+          
+          document.getElementById('lastScanTime').textContent = timeAgo;
+        } else {
+          document.getElementById('lastScanTime').textContent = 'Never';
+        }
+        
+        // Update component summaries
+        updateVulnComponent('backendVulnSummary', summary.backend);
+        updateVulnComponent('frontendVulnSummary', summary.frontend);
+        updateVulnComponent('systemVulnSummary', summary.system);
+        updateSslComponent(summary.ssl);
+        
+        // Load history
+        const historyRes = await fetch(`${API_BASE}/vulnerabilities/reports?limit=20`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const historyData = await historyRes.json();
+        
+        const tbody = document.getElementById('vulnHistoryBody');
+        tbody.innerHTML = historyData.reports.map(r => {
+          const scanTypeNames = {
+            'NPM_BACKEND': 'Backend NPM',
+            'NPM_FRONTEND': 'Frontend NPM',
+            'SYSTEM_PACKAGES': 'System Packages',
+            'DOCKER_IMAGES': 'Docker Images',
+            'SSL_CERTIFICATE': 'SSL Certificate'
+          };
+          
+          return `
+            <tr>
+              <td>${new Date(r.createdAt).toLocaleString()}</td>
+              <td><span class="badge badge-muted">${scanTypeNames[r.scanType] || r.scanType}</span></td>
+              <td>${r.totalVulnerabilities}</td>
+              <td>${r.criticalCount > 0 ? `<span style="color: #ff4757;">${r.criticalCount}</span>` : '-'}</td>
+              <td>${r.highCount > 0 ? `<span style="color: #ff6348;">${r.highCount}</span>` : '-'}</td>
+              <td>${r.moderateCount > 0 ? `<span style="color: #ffa502;">${r.moderateCount}</span>` : '-'}</td>
+              <td>${r.lowCount > 0 ? `<span style="color: #f1c40f;">${r.lowCount}</span>` : '-'}</td>
+              <td>${r.fixAvailable ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-muted">No</span>'}</td>
+              <td>${r.scanDurationMs ? `${(r.scanDurationMs / 1000).toFixed(1)}s` : '-'}</td>
+              <td>
+                <button class="btn btn-secondary" onclick="viewVulnDetails('${r.id}')">View</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        
+      } catch (e) {
+        console.error('Failed to load vulnerabilities', e);
+        document.getElementById('scanStatus').innerHTML = '<span class="error">Failed to load vulnerability data</span>';
+      }
+    }
+    
+    function updateVulnComponent(elementId, data) {
+      const el = document.getElementById(elementId);
+      if (!data) {
+        el.innerHTML = 'No scan data available';
+        return;
+      }
+      
+      if (data.errorMessage) {
+        el.innerHTML = `<span style="color: #ff4757;">Error: ${data.errorMessage}</span>`;
+        return;
+      }
+      
+      const total = data.totalVulnerabilities || 0;
+      const critical = data.criticalCount || 0;
+      const high = data.highCount || 0;
+      const moderate = data.moderateCount || 0;
+      const low = data.lowCount || 0;
+      
+      if (total === 0) {
+        el.innerHTML = '<span style="color: #2ed573;">✓ No vulnerabilities</span>';
+        return;
+      }
+      
+      let html = `<div style="line-height: 1.6;">`;
+      html += `<strong>Total: ${total}</strong><br>`;
+      if (critical > 0) html += `<span style="color: #ff4757;">Critical: ${critical}</span><br>`;
+      if (high > 0) html += `<span style="color: #ff6348;">High: ${high}</span><br>`;
+      if (moderate > 0) html += `<span style="color: #ffa502;">Moderate: ${moderate}</span><br>`;
+      if (low > 0) html += `<span style="color: #f1c40f;">Low: ${low}</span><br>`;
+      if (data.packagesChecked) html += `<span style="color: #666; font-size: 0.8rem;">${data.packagesChecked} packages checked</span>`;
+      html += `</div>`;
+
+      el.innerHTML = html;
+    }
+
+    // SSL has its own renderer so a healthy cert still shows days-remaining
+    // (the generic component would just say "No vulnerabilities" and hide it).
+    function updateSslComponent(data) {
+      const el = document.getElementById('sslVulnSummary');
+      if (!el) return;
+      if (!data) { el.innerHTML = 'No scan data available'; return; }
+      if (data.errorMessage) { el.innerHTML = `<span style="color: #ff4757;">Error: ${data.errorMessage}</span>`; return; }
+
+      let hosts = [];
+      try { hosts = (JSON.parse(data.details || '{}').hosts) || []; } catch (e) {}
+
+      if (!hosts.length) {
+        // Fall back to the generic counts renderer if details are missing
+        updateVulnComponent('sslVulnSummary', data);
+        return;
+      }
+
+      let html = '<div style="line-height: 1.6;">';
+      for (const h of hosts) {
+        if (h.error) {
+          html += `<span style="color: #ff4757;">✗ ${h.host}: ${h.error}</span><br>`;
+          continue;
+        }
+        let color = '#2ed573';
+        if (h.daysRemaining <= 7) color = '#ff4757';
+        else if (h.daysRemaining <= 14) color = '#ff6348';
+        else if (h.daysRemaining <= 30) color = '#ffa502';
+        const icon = h.daysRemaining > 30 ? '✓ ' : '⚠ ';
+        html += `<span style="color: ${color};">${icon}${h.host}: ${h.daysRemaining} days</span><br>`;
+        html += `<span style="color: #666; font-size: 0.8rem;">expires ${h.validTo}${h.issuer ? ' · ' + h.issuer : ''}</span><br>`;
+      }
+      html += '</div>';
+      el.innerHTML = html;
+    }
+
+    async function triggerVulnerabilityScan() {
+      const statusEl = document.getElementById('scanStatus');
+      statusEl.innerHTML = '<span class="success">⏳ Vulnerability scan triggered. This may take 1-2 minutes...</span>';
+      
+      try {
+        const res = await fetch(`${API_BASE}/vulnerabilities/scan`, {
+          method: 'POST',
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          statusEl.innerHTML = `<span class="success">${data.message}. Refresh in a minute to see results.</span>`;
+          
+          // Auto-refresh after 90 seconds
+          setTimeout(() => {
+            loadVulnerabilities();
+            statusEl.innerHTML = '';
+          }, 90000);
+        } else {
+          statusEl.innerHTML = `<span class="error">Failed to trigger scan: ${data.error}</span>`;
+        }
+      } catch (e) {
+        statusEl.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+      }
+    }
+    
+    async function viewVulnDetails(reportId) {
+      try {
+        const res = await fetch(`${API_BASE}/vulnerabilities/report/${reportId}`, {
+          headers: { 'X-Admin-Key': apiKey }
+        });
+        const report = await res.json();
+        
+        if (res.ok) {
+          // Show details in a modal or alert
+          let details = `Vulnerability Report\n\n`;
+          details += `Type: ${report.scanType}\n`;
+          details += `Scanned: ${new Date(report.createdAt).toLocaleString()}\n`;
+          details += `Total Vulnerabilities: ${report.totalVulnerabilities}\n`;
+          details += `Critical: ${report.criticalCount}\n`;
+          details += `High: ${report.highCount}\n`;
+          details += `Moderate: ${report.moderateCount}\n`;
+          details += `Low: ${report.lowCount}\n`;
+          if (report.packagesChecked) details += `Packages Checked: ${report.packagesChecked}\n`;
+          if (report.errorMessage) details += `\nError: ${report.errorMessage}\n`;
+          
+          if (report.details) {
+            details += `\n\nFull JSON Report:\n${report.details}`;
+          }
+          
+          if (report.systemInfo) {
+            details += `\n\nSystem Info:\n${report.systemInfo}`;
+          }
+          
+          // Copy to clipboard
+          navigator.clipboard.writeText(details).then(() => {
+            alert('Report details copied to clipboard!\n\n' + details.substring(0, 500) + '...');
+          }).catch(() => {
+            alert(details);
+          });
+        } else {
+          alert('Failed to load report details');
+        }
+      } catch (e) {
+        alert('Error loading report: ' + e.message);
+      }
+    }
+
+    // ============================ DIAGNOSTICS TAB ============================
+    function diagBadge(ok, okText, badText) {
+      return ok
+        ? `<span class="badge badge-success">${okText || 'OK'}</span>`
+        : `<span class="badge badge-danger">${badText || 'DOWN'}</span>`;
+    }
+    function yesNo(b) {
+      return b
+        ? '<span class="badge badge-success">YES</span>'
+        : '<span class="badge badge-muted">NO</span>';
+    }
+    function fmtUptime(sec) {
+      sec = Math.max(0, Math.floor(sec || 0));
+      const d = Math.floor(sec / 86400); sec %= 86400;
+      const h = Math.floor(sec / 3600); sec %= 3600;
+      const m = Math.floor(sec / 60);
+      return (d ? d + 'd ' : '') + (h ? h + 'h ' : '') + m + 'm';
+    }
+    // value may contain trusted HTML (badges); callers esc() any dynamic text.
+    function kvRow(label, value) {
+      return `<div class="user-field"><div class="field-label">${esc(label)}</div><div class="field-value">${value}</div></div>`;
+    }
+
+    const INTEGRATION_LABELS = {
+      grok: 'Grok / xAI (GROK_API_KEY)',
+      s3: 'AWS S3 (uploads)',
+      appleServerApi: 'Apple Server API (.p8)',
+      emailSmtp: 'Email — SMTP',
+      awsSesCreds: 'Email — AWS SES creds',
+      cloudwatchLogs: 'CloudWatch Logs',
+      sentry: 'Sentry (error tracking)',
+    };
+
+    async function loadDiagnostics() {
+      const body = document.getElementById('diagBody');
+      const stamp = document.getElementById('diagGeneratedAt');
+      stamp.textContent = 'Loading…';
+      try {
+        const res = await fetch(`${API_BASE}/diagnostics`, { headers: { 'X-Admin-Key': apiKey } });
+        if (!res.ok) {
+          body.innerHTML = `<p class="error">Failed to load diagnostics (${res.status})</p>`;
+          stamp.textContent = '—';
+          return;
+        }
+        const d = await res.json();
+        stamp.textContent = 'Generated ' + new Date(d.generatedAt).toLocaleString();
+        body.innerHTML = renderDiagnostics(d);
+        loadSentryIssues();
+      } catch (e) {
+        body.innerHTML = `<p class="error">Error: ${esc(e.message)}</p>`;
+        stamp.textContent = '—';
+      }
+    }
+
+    function renderDiagnostics(d) {
+      const pg = d.dependencies.postgres, rd = d.dependencies.redis;
+      const sys = d.system;
+
+      // Top-line status cards
+      let html = '<div class="stats-grid">';
+      html += `<div class="stat-card"><div class="value">${diagBadge(pg.up)}</div><div class="label">Postgres · ${pg.latencyMs}ms</div></div>`;
+      html += `<div class="stat-card"><div class="value">${diagBadge(rd.up)}</div><div class="label">Redis · ${rd.latencyMs}ms</div></div>`;
+      html += `<div class="stat-card"><div class="value" style="font-size:1.3rem;">${fmtUptime(sys.uptimeSeconds)}</div><div class="label">Process uptime</div></div>`;
+      html += `<div class="stat-card"><div class="value" style="font-size:1.3rem;">${sys.memoryMb.rss}</div><div class="label">RSS (MB)</div></div>`;
+      html += `<div class="stat-card"><div class="value" style="font-size:1.3rem;">${sys.memoryMb.heapUsed}/${sys.memoryMb.heapTotal}</div><div class="label">Heap used/total (MB)</div></div>`;
+      const tq = d.queues.find(q => q.name === 'tryon');
+      const tqFailed = tq && tq.counts ? (tq.counts.failed || 0) : '—';
+      html += `<div class="stat-card" style="border-left:3px solid ${tqFailed ? '#ff4757' : '#333'};"><div class="value" style="font-size:1.3rem;">${tqFailed}</div><div class="label">Try-on queue · failed</div></div>`;
+      html += '</div>';
+
+      // System
+      html += '<div class="section"><h2>System</h2>';
+      html += kvRow('Hostname', esc(sys.hostname));
+      html += kvRow('Platform', esc(sys.platform));
+      html += kvRow('Node', esc(sys.nodeVersion) + ' · pid ' + sys.pid);
+      html += kvRow('NODE_OPTIONS', sys.nodeOptions ? esc(sys.nodeOptions) : '<span style="color:#666;">(unset)</span>');
+      html += kvRow('Process memory', `RSS ${sys.memoryMb.rss}MB · heap ${sys.memoryMb.heapUsed}/${sys.memoryMb.heapTotal}MB · external ${sys.memoryMb.external}MB`);
+      html += kvRow('Host memory', `${sys.hostMemoryMb.free} free / ${sys.hostMemoryMb.total} total MB`);
+      html += kvRow('Load avg (1/5/15m)', sys.loadAvg.join(' · '));
+      html += '</div>';
+
+      // Integrations
+      html += '<div class="section"><h2>Integrations (configured on this box)</h2><div class="stats-grid">';
+      for (const [key, ok] of Object.entries(d.integrations)) {
+        const label = INTEGRATION_LABELS[key] || key;
+        html += `<div class="stat-card" style="text-align:left;"><div>${yesNo(ok)}</div><div class="label" style="margin-top:6px;">${esc(label)}</div></div>`;
+      }
+      html += '</div></div>';
+
+      // Config flags
+      const c = d.config;
+      html += '<div class="section"><h2>Config flags</h2>';
+      html += kvRow('NODE_ENV', esc(c.nodeEnv));
+      html += kvRow('APP_URL', esc(c.appUrl));
+      html += kvRow('Apple environment', esc(c.appleEnvironment));
+      html += kvRow('Refresh-token rotation', c.refreshTokenRotation
+        ? '<span class="badge badge-success">ON</span>'
+        : '<span class="badge badge-muted">OFF</span>');
+      html += kvRow('Log level', esc(c.logLevel));
+      html += kvRow('Allowed CORS origins', String(c.allowedOriginsCount));
+      html += '</div>';
+
+      // Queues
+      html += '<div class="section"><h2>Queues (BullMQ)</h2>';
+      for (const q of d.queues) {
+        html += `<div style="margin-bottom:14px;"><strong>${esc(q.name)}</strong> `;
+        if (!q.ok) {
+          html += `<span class="badge badge-danger">ERROR</span> <span style="color:#ff4757;">${esc(q.error || '')}</span></div>`;
+          continue;
+        }
+        html += Object.entries(q.counts).map(([k, v]) =>
+          `<span class="badge ${v && (k === 'failed') ? 'badge-danger' : 'badge-muted'}" style="margin-left:4px;">${esc(k)}: ${v}</span>`
+        ).join('');
+        if (q.recentFailures && q.recentFailures.length) {
+          html += '<table style="margin-top:8px;"><thead><tr><th>Job</th><th>Attempts</th><th>When</th><th>Reason</th></tr></thead><tbody>';
+          for (const f of q.recentFailures) {
+            html += `<tr><td>${esc(f.jobId)}</td><td>${f.attemptsMade}</td><td>${f.timestamp ? new Date(f.timestamp).toLocaleString() : '—'}</td><td style="color:#ff8a8a;">${esc(f.failedReason)}</td></tr>`;
+          }
+          html += '</tbody></table>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Try-on jobs (24h)
+      html += '<div class="section"><h2>Try-on jobs — last 24h</h2>';
+      if (!d.jobs24h.ok) {
+        html += `<p class="error">${esc(d.jobs24h.error || 'unavailable')}</p>`;
+      } else {
+        const j = d.jobs24h;
+        html += '<div class="stats-grid">';
+        for (const st of ['PENDING', 'PROCESSING', 'COMPLETE', 'FAILED']) {
+          const color = st === 'FAILED' && j.counts[st] ? '#ff4757' : st === 'COMPLETE' ? '#2ed573' : '#fff';
+          html += `<div class="stat-card"><div class="value" style="color:${color}; font-size:1.6rem;">${j.counts[st] || 0}</div><div class="label">${st}</div></div>`;
+        }
+        html += `<div class="stat-card" style="border-left:3px solid ${j.stuckProcessing ? '#ff4757' : '#333'};"><div class="value" style="color:${j.stuckProcessing ? '#ff4757' : '#fff'}; font-size:1.6rem;">${j.stuckProcessing}</div><div class="label">Stuck &gt;30m</div></div>`;
+        html += '</div>';
+        if (j.recentFailures.length) {
+          html += '<table style="margin-top:10px;"><thead><tr><th>Job ID</th><th>User</th><th>When</th><th>Error</th></tr></thead><tbody>';
+          for (const f of j.recentFailures) {
+            html += `<tr><td style="font-family:monospace;font-size:0.75rem;cursor:copy;" title="${esc(f.jobId)} — click to copy" onclick="navigator.clipboard.writeText('${esc(f.jobId)}')">${esc(f.jobId)}</td><td title="${esc(f.userId || '')}">${esc((f.userId || '').slice(0, 8))}</td><td>${new Date(f.at).toLocaleString()}</td><td style="color:#ff8a8a;">${esc(f.errorMessage)}</td></tr>`;
+          }
+          html += '</tbody></table>';
+        }
+      }
+      html += '</div>';
+
+      // Credit economy (7d)
+      html += '<div class="section"><h2>Credit economy — last 7 days</h2>';
+      if (!d.economy.ok) {
+        html += `<p class="error">${esc(d.economy.error || 'unavailable')}</p>`;
+      } else {
+        const e = d.economy;
+        html += '<div class="stats-grid">';
+        html += `<div class="stat-card"><div class="value" style="font-size:1.6rem;">${e.creditsOutstanding}</div><div class="label">Credits outstanding</div></div>`;
+        for (const t of ['PURCHASE', 'GRANT', 'USAGE', 'REFUND']) {
+          const row = e.byType[t] || { sum: 0, count: 0 };
+          html += `<div class="stat-card"><div class="value" style="font-size:1.6rem;">${row.sum}</div><div class="label">${t} (${row.count} tx)</div></div>`;
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Sentry
+      const s = d.sentry;
+      html += '<div class="section"><h2>Sentry — error tracking</h2>';
+      html += kvRow('Status', s.enabled
+        ? '<span class="badge badge-success">ENABLED</span>'
+        : '<span class="badge badge-warning">DISABLED (set SENTRY_DSN)</span>');
+      html += kvRow('Environment', esc(s.environment));
+      html += kvRow('Release', s.release ? esc(s.release) : '<span style="color:#666;">(unset)</span>');
+      html += kvRow('Traces sample rate', String(s.tracesSampleRate));
+      html += kvRow('Ingest endpoint', s.dsnHost ? esc(s.dsnHost) : '<span style="color:#666;">—</span>');
+      html += kvRow('Issues API', s.issuesApiConfigured
+        ? '<span class="badge badge-success">CONFIGURED</span>'
+        : '<span class="badge badge-muted">not configured</span>');
+      if (s.projectUrl) {
+        html += kvRow('Project', `<a href="${esc(s.projectUrl)}" target="_blank" rel="noopener" style="color:#5aa0ff;">Open in Sentry ↗</a>`);
+      }
+      html += `<div style="margin-top:12px;">
+        <button class="btn btn-secondary" onclick="sendSentryTest()" ${s.enabled ? '' : 'disabled'}>Send test event</button>
+        <span id="sentryTestResult" style="margin-left:10px;"></span>
+      </div>`;
+      html += '<div id="sentryIssues" style="margin-top:14px;"><p style="color:#666;">Loading recent issues…</p></div>';
+      html += '</div>';
+
+      return html;
+    }
+
+    async function loadSentryIssues() {
+      const el = document.getElementById('sentryIssues');
+      if (!el) return;
+      try {
+        const res = await fetch(`${API_BASE}/sentry/issues?limit=10`, { headers: { 'X-Admin-Key': apiKey } });
+        if (res.status === 503) {
+          el.innerHTML = '<p style="color:#888;">Recent-issues feed not wired up. Set <code>SENTRY_AUTH_TOKEN</code>, <code>SENTRY_ORG_SLUG</code>, and <code>SENTRY_PROJECT_SLUG</code> to show unresolved issues here.</p>';
+          return;
+        }
+        if (!res.ok) {
+          el.innerHTML = `<p class="error">Could not load issues (${res.status}).</p>`;
+          return;
+        }
+        const { environment, issues } = await res.json();
+        const envLabel = environment
+          ? `<p style="color:#888; margin-bottom:6px;">Unresolved issues — <strong>${esc(environment)}</strong> environment only (last 14 days)</p>`
+          : '';
+        if (!issues || !issues.length) {
+          el.innerHTML = envLabel + '<p style="color:#2ed573;">No unresolved issues in the last 14 days. 🎉</p>';
+          return;
+        }
+        let h = envLabel + '<table><thead><tr><th>Issue</th><th>Level</th><th>Events</th><th>Users</th><th>Last seen</th></tr></thead><tbody>';
+        for (const i of issues) {
+          const lvlClass = i.level === 'error' || i.level === 'fatal' ? 'badge-danger'
+            : i.level === 'warning' ? 'badge-warning' : 'badge-muted';
+          const link = i.permalink ? `<a href="${esc(i.permalink)}" target="_blank" rel="noopener" style="color:#5aa0ff;">${esc(i.title)}</a>` : esc(i.title);
+          h += `<tr><td>${link}<div style="color:#666; font-size:0.8rem;">${esc(i.culprit || '')}</div></td><td><span class="badge ${lvlClass}">${esc(i.level || '?')}</span></td><td>${esc(String(i.count ?? '—'))}</td><td>${esc(String(i.userCount ?? '—'))}</td><td>${i.lastSeen ? new Date(i.lastSeen).toLocaleString() : '—'}</td></tr>`;
+        }
+        h += '</tbody></table>';
+        el.innerHTML = h;
+      } catch (e) {
+        el.innerHTML = `<p class="error">Error: ${esc(e.message)}</p>`;
+      }
+    }
+
+    async function sendSentryTest() {
+      const out = document.getElementById('sentryTestResult');
+      out.textContent = 'Sending…';
+      try {
+        const res = await fetch(`${API_BASE}/sentry/test`, {
+          method: 'POST',
+          headers: { 'X-Admin-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ note: 'admin dashboard' }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          out.innerHTML = `<span class="success">Sent${data.eventId ? ' · ' + esc(data.eventId.slice(0, 8)) : ''}${data.flushed ? ' · flushed' : ''}. Check Sentry.</span>`;
+        } else {
+          out.innerHTML = `<span class="error">${esc(data.error || ('HTTP ' + res.status))}</span>`;
+        }
+      } catch (e) {
+        out.innerHTML = `<span class="error">${esc(e.message)}</span>`;
+      }
+    }
+  </script>
+</body>
+</html>

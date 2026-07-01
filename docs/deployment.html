@@ -1,0 +1,1557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEPLOYMENT — TryOn Docs</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="index.html" class="brand">TryOn Docs</a>
+  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html">CLAUDE</a><a href="deployment.html" class="active">DEPLOYMENT</a><a href="contributing.html">CONTRIBUTING</a><a href="todos.html">TODOS</a><a href="release-notes.html">RELEASE NOTES</a><a href="testflight-checklist.html">TESTFLIGHT CHECKLIST</a></nav>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <h2 class="toc-title">On this page</h2>
+    <ul class="toc"><li><a href="#quick-deploy-reference-read-this-first">⚠️ QUICK DEPLOY REFERENCE (Read This First!)</a></li><li><a href="#130-production-cutover-one-time-when-promoting-130-to-prod">🚀 1.3.0 production cutover (one-time, when promoting 1.3.0 to prod)</a></li><li><a href="#120-production-cutover-done-2026-06-15">🚀 1.2.0 production cutover — ✅ DONE (2026-06-15)</a></li><li><a href="#database-migrations-explained">Database Migrations Explained</a><ul><li><a href="#what-are-migrations">What Are Migrations?</a></li><li><a href="#when-to-run-migrations">When to Run Migrations</a></li><li><a href="#what-happens-if-you-skip-it">What Happens If You Skip It?</a></li><li><a href="#migration-commands">Migration Commands</a></li><li><a href="#current-migrations">Current Migrations</a></li></ul></li><li><a href="#prerequisites">Prerequisites</a></li><li><a href="#1-initial-server-setup">1. Initial Server Setup</a><ul><li><a href="#install-docker-and-docker-compose">Install Docker and Docker Compose</a></li><li><a href="#configure-swap-space">Configure swap space</a></li><li><a href="#install-certbot-for-ssl">Install Certbot for SSL</a></li></ul></li><li><a href="#2-clone-repository">2. Clone Repository</a></li><li><a href="#3-configure-environment-variables">3. Configure Environment Variables</a><ul><li><a href="#root-env-file-for-docker-compose">Root .env file (for Docker Compose)</a></li><li><a href="#backend-env-file">Backend .env file</a></li><li><a href="#apple-root-ca-certificates">Apple Root CA Certificates</a></li></ul></li><li><a href="#4-ssl-certificate-setup">4. SSL Certificate Setup</a><ul><li><a href="#create-certbot-directory-structure">Create certbot directory structure</a></li><li><a href="#get-initial-certificate-before-nginx-starts">Get initial certificate (before nginx starts)</a></li><li><a href="#auto-renewal-cron-job">Auto-renewal cron job</a></li></ul></li><li><a href="#5-deploy-application">5. Deploy Application</a><ul><li><a href="#build-and-start-all-services">Build and start all services</a></li><li><a href="#run-database-migrations">Run database migrations</a></li><li><a href="#verify-services-are-running">Verify services are running</a></li><li><a href="#test-health-endpoint">Test health endpoint</a></li></ul></li><li><a href="#5b-apple-in-app-purchase-configuration">5b. Apple In-App Purchase Configuration</a><ul><li><a href="#app-store-server-notifications-v2">App Store Server Notifications V2</a></li><li><a href="#iap-products">IAP Products</a></li><li><a href="#verifying-the-webhook-end-to-end">Verifying the webhook end-to-end</a></li></ul></li><li><a href="#6-lightsail-firewall-configuration">6. Lightsail Firewall Configuration</a></li><li><a href="#7-fail2ban-setup">7. Fail2ban Setup</a><ul><li><a href="#verify-fail2ban-is-running">Verify fail2ban is running</a></li><li><a href="#check-banned-ips">Check banned IPs</a></li><li><a href="#unban-an-ip">Unban an IP</a></li><li><a href="#configuration-files">Configuration files</a></li></ul></li><li><a href="#8-admin-dashboard">8. Admin Dashboard</a></li><li><a href="#9-monitoring-logs">9. Monitoring &amp;amp; Logs</a><ul><li><a href="#application-logging-winston">Application Logging (Winston)</a></li><li><a href="#viewing-logs">Viewing Logs</a></li><li><a href="#log-management">Log Management</a></li><li><a href="#request-tracing">Request Tracing</a></li><li><a href="#resource-monitoring">Resource Monitoring</a></li><li><a href="#cloudwatch-logs-alarms">CloudWatch Logs &amp;amp; Alarms</a></li><li><a href="#sentry-error-tracking">Sentry (error tracking)</a></li></ul></li><li><a href="#10-database-backup">10. Database Backup</a><ul><li><a href="#101-whats-running">10.1 What's running</a></li><li><a href="#102-verify-its-working">10.2 Verify it's working</a></li><li><a href="#103-initial-setup-one-time-if-rebuilding-the-host">10.3 Initial setup (one-time, if rebuilding the host)</a></li><li><a href="#104-restore-from-a-backup">10.4 Restore from a backup</a></li><li><a href="#105-ad-hoc-pre-migration-manual-dump">10.5 Ad-hoc / pre-migration manual dump</a></li></ul></li><li><a href="#11-backups-snapshots-disaster-recovery">11. Backups, Snapshots &amp;amp; Disaster Recovery</a><ul><li><a href="#111-lightsail-automatic-snapshots">11.1 Lightsail automatic snapshots</a></li><li><a href="#112-s3-versioning-on-evofaceflow-uploads">11.2 S3 versioning on evofaceflow-uploads</a></li><li><a href="#113-postgres-dumps-to-s3">11.3 Postgres dumps to S3</a></li><li><a href="#114-dns-nameservers-registrar-record-rollback">11.4 DNS &amp;amp; nameservers (registrar record + rollback)</a></li></ul></li><li><a href="#12-external-monitoring">12. External Monitoring</a><ul><li><a href="#121-uptimerobot">12.1 UptimeRobot</a></li><li><a href="#122-ssl-certificate-expiry-deferred">12.2 SSL certificate expiry (deferred)</a></li></ul></li><li><a href="#13-updating-the-application">13. Updating the Application</a><ul><li><a href="#backend-server-side">Backend (server-side)</a></li><li><a href="#frontend-mobile-app">Frontend (mobile app)</a></li><li><a href="#connecting-the-frontend-to-lightsail">Connecting the frontend to Lightsail</a></li></ul></li><li><a href="#14-rollback-procedure">14. Rollback Procedure</a></li><li><a href="#15-local-vs-live-development">15. Local vs Live Development</a><ul><li><a href="#configuration">Configuration</a></li><li><a href="#local-development">Local Development</a></li><li><a href="#testing-against-the-dev-or-live-server">Testing Against the Dev or Live Server</a></li><li><a href="#pre-commit-checklist">Pre-Commit Checklist</a></li></ul></li><li><a href="#16-dev-server-setup">16. Dev Server Setup</a><ul><li><a href="#161-provision-aws-dns-console">16.1 Provision (AWS / DNS console)</a></li><li><a href="#162-base-setup-ssh">16.2 Base setup (SSH)</a></li><li><a href="#163-tls-cert-before-bringing-up-nginx-ssh">16.3 TLS cert — before bringing up nginx (SSH)</a></li><li><a href="#164-dev-env-files-ssh">16.4 Dev .env files (SSH)</a></li><li><a href="#165-bring-it-up-migrate-ssh">16.5 Bring it up + migrate (SSH)</a></li><li><a href="#166-wire-apple-sandbox-app-store-connect-console">16.6 Wire Apple Sandbox (App Store Connect console)</a></li><li><a href="#167-point-a-dev-client-build-at-it-local">16.7 Point a dev-client build at it (local)</a></li><li><a href="#168-ongoing-dev-deploys">16.8 Ongoing dev deploys</a></li></ul></li><li><a href="#troubleshooting">Troubleshooting</a><ul><li><a href="#backend-wont-start">Backend won't start</a></li><li><a href="#ssl-certificate-issues">SSL certificate issues</a></li><li><a href="#database-connection-issues">Database connection issues</a></li><li><a href="#out-of-memory">Out of memory</a></li></ul></li><li><a href="#17-tier-a-lean-ha-build-migration-runbook-planned-not-yet-executed">17. Tier A-Lean HA build &amp;amp; migration runbook (⏳ PLANNED — not yet executed)</a><ul><li><a href="#phase-0-prerequisites-app-statelessness-do-these-before-provisioning">Phase 0 — Prerequisites &amp;amp; app-statelessness (do these BEFORE provisioning)</a></li><li><a href="#phase-1-externalize-redis-decouple-the-queue-from-the-app-box">Phase 1 — Externalize Redis (decouple the queue from the app box)</a></li><li><a href="#phase-2-externalize-postgres-lightsail-managed-db-ha">Phase 2 — Externalize Postgres → Lightsail Managed DB (HA)</a></li><li><a href="#phase-3-build-the-2-app-instances-app-nginx-only-stateless">Phase 3 — Build the 2 app instances (app + nginx only, stateless)</a></li><li><a href="#phase-4-lightsail-load-balancer">Phase 4 — Lightsail Load Balancer</a></li><li><a href="#phase-5-cutover-decommission">Phase 5 — Cutover &amp;amp; decommission</a></li><li><a href="#phase-6-deploys-in-the-ha-world-zero-downtime-replaces-the-bluegreen-todo">Phase 6 — Deploys in the HA world (zero-downtime, replaces the blue/green TODO)</a></li><li><a href="#cost-recap">Cost recap</a></li></ul></li></ul>
+  </aside>
+  <main class="content">
+<h1 id="aws-lightsail-deployment-guide" tabindex="-1"><a class="header-anchor" href="#aws-lightsail-deployment-guide" aria-hidden="true">#</a> AWS Lightsail Deployment Guide</h1>
+<hr>
+<h2 id="quick-deploy-reference-read-this-first" tabindex="-1"><a class="header-anchor" href="#quick-deploy-reference-read-this-first" aria-hidden="true">#</a> ⚠️ QUICK DEPLOY REFERENCE (Read This First!)</h2>
+<p><strong>Every time you deploy changes to Lightsail:</strong></p>
+<pre><code class="language-bash"># SSH into Lightsail
+ssh ubuntu@&lt;your-lightsail-ip&gt;
+cd /opt/evofaceflow/TryOn
+
+# Pull latest code
+git pull
+
+# Rebuild and restart containers
+docker compose -f docker-compose.prod.yml up -d --build
+
+# ⚠️ CRITICAL: Apply any database migrations
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+</code></pre>
+<blockquote>
+<p><strong>🚨 WARNING:</strong> If you skip the <code>prisma migrate deploy</code> step after schema changes, the backend will crash with database errors!</p>
+</blockquote>
+<blockquote>
+<p><strong>🟢 ZERO-GAP ORDERING when the new code reads a NEW column (additive migrations).</strong>
+The order above (<code>up -d --build</code> <em>then</em> <code>migrate deploy</code>) leaves a window: the
+new container starts serving <strong>before</strong> the migration runs, so any request whose
+code path <code>SELECT</code>s a column the migration hasn't added yet <strong>returns 500 until
+the migration lands</strong>. This bit the <code>add_throttle_reset</code> migration — it adds
+<code>User.throttleResetAt</code>, which <code>computeQueueDelayMs</code> selects on <strong>every try-on
+AND video submit</strong>, so both endpoints fail in the gap. You can't run the new
+migration from the <em>old</em> container (migration files are baked into the image at
+build time), so apply it with a <strong>throwaway container built from the new
+image</strong> while the old container keeps serving — an additive <em>nullable</em> column
+is invisible to the old code — then swap:</p>
+<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
+git pull
+# 1. Build the new image (it contains the new migration file)
+docker compose -f docker-compose.prod.yml build backend
+# 2. Apply the migration via a throwaway NEW-image container — old container is
+#    still serving live traffic and harmlessly ignores the new nullable column
+docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate deploy
+# 3. Now swap to the new code — the column already exists, so no 500 gap
+docker compose -f docker-compose.prod.yml up -d --build
+</code></pre>
+<p><strong>Scope:</strong> this is for <strong>additive</strong> migrations (new nullable column / new table)
+the new code reads immediately. <strong>Destructive</strong> migrations (drop / rename / add
+a NOT-NULL column) are NOT safe to apply while the old code is still live —
+those need a short maintenance window or an expand/contract multi-step
+migration. When unsure, ask: <em>can the currently-running code tolerate the schema
+mid-state?</em> If no, don't use this ordering.</p>
+</blockquote>
+<hr>
+<h2 id="130-production-cutover-one-time-when-promoting-130-to-prod" tabindex="-1"><a class="header-anchor" href="#130-production-cutover-one-time-when-promoting-130-to-prod" aria-hidden="true">#</a> 🚀 1.3.0 production cutover (one-time, when promoting 1.3.0 to prod)</h2>
+<p>As of 2026-06-16 <strong>1.3.0 lives on <code>develop</code> / the dev box only — prod (<code>main</code>) is on 1.2.0.</strong> 1.3.0 = <strong>AI Video</strong> (image-to-video), bottom-nav expansion (Video + Design tabs), try-on captions, the web &quot;My Try-Ons&quot; carousel, and credit-farming hardening. Do the cutover <strong>with</strong> the 1.3.0 App Store build, in this order:</p>
+<pre><code class="language-bash"># 1. Merge develop -&gt; main, push, then on the PROD box:
+ssh ubuntu@&lt;prod-ip&gt;
+cd /opt/evofaceflow/TryOn
+git pull
+docker compose -f docker-compose.prod.yml up -d --build
+# 2. Apply the THREE new migrations (add_tryon_title, add_email_normalized, add_video_jobs):
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+# 3. chmod -R a+rX website   # the My Try-Ons carousel changed website/* (umask 007 gotcha)
+</code></pre>
+<ul>
+<li><strong>Native app gate:</strong> video playback uses <code>expo-video</code> (a native module). The 1.3.0 <strong>App Store build must be live</strong> for users to get the Video screen — a JS-only/OTA update can't add the native module. Backend can be promoted independently (the <code>/api/video</code> routes just sit unused until the app build ships).</li>
+<li><strong>No new nginx change</strong> for 1.3.0 (the <code>/t/</code> share proxy from 1.2.0 already serves the video share pages). Verify after: <code>curl -s -o /dev/null -w &quot;%{http_code}&quot; -X POST https://api.tryon-mirror.ai/api/video</code> → <code>401</code> (route mounted, auth-gated).</li>
+</ul>
+<hr>
+<h2 id="120-production-cutover-done-2026-06-15" tabindex="-1"><a class="header-anchor" href="#120-production-cutover-done-2026-06-15" aria-hidden="true">#</a> 🚀 1.2.0 production cutover — ✅ DONE (2026-06-15)</h2>
+<p>This was completed: prod runs the 1.2.0 backend with <code>add_referrals</code> + <code>add_saved_looks</code> applied and nginx force-recreated for <code>/t/</code>. Kept below for reference / as the template for future cutovers.</p>
+<p>As of 2026-06-13 <strong>all 1.2.0 work lives on <code>develop</code> / the dev box only — prod (<code>main</code>) is ~19 commits behind and has NONE of it.</strong> The 1.2.0 App Store build (build 34) is <strong>prod-pointed</strong>, so once it's live, its new features (referral, Saved Looks, share pages, closet &quot;Clean Up&quot;, <code>/api/config</code>-driven join offer) will <strong>404 against prod until the prod backend is promoted.</strong> Promote the backend <strong>before/at</strong> the App Store release, in this order:</p>
+<pre><code class="language-bash"># 1. Merge develop -&gt; main (locally) and push, then on the PROD box:
+ssh ubuntu@&lt;prod-ip&gt;
+cd /opt/evofaceflow/TryOn
+git pull                                                   # main now has 1.2.0
+docker compose -f docker-compose.prod.yml up -d --build    # backend rebuild
+# 2. Apply the TWO new migrations (referrals + saved_looks):
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+# 3. Force-recreate nginx so the new `location /t/` proxy takes effect (share
+#    pages render OG meta instead of the static-site index.html). A plain
+#    reload/restart will NOT pick up the bind-mounted config change.
+docker compose -f docker-compose.prod.yml up -d --force-recreate nginx
+# 4. chmod -R a+rX website   # if any website/*.html changed (umask 007 gotcha)
+</code></pre>
+<p>Verify after: <code>curl https://api.tryon-mirror.ai/api/config</code> returns <code>{ &quot;signupCreditGrant&quot;: ... }</code>, and <code>curl -s -o /dev/null -w &quot;%{http_code}&quot; https://api.tryon-mirror.ai/t/&lt;a-public-jobId&gt;</code> returns 200 (not the SPA index). <strong>Keep the welcome-bonus grant at 10 until 1.2.0 is the live App Store build</strong> (older builds hardcode &quot;10 Free Credits&quot;).</p>
+<hr>
+<h2 id="database-migrations-explained" tabindex="-1"><a class="header-anchor" href="#database-migrations-explained" aria-hidden="true">#</a> Database Migrations Explained</h2>
+<h3 id="what-are-migrations" tabindex="-1"><a class="header-anchor" href="#what-are-migrations" aria-hidden="true">#</a> What Are Migrations?</h3>
+<p>Prisma migrations are SQL scripts that update your database schema (tables, columns, indexes) to match changes in <code>backend/prisma/schema.prisma</code>. They're stored in <code>backend/prisma/migrations/</code>.</p>
+<h3 id="when-to-run-migrations" tabindex="-1"><a class="header-anchor" href="#when-to-run-migrations" aria-hidden="true">#</a> When to Run Migrations</h3>
+<p>Run <code>npx prisma migrate deploy</code> whenever:</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>First-time setup</strong> (fresh database)</td>
+<td>Required — creates all tables</td>
+</tr>
+<tr>
+<td><strong>After <code>git pull</code></strong> with schema changes</td>
+<td>Required — applies new migrations</td>
+</tr>
+<tr>
+<td><strong>After adding new fields/models</strong></td>
+<td>Required — adds columns/tables</td>
+</tr>
+<tr>
+<td><strong>Routine deploy with no schema changes</strong></td>
+<td>Safe to run (no-op if nothing new)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-happens-if-you-skip-it" tabindex="-1"><a class="header-anchor" href="#what-happens-if-you-skip-it" aria-hidden="true">#</a> What Happens If You Skip It?</h3>
+<p>The backend will crash with errors like:</p>
+<pre><code>PrismaClientKnownRequestError: The table `public.users` does not exist
+</code></pre>
+<h3 id="migration-commands" tabindex="-1"><a class="header-anchor" href="#migration-commands" aria-hidden="true">#</a> Migration Commands</h3>
+<pre><code class="language-bash"># Production (Lightsail) — apply existing migrations
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+
+# Local Docker — apply existing migrations  
+docker compose exec backend npx prisma migrate deploy
+
+# Local development (no Docker) — create + apply migrations
+cd backend &amp;&amp; npx prisma migrate dev
+</code></pre>
+<h3 id="current-migrations" tabindex="-1"><a class="header-anchor" href="#current-migrations" aria-hidden="true">#</a> Current Migrations</h3>
+<p>The authoritative list is the contents of <code>backend/prisma/migrations/</code>. List them with:</p>
+<pre><code class="language-bash">ls backend/prisma/migrations/
+</code></pre>
+<p><code>prisma migrate deploy</code> applies all unapplied migrations in chronological order — you don't need to track them by hand. If you need to know what's currently applied vs pending on the server:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec backend npx prisma migrate status
+</code></pre>
+<hr>
+<h2 id="prerequisites" tabindex="-1"><a class="header-anchor" href="#prerequisites" aria-hidden="true">#</a> Prerequisites</h2>
+<ul>
+<li>AWS Lightsail instance running Ubuntu 22.04</li>
+<li>Domain <code>tryon-mirror.ai</code> (and legacy <code>evofaceflow.com</code>) pointing to the Lightsail instance IP</li>
+<li>SSH access configured</li>
+</ul>
+<h2 id="1-initial-server-setup" tabindex="-1"><a class="header-anchor" href="#1-initial-server-setup" aria-hidden="true">#</a> 1. Initial Server Setup</h2>
+<p>SSH into your Lightsail instance:</p>
+<pre><code class="language-bash">ssh ubuntu@&lt;your-lightsail-ip&gt;
+</code></pre>
+<h3 id="install-docker-and-docker-compose" tabindex="-1"><a class="header-anchor" href="#install-docker-and-docker-compose" aria-hidden="true">#</a> Install Docker and Docker Compose</h3>
+<pre><code class="language-bash"># Update packages
+sudo apt update &amp;&amp; sudo apt upgrade -y
+
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker ubuntu
+
+# Install Docker Compose plugin
+sudo apt install docker-compose-plugin -y
+
+# Verify installation
+docker --version
+docker compose version
+
+# Log out and back in for group changes to take effect
+exit
+</code></pre>
+<h3 id="configure-swap-space" tabindex="-1"><a class="header-anchor" href="#configure-swap-space" aria-hidden="true">#</a> Configure swap space</h3>
+<p><strong>Do this on every Lightsail instance (prod <em>and</em> dev) before the first build.</strong> The smaller Lightsail plans ship with little RAM and <strong>no swap</strong>. The backend image build runs <code>tsc</code>, which is memory-hungry, while Postgres + Redis + the old backend container are still up competing for RAM — with no swap, the box thrashes and the build appears to hang for minutes at the <code>npm run build</code> / <code>tsc</code> step (this actually happened on the dev server). A 2 GB swapfile gives <code>tsc</code> somewhere to spill so the build completes.</p>
+<pre><code class="language-bash">ssh ubuntu@&lt;your-lightsail-ip&gt;
+
+# Check current memory + whether any swap already exists
+free -h                          # if &quot;Swap:&quot; shows 0B, continue below
+
+# Create a 2 GB swapfile
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile         # root-only — a world-readable swapfile leaks memory contents
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# Persist across reboots (without this, swap is gone after a restart)
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# Optional: bias the kernel toward using RAM first, swap only under pressure
+# (default vm.swappiness=60 swaps too eagerly for a server workload)
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
+sudo sysctl -p /etc/sysctl.d/99-swappiness.conf
+
+# Confirm
+free -h                          # &quot;Swap:&quot; should now show 2.0Gi
+</code></pre>
+<blockquote>
+<p><strong>Symptom this prevents:</strong> <code>docker compose ... up -d --build</code> sits at <code>=&gt; [builder] RUN npm run build</code> (the <code>tsc</code> step) for minutes with no output and looks frozen. That's RAM exhaustion, not a broken build — add swap and re-run. See also the &quot;Out of memory&quot; entry under Troubleshooting.</p>
+</blockquote>
+<h3 id="install-certbot-for-ssl" tabindex="-1"><a class="header-anchor" href="#install-certbot-for-ssl" aria-hidden="true">#</a> Install Certbot for SSL</h3>
+<pre><code class="language-bash">ssh ubuntu@&lt;your-lightsail-ip&gt;
+
+sudo apt install certbot -y
+</code></pre>
+<h2 id="2-clone-repository" tabindex="-1"><a class="header-anchor" href="#2-clone-repository" aria-hidden="true">#</a> 2. Clone Repository</h2>
+<blockquote>
+<p><strong>The GitHub repo is private</strong> (since 2026-06-12). Servers authenticate with a
+<strong>read-only deploy key</strong> — generate one on the new box first, then clone over SSH:</p>
+<pre><code class="language-bash">ssh-keygen -t ed25519 -C &quot;tryon-deploy-&lt;env&gt;&quot; -f ~/.ssh/tryon_deploy -N &quot;&quot;
+printf '\nHost github.com\n    User git\n    IdentityFile ~/.ssh/tryon_deploy\n    IdentitiesOnly yes\n' &gt;&gt; ~/.ssh/config
+chmod 600 ~/.ssh/config
+cat ~/.ssh/tryon_deploy.pub
+</code></pre>
+<p>Add the printed public key at GitHub → repo <strong>Settings → Deploy keys → Add deploy
+key</strong> (leave &quot;Allow write access&quot; <strong>unchecked</strong>). Each server gets its own key —
+GitHub rejects a public key registered twice, and per-server keys can be revoked
+independently. Verify with <code>ssh -T git@github.com</code> (expect <code>Hi bruhnf/TryOn!</code> —
+the repo name, not a username, confirms the deploy key is in use).</p>
+</blockquote>
+<pre><code class="language-bash">sudo mkdir -p /opt/evofaceflow
+sudo chown ubuntu:ubuntu /opt/evofaceflow
+cd /opt/evofaceflow
+git clone git@github.com:bruhnf/TryOn.git
+cd TryOn
+</code></pre>
+<h2 id="3-configure-environment-variables" tabindex="-1"><a class="header-anchor" href="#3-configure-environment-variables" aria-hidden="true">#</a> 3. Configure Environment Variables</h2>
+<h3 id="root-env-file-for-docker-compose" tabindex="-1"><a class="header-anchor" href="#root-env-file-for-docker-compose" aria-hidden="true">#</a> Root .env file (for Docker Compose)</h3>
+<pre><code class="language-bash">cp .env.example .env
+nano .env
+</code></pre>
+<p>Set secure values:</p>
+<pre><code>POSTGRES_USER=tryon_prod
+POSTGRES_PASSWORD=&lt;generate: openssl rand -hex 32&gt;
+POSTGRES_DB=tryon_db
+</code></pre>
+<h3 id="backend-env-file" tabindex="-1"><a class="header-anchor" href="#backend-env-file" aria-hidden="true">#</a> Backend .env file</h3>
+<pre><code class="language-bash">cp backend/.env.example backend/.env
+nano backend/.env
+</code></pre>
+<p>Fill in all required values. Generate secrets with:</p>
+<pre><code class="language-bash">openssl rand -hex 32  # For JWT_SECRET, JWT_REFRESH_SECRET, ADMIN_API_KEY
+</code></pre>
+<p><strong>Important values:</strong></p>
+<pre><code># CORS — must include the marketing site so the web auth flow works
+ALLOWED_ORIGINS=https://tryon-mirror.ai
+
+# Admin Console UI gate (comma-separated lowercase emails). Distinct from
+# ADMIN_API_KEY which protects the actual /api/admin/* endpoints.
+ADMIN_EMAILS=you@example.com
+
+# Apple In-App Purchases — App Store Server Notifications V2 verifier
+APPLE_BUNDLE_ID=com.evofaceflow.tryon.app
+APPLE_APP_APPLE_ID=&lt;numeric ID from App Store Connect URL&gt;
+APPLE_ENVIRONMENT=Production         # or &quot;Sandbox&quot; for the sandbox webhook
+# Leave APPLE_ROOT_CERTS_DIR unset to use the default ./certs/apple inside
+# the container (the path is relative to /app, the container WORKDIR).
+</code></pre>
+<blockquote>
+<p><strong>🚨 Path gotcha:</strong> <code>APPLE_ROOT_CERTS_DIR</code> must point to a path inside the container (e.g. <code>/app/certs/apple</code>), not the host. The default <code>./certs/apple</code> resolves correctly inside the container; setting it to a host path like <code>/opt/evofaceflow/TryOn/backend/certs/apple</code> will fail because the container has no view of the host filesystem.</p>
+</blockquote>
+<h3 id="apple-root-ca-certificates" tabindex="-1"><a class="header-anchor" href="#apple-root-ca-certificates" aria-hidden="true">#</a> Apple Root CA Certificates</h3>
+<p>The backend's JWS verifier needs Apple's root CAs to validate App Store Server Notifications and StoreKit receipts. They are public certificates and are baked into the Docker image at build time.</p>
+<pre><code class="language-bash"># On your dev machine (one-time)
+mkdir -p backend/certs/apple
+# Download AppleRootCA-G3.cer (and optionally G2 + AppleIncRoot) from:
+# https://www.apple.com/certificateauthority/
+# Place the .cer files inside backend/certs/apple/
+git add backend/certs/apple/*.cer
+git commit -m &quot;Add Apple root CAs for App Store Server Notifications V2&quot;
+</code></pre>
+<p>The Dockerfile contains <code>COPY certs ./certs</code> which embeds these into the production image. Verify after deploy:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec backend ls certs/apple
+# Should list the .cer files
+</code></pre>
+<h2 id="4-ssl-certificate-setup" tabindex="-1"><a class="header-anchor" href="#4-ssl-certificate-setup" aria-hidden="true">#</a> 4. SSL Certificate Setup</h2>
+<h3 id="create-certbot-directory-structure" tabindex="-1"><a class="header-anchor" href="#create-certbot-directory-structure" aria-hidden="true">#</a> Create certbot directory structure</h3>
+<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
+mkdir -p certbot/www
+</code></pre>
+<h3 id="get-initial-certificate-before-nginx-starts" tabindex="-1"><a class="header-anchor" href="#get-initial-certificate-before-nginx-starts" aria-hidden="true">#</a> Get initial certificate (before nginx starts)</h3>
+<p>Stop any running services using port 80:</p>
+<pre><code class="language-bash">sudo docker compose -f docker-compose.prod.yml down 2&gt;/dev/null || true
+</code></pre>
+<p>Get certificate:</p>
+<pre><code class="language-bash">sudo certbot certonly --standalone -d tryon-mirror.ai -d www.tryon-mirror.ai -d api.tryon-mirror.ai \
+  -d evofaceflow.com -d www.evofaceflow.com -d api.evofaceflow.com   # legacy names still served
+</code></pre>
+<h3 id="auto-renewal-cron-job" tabindex="-1"><a class="header-anchor" href="#auto-renewal-cron-job" aria-hidden="true">#</a> Auto-renewal cron job</h3>
+<pre><code class="language-bash">sudo crontab -e
+</code></pre>
+<p>Add:</p>
+<pre><code>0 0 * * * certbot renew --quiet --post-hook &quot;docker compose -f /opt/evofaceflow/TryOn/docker-compose.prod.yml restart nginx&quot;
+</code></pre>
+<h2 id="5-deploy-application" tabindex="-1"><a class="header-anchor" href="#5-deploy-application" aria-hidden="true">#</a> 5. Deploy Application</h2>
+<h3 id="build-and-start-all-services" tabindex="-1"><a class="header-anchor" href="#build-and-start-all-services" aria-hidden="true">#</a> Build and start all services</h3>
+<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
+docker compose -f docker-compose.prod.yml up -d --build
+</code></pre>
+<h3 id="run-database-migrations" tabindex="-1"><a class="header-anchor" href="#run-database-migrations" aria-hidden="true">#</a> Run database migrations</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+</code></pre>
+<h3 id="verify-services-are-running" tabindex="-1"><a class="header-anchor" href="#verify-services-are-running" aria-hidden="true">#</a> Verify services are running</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs backend
+</code></pre>
+<h3 id="test-health-endpoint" tabindex="-1"><a class="header-anchor" href="#test-health-endpoint" aria-hidden="true">#</a> Test health endpoint</h3>
+<pre><code class="language-bash">curl https://api.tryon-mirror.ai/health
+</code></pre>
+<h2 id="5b-apple-in-app-purchase-configuration" tabindex="-1"><a class="header-anchor" href="#5b-apple-in-app-purchase-configuration" aria-hidden="true">#</a> 5b. Apple In-App Purchase Configuration</h2>
+<p>In addition to env vars and the root CAs above, the App Store Connect side must be configured.</p>
+<h3 id="app-store-server-notifications-v2" tabindex="-1"><a class="header-anchor" href="#app-store-server-notifications-v2" aria-hidden="true">#</a> App Store Server Notifications V2</h3>
+<p>In App Store Connect: <strong>My Apps → [your app] → App Information → App Store Server Notifications</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production Server URL</td>
+<td><code>https://api.tryon-mirror.ai/api/webhooks/apple</code></td>
+</tr>
+<tr>
+<td>Sandbox Server URL</td>
+<td>Same URL (or a separate one — see below)</td>
+</tr>
+<tr>
+<td>Version</td>
+<td><strong>Version 2</strong> (V1 is deprecated)</td>
+</tr>
+</tbody>
+</table>
+<p>The endpoint must respond with HTTP 200 within a few seconds. Apple retries on non-2xx with exponential backoff. The webhook is exempt from the global rate limiter (see <code>index.ts</code>).</p>
+<p><strong>Notification environments:</strong> A single <code>APPLE_ENVIRONMENT</code> env var controls which environment the verifier accepts. To handle both Sandbox (TestFlight) and Production from the same backend you need either:</p>
+<ul>
+<li>Two backends with different <code>APPLE_ENVIRONMENT</code> values, OR</li>
+<li>Separate URLs in App Store Connect for Sandbox vs Production, with one of them rejecting the other's notifications.</li>
+</ul>
+<p>For initial setup, point both URLs at the same backend with <code>APPLE_ENVIRONMENT=Sandbox</code>. Flip to <code>Production</code> and restart the stack just before public launch.</p>
+<h3 id="iap-products" tabindex="-1"><a class="header-anchor" href="#iap-products" aria-hidden="true">#</a> IAP Products</h3>
+<p>Products must be configured in App Store Connect → <strong>In-App Purchases &amp; Subscriptions</strong>. Product IDs must match <code>frontend/app.json</code> (<code>extra.appleProducts</code>) and <code>backend/src/config/appleIap.ts</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Product ID</th>
+<th>Type</th>
+<th>Tier / Credits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>com.evofaceflow.tryon.app.basic.monthly.v14</code></td>
+<td>Auto-renewing subscription</td>
+<td>BASIC</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.premium.monthly.v14</code></td>
+<td>Auto-renewing subscription</td>
+<td>PREMIUM</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.10.free.v14</code></td>
+<td>Consumable</td>
+<td>10 credits (Free-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.25.free.v14</code></td>
+<td>Consumable</td>
+<td>25 credits (Free-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.50.free.v14</code></td>
+<td>Consumable</td>
+<td>50 credits (Free-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.100.free.v14</code></td>
+<td>Consumable</td>
+<td>100 credits (Free-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.10.basic.v14</code></td>
+<td>Consumable</td>
+<td>10 credits (Basic-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.25.basic.v14</code></td>
+<td>Consumable</td>
+<td>25 credits (Basic-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.50.basic.v14</code></td>
+<td>Consumable</td>
+<td>50 credits (Basic-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.100.basic.v14</code></td>
+<td>Consumable</td>
+<td>100 credits (Basic-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.10.premium.v14</code></td>
+<td>Consumable</td>
+<td>10 credits (Premium-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.25.premium.v14</code></td>
+<td>Consumable</td>
+<td>25 credits (Premium-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.50.premium.v14</code></td>
+<td>Consumable</td>
+<td>50 credits (Premium-tier price)</td>
+</tr>
+<tr>
+<td><code>com.evofaceflow.tryon.app.credits.100.premium.v14</code></td>
+<td>Consumable</td>
+<td>100 credits (Premium-tier price)</td>
+</tr>
+</tbody>
+</table>
+<p>The 12 credit-pack SKUs come in 4 sizes × 3 tier variants. <strong>All variants of the same size grant the same number of credits</strong> — only the price differs (Free = highest, Premium = lowest). The mobile client offers the user only the variant priced for their current tier.</p>
+<p>Each product needs a price tier and at least one localization (display name + description). Sandbox testing requires &quot;Ready to Submit&quot; status minimum.</p>
+<p><strong>SKU versioning.</strong> Every product ID carries a <code>.v&lt;N&gt;</code> suffix matching the app version at which it was <em>last reissued</em> in App Store Connect (currently <code>.v14</code>). The suffix is <strong>not</strong> bumped on every app release; it only changes when an IAP gets stuck in &quot;Needs Developer Attention&quot; and can't be recovered. App Store Connect treats deleted product IDs as permanently burned — they can never be recreated under the same name — so when an IAP needs to be reissued, we bump the suffix to the current app version. <strong>Reissuing IAPs ⇒ update both <a href="frontend/app.json">frontend/app.json</a> and <a href="backend/src/config/appleIap.ts">backend/src/config/appleIap.ts</a> to the new suffix, and re-link all products to the new version in App Store Connect.</strong></p>
+<h3 id="verifying-the-webhook-end-to-end" tabindex="-1"><a class="header-anchor" href="#verifying-the-webhook-end-to-end" aria-hidden="true">#</a> Verifying the webhook end-to-end</h3>
+<p>Once env vars are set and the stack is up, you can fire a TEST notification from your dev machine using the helper script:</p>
+<pre><code class="language-powershell">cd frontend
+$env:APPLE_ISSUER_ID=&quot;...&quot;         # from App Store Connect → Users and Access → Integrations
+$env:APPLE_KEY_ID=&quot;...&quot;
+$env:APPLE_PRIVATE_KEY_PATH=&quot;.\secrets\AuthKey_&lt;KEYID&gt;.p8&quot;
+$env:APPLE_BUNDLE_ID=&quot;com.evofaceflow.tryon.app&quot;
+npx ts-node ../backend/scripts/sendAppleTestNotification.ts sandbox
+</code></pre>
+<p>Watch the backend logs on Lightsail:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml logs --tail 200 backend | grep -iE &quot;apple|webhook&quot;
+</code></pre>
+<p>You should see four log lines: verifier initialized, notification enqueued, processing, TEST received.</p>
+<h2 id="6-lightsail-firewall-configuration" tabindex="-1"><a class="header-anchor" href="#6-lightsail-firewall-configuration" aria-hidden="true">#</a> 6. Lightsail Firewall Configuration</h2>
+<p>In the AWS Lightsail console, go to your instance &gt; Networking &gt; Firewall:</p>
+<ul>
+<li>Allow TCP 80 (HTTP)</li>
+<li>Allow TCP 443 (HTTPS)</li>
+<li>Allow TCP 22 (SSH)</li>
+<li>Block all other ports</li>
+</ul>
+<h2 id="7-fail2ban-setup" tabindex="-1"><a class="header-anchor" href="#7-fail2ban-setup" aria-hidden="true">#</a> 7. Fail2ban Setup</h2>
+<p>Fail2ban is included in the Docker Compose configuration and will automatically ban IPs that:</p>
+<ul>
+<li>Generate too many 404 errors (vulnerability scanners)</li>
+<li>Request PHP files (we don't serve PHP)</li>
+<li>Request WordPress paths (we don't run WordPress)</li>
+<li>Send malicious requests (SQL injection, XSS attempts)</li>
+<li>Have excessive failed auth attempts</li>
+</ul>
+<h3 id="verify-fail2ban-is-running" tabindex="-1"><a class="header-anchor" href="#verify-fail2ban-is-running" aria-hidden="true">#</a> Verify fail2ban is running</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml logs fail2ban
+</code></pre>
+<h3 id="check-banned-ips" tabindex="-1"><a class="header-anchor" href="#check-banned-ips" aria-hidden="true">#</a> Check banned IPs</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec fail2ban fail2ban-client status
+docker compose -f docker-compose.prod.yml exec fail2ban fail2ban-client status nginx-404
+</code></pre>
+<h3 id="unban-an-ip" tabindex="-1"><a class="header-anchor" href="#unban-an-ip" aria-hidden="true">#</a> Unban an IP</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec fail2ban fail2ban-client set nginx-404 unbanip 1.2.3.4
+</code></pre>
+<h3 id="configuration-files" tabindex="-1"><a class="header-anchor" href="#configuration-files" aria-hidden="true">#</a> Configuration files</h3>
+<ul>
+<li><code>fail2ban/jail.local</code> — jail definitions (ban times, retry limits)</li>
+<li><code>fail2ban/filter.d/*.conf</code> — regex patterns for each jail</li>
+</ul>
+<h2 id="8-admin-dashboard" tabindex="-1"><a class="header-anchor" href="#8-admin-dashboard" aria-hidden="true">#</a> 8. Admin Dashboard</h2>
+<p>Access the admin dashboard at <code>https://api.tryon-mirror.ai/admin</code></p>
+<p>Login with the <code>ADMIN_API_KEY</code> from your backend <code>.env</code> file.</p>
+<p>Features:</p>
+<ul>
+<li>View user statistics, try-on jobs, and credits</li>
+<li>Create test users</li>
+<li>Verify/unverify user accounts</li>
+<li>Toggle subscriptions</li>
+<li>Adjust user credits</li>
+<li>View suspicious login attempts and security stats</li>
+</ul>
+<h2 id="9-monitoring-logs" tabindex="-1"><a class="header-anchor" href="#9-monitoring-logs" aria-hidden="true">#</a> 9. Monitoring &amp; Logs</h2>
+<h3 id="application-logging-winston" tabindex="-1"><a class="header-anchor" href="#application-logging-winston" aria-hidden="true">#</a> Application Logging (Winston)</h3>
+<p>The backend uses Winston for structured logging with daily file rotation.</p>
+<p><strong>Log Levels:</strong></p>
+<ul>
+<li><code>error</code> - Application errors, exceptions, failed operations</li>
+<li><code>warn</code> - Warnings, suspicious activity (e.g., suspicious login locations)</li>
+<li><code>info</code> - Key business events, successful operations</li>
+<li><code>http</code> - HTTP request/response logging</li>
+<li><code>debug</code> - Detailed debugging information</li>
+</ul>
+<p><strong>Environment Variables:</strong></p>
+<pre><code class="language-bash">LOG_LEVEL=debug       # Set log level (default: debug in dev, info in prod)
+LOG_DIR=/var/log/tryon  # Log file directory (default: ./logs)
+LOG_TO_FILE=true      # Enable file logging in development
+</code></pre>
+<p><strong>Log Files (Production):</strong></p>
+<p>Located at <code>/var/log/tryon/</code> (Docker volume <code>backend_logs</code>):</p>
+<ul>
+<li><code>combined-YYYY-MM-DD.log</code> - All logs, rotated daily, 14-day retention</li>
+<li><code>error-YYYY-MM-DD.log</code> - Errors only, 30-day retention</li>
+<li><code>exceptions-YYYY-MM-DD.log</code> - Unhandled exceptions</li>
+<li><code>rejections-YYYY-MM-DD.log</code> - Unhandled promise rejections</li>
+</ul>
+<h3 id="viewing-logs" tabindex="-1"><a class="header-anchor" href="#viewing-logs" aria-hidden="true">#</a> Viewing Logs</h3>
+<pre><code class="language-bash"># Live Docker stdout/stderr logs (all services)
+docker compose -f docker-compose.prod.yml logs -f
+
+# Specific service Docker logs
+docker compose -f docker-compose.prod.yml logs -f backend
+docker compose -f docker-compose.prod.yml logs -f nginx
+docker compose -f docker-compose.prod.yml logs -f postgres
+docker compose -f docker-compose.prod.yml logs -f fail2ban
+
+# Backend application log files (Winston)
+docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/tryon/combined-$(date +%Y-%m-%d).log
+
+# View only errors
+docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/tryon/error-$(date +%Y-%m-%d).log
+
+# View all log files
+docker compose -f docker-compose.prod.yml exec backend ls -la /var/log/tryon/
+
+# Access log volume directly on host
+docker volume inspect www_backend_logs  # Find mount point
+tail -f /var/lib/docker/volumes/www_backend_logs/_data/combined-*.log
+</code></pre>
+<h3 id="log-management" tabindex="-1"><a class="header-anchor" href="#log-management" aria-hidden="true">#</a> Log Management</h3>
+<p>Log files are automatically managed:</p>
+<ul>
+<li><strong>Daily rotation</strong> - New file each day, prevents large files</li>
+<li><strong>14-day retention</strong> - Combined logs auto-deleted after 14 days</li>
+<li><strong>30-day retention</strong> - Error logs kept longer for debugging</li>
+<li><strong>Gzip compression</strong> - Rotated logs are compressed</li>
+</ul>
+<p>To manually clean old logs:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec backend find /var/log/tryon -name &quot;*.log.gz&quot; -mtime +30 -delete
+</code></pre>
+<h3 id="request-tracing" tabindex="-1"><a class="header-anchor" href="#request-tracing" aria-hidden="true">#</a> Request Tracing</h3>
+<p>All requests get a unique correlation ID (<code>x-correlation-id</code> header). Use this to trace a specific request through logs:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec backend grep &quot;abc12345&quot; /var/log/tryon/combined-$(date +%Y-%m-%d).log
+</code></pre>
+<h3 id="resource-monitoring" tabindex="-1"><a class="header-anchor" href="#resource-monitoring" aria-hidden="true">#</a> Resource Monitoring</h3>
+<pre><code class="language-bash">docker stats
+</code></pre>
+<h3 id="cloudwatch-logs-alarms" tabindex="-1"><a class="header-anchor" href="#cloudwatch-logs-alarms" aria-hidden="true">#</a> CloudWatch Logs &amp; Alarms</h3>
+<p>Container logs are shipped off-host to CloudWatch by the <strong>Amazon CloudWatch Agent</strong>
+installed on the prod Lightsail box. This survives the VM dying — if the instance is
+lost, the logs leading up to the failure are still in CloudWatch. Without this, the only
+copy of recent logs is the <code>backend_logs</code> volume on the (now dead) host.</p>
+<blockquote>
+<p><strong>If the VM is ever rebuilt from a snapshot, this whole setup must be recreated</strong> — the
+agent, its config, and the IAM user's credentials live on the host, not in the repo.
+This section is the recovery reference.</p>
+</blockquote>
+<p><strong>What is shipped (prod):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Log group</td>
+<td><code>/tryon/host-containers</code> (all containers — backend, postgres, redis, nginx — in one group)</td>
+</tr>
+<tr>
+<td>Log stream</td>
+<td><code>{instance_id}-{hostname}</code> (one combined stream for all containers — see foot-gun note below)</td>
+</tr>
+<tr>
+<td>Source files</td>
+<td><code>/var/lib/docker/containers/*/*-json.log</code> (Docker's json-file driver)</td>
+</tr>
+<tr>
+<td>Region</td>
+<td><code>us-east-1</code></td>
+</tr>
+<tr>
+<td>Agent run-as</td>
+<td><code>root</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Agent config</strong> — canonical source is
+<code>/opt/aws/amazon-cloudwatch-agent/etc/tryon-cwagent.json</code> (applied with
+<code>fetch-config -c file:&lt;that path&gt; -s</code>, NOT from SSM). <code>fetch-config</code> copies it into
+<code>…/amazon-cloudwatch-agent.d/file_tryon-cwagent.json</code>; the agent merges <strong>every</strong> <code>*.json</code>
+in that <code>.d</code> dir, so there must be exactly <strong>one</strong> file there (see the duplicate-config
+foot-gun below). Ships both logs and host metrics (mem + root disk):</p>
+<pre><code class="language-json">{
+  &quot;agent&quot;: { &quot;metrics_collection_interval&quot;: 60, &quot;run_as_user&quot;: &quot;root&quot; },
+  &quot;metrics&quot;: {
+    &quot;namespace&quot;: &quot;CWAgent&quot;,
+    &quot;append_dimensions&quot;: { &quot;InstanceId&quot;: &quot;${aws:InstanceId}&quot; },
+    &quot;aggregation_dimensions&quot;: [[&quot;InstanceId&quot;]],
+    &quot;metrics_collected&quot;: {
+      &quot;mem&quot;:  { &quot;measurement&quot;: [&quot;mem_used_percent&quot;] },
+      &quot;disk&quot;: { &quot;measurement&quot;: [&quot;disk_used_percent&quot;], &quot;resources&quot;: [&quot;/&quot;] }
+    }
+  },
+  &quot;logs&quot;: {
+    &quot;logs_collected&quot;: {
+      &quot;files&quot;: {
+        &quot;collect_list&quot;: [
+          {
+            &quot;file_path&quot;: &quot;/var/lib/docker/containers/*/*-json.log&quot;,
+            &quot;log_group_name&quot;: &quot;/tryon/host-containers&quot;,
+            &quot;log_stream_name&quot;: &quot;{instance_id}-{hostname}&quot;,
+            &quot;timezone&quot;: &quot;UTC&quot;
+          }
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<p><code>aggregation_dimensions: [[&quot;InstanceId&quot;]]</code> makes the agent also publish an InstanceId-only
+rollup of each metric, which is the clean stream the host alarms target. Three custom
+metrics result (<code>mem_used_percent</code>, <code>disk_used_percent</code> detailed, <code>disk_used_percent</code>
+rolled-up) → with the 2 <code>TryOn</code> log-metric-filter metrics that's 5 custom metrics, inside
+the always-free 10.</p>
+<blockquote>
+<p><strong>⚠️ Foot-gun — don't put <code>{file_basename}</code> (or any per-file token) in
+<code>log_stream_name</code>.</strong> The agent does <strong>not</strong> support a per-file placeholder; an earlier
+config used <code>&quot;{instance_id}-{hostname}-{file_basename}&quot;</code> and the <code>{file_basename}</code> part
+shipped <strong>literally</strong> (a stream actually named <code>…ec2.internal-{file_basename}</code>). With all
+container files funnelled into that one mis-named stream, low-volume containers were
+dropped — <strong>postgres logs never reached CloudWatch for ~30 days</strong> while backend + nginx
+did. Fixed 2026-06-08 by switching to <code>&quot;{instance_id}-{hostname}&quot;</code> (a valid template) and
+re-running <code>fetch-config -s</code>; postgres immediately began shipping. All containers now
+share that one combined stream, which is fine because <strong>metric filters are scoped to the
+log group, not a stream</strong> (see Alarms below). The old broken stream remains until it ages
+out via the 30-day retention.</p>
+<p><strong>⚠️ Second foot-gun — exactly one config file in <code>.d</code>.</strong> <code>fetch-config -c file:X</code> copies
+<code>X</code> into <code>.d/file_&lt;basename(X)&gt;.json</code>. If you point it at a file that already lives <em>in</em>
+<code>.d</code>, you get a second copy (e.g. <code>file_file_…json</code>) and the agent <strong>merges both</strong> →
+duplicate log shipping + duplicate metrics. Always keep the source <strong>outside</strong> <code>.d</code> (we
+use <code>…/etc/tryon-cwagent.json</code>). To reset cleanly:
+<code>sudo amazon-cloudwatch-agent-ctl -a remove-config -c all &amp;&amp; sudo rm -f .../amazon-cloudwatch-agent.d/*.json</code>,
+then <code>fetch-config -c file:.../tryon-cwagent.json -s</code>, and confirm <code>.d</code> holds one file.</p>
+</blockquote>
+<p><strong>Credentials / IAM:</strong> the agent reads AWS creds from <code>/etc/aws/credentials</code> profile
+<code>[AmazonCloudWatchAgent]</code> (pointed there by
+<code>/opt/aws/amazon-cloudwatch-agent/etc/common-config.toml</code>). Those keys belong to the IAM
+user <strong><code>tryon-log-shipper</code></strong> (account <code>165341015574</code>), which has <strong>two least-privilege
+inline policies</strong>:</p>
+<ul>
+<li><code>tryon-log-put-only</code> — <code>logs:CreateLogStream</code> / <code>PutLogEvents</code> / <code>DescribeLogStreams</code> on
+<code>arn:aws:logs:us-east-1:165341015574:log-group:/tryon/*</code> (note: no <code>CreateLogGroup</code>, so
+the <code>/tryon/*</code> groups must pre-exist).</li>
+<li><code>tryon-metric-put-only</code> — <code>cloudwatch:PutMetricData</code> with a condition restricting it to
+<code>cloudwatch:namespace = CWAgent</code> (added 2026-06-08 to enable host metrics; without it the
+agent logs <code>AccessDenied: ... not authorized to perform: cloudwatch:PutMetricData</code>).</li>
+</ul>
+<p><code>/etc/aws/credentials</code> is root-only and <strong>never committed</strong>.</p>
+<p><strong>Agent management commands:</strong></p>
+<pre><code class="language-bash">CTL=/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+sudo $CTL -a status                       # running? configured?
+sudo $CTL -a fetch-config -m ec2 \
+  -c file:/opt/aws/amazon-cloudwatch-agent/etc/tryon-cwagent.json -s   # re-apply config + restart
+sudo $CTL -a stop ; sudo $CTL -a start    # bounce the agent
+</code></pre>
+<p><strong>Rebuild-from-scratch (after a snapshot restore):</strong></p>
+<pre><code class="language-bash"># 1. Install the agent
+wget https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+# 2. Restore creds (from your backup of /etc/aws/credentials — profile [AmazonCloudWatchAgent])
+sudo mkdir -p /etc/aws &amp;&amp; sudo nano /etc/aws/credentials
+# 3. Point the agent at that profile
+echo '[credentials]
+shared_credential_file = &quot;/etc/aws/credentials&quot;
+shared_credential_profile = &quot;AmazonCloudWatchAgent&quot;' | sudo tee /opt/aws/amazon-cloudwatch-agent/etc/common-config.toml
+# 4. Write the config JSON above to /opt/aws/amazon-cloudwatch-agent/etc/tryon-cwagent.json
+#    (NOT inside the .d dir), then: fetch-config -c file:.../tryon-cwagent.json -s (see above)
+# 5. Re-add the IAM tryon-metric-put-only policy if the user was recreated (see Credentials/IAM)
+</code></pre>
+<blockquote>
+<p><strong>⚠️ Do NOT route nginx to <code>/dev/stdout</code> to pull its logs into CloudWatch.</strong> fail2ban
+reads nginx logs from the shared <code>nginx_logs</code> Docker volume; redirecting nginx to stdout
+empties those files and blinds every jail. If nginx logs are ever wanted in CloudWatch,
+add them <em>additively</em> (a sidecar tailing the volume). See the &quot;Do NOT do&quot; note in
+<a href="todos.html">TODOS.md</a>.</p>
+</blockquote>
+<h4 id="alarms-live-as-of-2026-06-08" tabindex="-1"><a class="header-anchor" href="#alarms-live-as-of-2026-06-08" aria-hidden="true">#</a> Alarms (live as of 2026-06-08)</h4>
+<p>Four CloudWatch alarms exist, all wired to the SNS topic <code>tryon-alerts</code>
+(<code>arn:aws:sns:us-east-1:165341015574:tryon-alerts</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Alarm</th>
+<th>Source metric</th>
+<th>Fires when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tryon-backend-error-rate</code></td>
+<td>filter <code>tryon-backend-errors</code> → <code>TryOn/BackendErrorCount</code></td>
+<td>Sum &gt; 10 in 5 min</td>
+</tr>
+<tr>
+<td><code>tryon-postgres-fatal</code></td>
+<td>filter <code>tryon-postgres-fatal</code> → <code>TryOn/PostgresFatalCount</code></td>
+<td>Sum &gt; 0 in 5 min</td>
+</tr>
+<tr>
+<td><code>tryon-prod-disk-high</code></td>
+<td><code>CWAgent/disk_used_percent</code> (InstanceId rollup, <code>/</code>)</td>
+<td>Avg &gt; 85% in 5 min</td>
+</tr>
+<tr>
+<td><code>tryon-prod-memory-high</code></td>
+<td><code>CWAgent/mem_used_percent</code> (InstanceId rollup)</td>
+<td>Avg &gt; 90% in 5 min</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>⚠️ The SNS email subscription must be confirmed or no alert is delivered.</strong> AWS emails
+<code>bruhn@bruhnfreeman.com</code> a confirmation link; until clicked the subscription shows
+<code>PendingConfirmation</code>. (Confirmed 2026-06-08.) Check with
+<code>aws sns list-subscriptions-by-topic --topic-arn arn:aws:sns:us-east-1:165341015574:tryon-alerts</code>.</p>
+</blockquote>
+<p><strong>Separate notification path — Lightsail alarms.</strong> The 6 Lightsail instance alarms
+(<code>evofaceflow-{prod,dev}-{status-check-failed,cpu-high,burst-capacity-low}</code>) are <strong>not</strong>
+CloudWatch alarms — they live in Lightsail and notify via the Lightsail <strong>Email contact
+method</strong> (<code>get-contact-methods</code>, also requires email confirmation), not SNS. Manage them
+with <code>aws lightsail get-alarms</code> / <code>put-alarm</code>. Lightsail instance metrics aren't in
+CloudWatch, so these can't be combined with the CloudWatch alarms above.</p>
+<p><strong>Dashboard.</strong> <code>aws cloudwatch get-dashboard --dashboard-name TryOn-Prod</code> — host mem/disk +
+app error/FATAL metrics + a CloudWatch-alarm status widget, one pane. (Lightsail CPU/burst
+still viewed in the Lightsail console.)</p>
+<p><strong>Important caveat — Docker double-encodes the logs.</strong> The json-file driver wraps each
+line as <code>{&quot;log&quot;:&quot;&lt;your line, with quotes \\\&quot;escaped\\\&quot;&gt;&quot;,&quot;stream&quot;:...}</code>. So the inner
+Winston JSON is <em>escaped</em> in the stored event, and structured metric-filter syntax
+(<code>{ $.level = &quot;error&quot; }</code>) will <strong>not</strong> match — and an unquoted term containing a backslash
+(e.g. <code>level\&quot;:\&quot;error</code>) is rejected outright (<code>Invalid character(s) in term '\'</code>). The
+working form is a <strong>quoted term with the backslashes escaped</strong>, validated against live logs
+with <code>aws logs filter-log-events --filter-pattern '&lt;pattern&gt;'</code> before committing.</p>
+<p>These are the exact commands used to create them (re-runnable; <code>put-*</code> is idempotent). Set
+<code>MSYS_NO_PATHCONV=1</code> on git-bash so <code>/tryon/...</code> isn't mangled.</p>
+<pre><code class="language-bash">REGION=us-east-1
+LOG_GROUP=/tryon/host-containers
+SNS=arn:aws:sns:us-east-1:165341015574:tryon-alerts
+
+# One-time: SNS topic + email (then CONFIRM via the link AWS emails you)
+aws sns create-topic --name tryon-alerts --region $REGION
+aws sns subscribe --topic-arn $SNS --protocol email \
+  --notification-endpoint bruhn@bruhnfreeman.com --region $REGION
+
+# (a) Backend error rate. Pattern = the Docker-escaped, quoted form (validated to match
+#     real &quot;level&quot;:&quot;error&quot; lines; bare 'error' is noisier).
+aws logs put-metric-filter --region $REGION --log-group-name &quot;$LOG_GROUP&quot; \
+  --filter-name tryon-backend-errors \
+  --filter-pattern '&quot;\\\&quot;level\\\&quot;:\\\&quot;error\\\&quot;&quot;' \
+  --metric-transformations metricName=BackendErrorCount,metricNamespace=TryOn,metricValue=1,defaultValue=0
+aws cloudwatch put-metric-alarm --region $REGION --alarm-name tryon-backend-error-rate \
+  --namespace TryOn --metric-name BackendErrorCount --statistic Sum \
+  --period 300 --evaluation-periods 1 --threshold 10 \
+  --comparison-operator GreaterThanThreshold --treat-missing-data notBreaching \
+  --alarm-actions $SNS --ok-actions $SNS
+
+# (b) Postgres FATAL (any occurrence). Plain term — valid as-is.
+aws logs put-metric-filter --region $REGION --log-group-name &quot;$LOG_GROUP&quot; \
+  --filter-name tryon-postgres-fatal \
+  --filter-pattern 'FATAL' \
+  --metric-transformations metricName=PostgresFatalCount,metricNamespace=TryOn,metricValue=1,defaultValue=0
+aws cloudwatch put-metric-alarm --region $REGION --alarm-name tryon-postgres-fatal \
+  --namespace TryOn --metric-name PostgresFatalCount --statistic Sum \
+  --period 300 --evaluation-periods 1 --threshold 0 \
+  --comparison-operator GreaterThanThreshold --treat-missing-data notBreaching \
+  --alarm-actions $SNS --ok-actions $SNS
+
+# Verify
+aws cloudwatch describe-alarms --region $REGION \
+  --alarm-names tryon-backend-error-rate tryon-postgres-fatal \
+  --query 'MetricAlarms[].{name:AlarmName,state:StateValue}' --output table
+</code></pre>
+<blockquote>
+<p>The <code>FATAL</code> filter watches the whole combined group, so a FATAL from any container
+trips it (incl. transient client-auth / &quot;could not receive data&quot; FATALs) — acceptable for
+a coarse &quot;look at postgres&quot; page; tighten later if noisy. For backend error-rate, set the
+threshold from your real baseline once you've watched the metric for a few days.
+<code>tryon-postgres-fatal</code> shows <code>INSUFFICIENT_DATA</code> until the first log event flows through
+its filter — <code>notBreaching</code> means that state never pages.</p>
+</blockquote>
+<h3 id="sentry-error-tracking" tabindex="-1"><a class="header-anchor" href="#sentry-error-tracking" aria-hidden="true">#</a> Sentry (error tracking)</h3>
+<p>The backend ships with a <strong>Sentry</strong> (<code>@sentry/node</code>) integration for exception/crash
+reporting — stack traces, breadcrumbs, release tagging. It complements CloudWatch (which is
+metrics + raw logs): Sentry groups distinct <em>errors</em> and tells you which line threw, for how
+many users. <strong>The whole thing is gated on <code>SENTRY_DSN</code></strong> — with that env var unset (the
+current state on both prod and dev) the SDK is a no-op, so the code can ship dark and be
+switched on later with zero redeploy logic.</p>
+<p><strong>Turn it on for an environment (no code change):</strong></p>
+<ol>
+<li>Create a project at <a href="https://sentry.io">https://sentry.io</a> (free tier is plenty at this scale): <strong>Create
+Project → Platform: Node.js → Express</strong>. Copy the <strong>DSN</strong> (Settings → Projects → <em>project</em>
+→ Client Keys (DSN)).</li>
+<li>Add it to that box's <code>backend/.env</code> and set the environment tag (NODE_ENV is <code>production</code>
+on <strong>both</strong> boxes, so this is how you tell them apart in Sentry):<pre><code class="language-bash"># dev box: /opt/evofaceflow/TryOn/backend/.env
+SENTRY_DSN=&quot;https://&lt;key&gt;@&lt;org&gt;.ingest.sentry.io/&lt;projectId&gt;&quot;
+SENTRY_ENVIRONMENT=&quot;development&quot;   # use &quot;production&quot; on the prod box
+# optional: SENTRY_RELEASE, SENTRY_TRACES_SAMPLE_RATE (default 0 = errors only)
+</code></pre>
+Both compose files pass <code>backend/.env</code> through via <code>env_file</code>, so <strong>do not</strong> add
+<code>SENTRY_*</code> to the compose <code>environment:</code> block (that would override the file with empty
+shell values).</li>
+<li>Recreate the backend so it re-reads <code>.env</code>:<pre><code class="language-bash">docker compose -f docker-compose.dev.yml up -d backend   # dev
+</code></pre>
+</li>
+<li>Confirm: the backend logs <code>[sentry] initialized (environment=…)</code> at boot, and the admin
+dashboard's <strong>🩺 Diagnostics → Sentry</strong> card shows <code>ENABLED</code>. Click <strong>Send test event</strong>
+and confirm it lands in the Sentry UI.</li>
+</ol>
+<p><strong>Optional — &quot;recent issues&quot; panel on the dashboard.</strong> To list unresolved issues inline (and
+deep-link to the project), also set an org auth token (Sentry → Settings → Auth Tokens, scopes
+<code>project:read</code> + <code>event:read</code>) and the slugs:</p>
+<pre><code class="language-bash">SENTRY_AUTH_TOKEN=&quot;sntrys_…&quot;
+SENTRY_ORG_SLUG=&quot;your-org&quot;
+SENTRY_PROJECT_SLUG=&quot;tryon-backend&quot;
+</code></pre>
+<p>Without these the dashboard still shows config status and the test button — just no inline
+issue feed (the <code>/api/admin/sentry/issues</code> endpoint returns 503, which the UI renders as a
+setup hint).</p>
+<p><strong>Privacy:</strong> <code>sendDefaultPii:false</code> plus a <code>beforeSend</code> scrubber ([backend/src/utils/scrub.ts])
+strip auth headers (incl. <code>x-admin-key</code>), cookies, sensitive body fields, and the user's
+email/IP before any event leaves the box. Keep that scrubber's <code>SENSITIVE_KEY</code> list current.</p>
+<h2 id="10-database-backup" tabindex="-1"><a class="header-anchor" href="#10-database-backup" aria-hidden="true">#</a> 10. Database Backup</h2>
+<p>Backups are <strong>nightly, automated, and off-host</strong>. A cron job on the Lightsail host streams a <code>pg_dump</code> from the postgres container directly to S3 (<code>s3://evofaceflow-backups/postgres/</code>) without writing any unencrypted dump to local disk. Backups are immutable from the backup user (write-only IAM scope) and survive any disk failure on the VM.</p>
+<h3 id="101-whats-running" tabindex="-1"><a class="header-anchor" href="#101-whats-running" aria-hidden="true">#</a> 10.1 What's running</h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/usr/local/bin/backup-postgres.sh</code></td>
+<td>Lightsail host</td>
+<td>The backup script — sourced from <code>/etc/tryon-backup.env</code>, streams <code>pg_dump</code> | <code>gzip</code> | <code>aws s3 cp</code></td>
+</tr>
+<tr>
+<td><code>/etc/tryon-backup.env</code></td>
+<td>Lightsail host (root-only, <code>chmod 600</code>)</td>
+<td>AWS credentials + Postgres connection details. NEVER committed.</td>
+</tr>
+<tr>
+<td><code>/etc/logrotate.d/tryon-backup</code></td>
+<td>Lightsail host</td>
+<td>Weekly rotation of <code>/var/log/tryon-backup.log</code>, 8-week retention, gzipped</td>
+</tr>
+<tr>
+<td>Root crontab entry</td>
+<td>Lightsail host</td>
+<td><code>0 2 * * * /usr/local/bin/backup-postgres.sh &gt;&gt; /var/log/tryon-backup.log 2&gt;&amp;1</code> — runs daily at 02:00 UTC</td>
+</tr>
+<tr>
+<td><code>evofaceflow-backups</code> S3 bucket</td>
+<td>AWS S3 (us-east-1)</td>
+<td>Destination. Versioning enabled. Lifecycle: Glacier IR after 30 days, expire after 365 days.</td>
+</tr>
+<tr>
+<td>IAM user <code>tryon-backup-uploader</code></td>
+<td>AWS IAM</td>
+<td>Long-lived access keys used by the script. Inline policy allows <code>s3:PutObject</code> + <code>s3:AbortMultipartUpload</code> on <code>evofaceflow-backups/postgres/*</code> and <code>s3:ListBucketMultipartUploads</code> on the bucket. <strong>No</strong> read, no delete on completed objects.</td>
+</tr>
+</tbody>
+</table>
+<p>The script uses <code>set -euo pipefail</code>, so any stage failure (container down, pg_dump error, network failure, upload reject) aborts the run with a non-zero exit code. Output goes to <code>/var/log/tryon-backup.log</code>.</p>
+<h3 id="102-verify-its-working" tabindex="-1"><a class="header-anchor" href="#102-verify-its-working" aria-hidden="true">#</a> 10.2 Verify it's working</h3>
+<p>After-the-fact health check (run any time):</p>
+<pre><code class="language-bash"># Last 20 backup runs from the log
+sudo tail -20 /var/log/tryon-backup.log
+
+# List the last 7 days of dumps in S3 (requires read-capable AWS principal — not the backup user)
+aws s3 ls s3://evofaceflow-backups/postgres/ --human-readable | tail -7
+</code></pre>
+<p>A healthy log line pair looks like:</p>
+<pre><code>[2026-05-12T02:00:01Z] backup start: postgres/20260512T020001Z.sql.gz
+[2026-05-12T02:00:03Z] backup ok: s3://evofaceflow-backups/postgres/20260512T020001Z.sql.gz
+</code></pre>
+<p>If a run fails, the script exits non-zero and the corresponding line will read <code>backup start: ...</code> with no matching <code>backup ok:</code>. Cron does not email on failure unless you set <code>MAILTO</code> in the crontab.</p>
+<h3 id="103-initial-setup-one-time-if-rebuilding-the-host" tabindex="-1"><a class="header-anchor" href="#103-initial-setup-one-time-if-rebuilding-the-host" aria-hidden="true">#</a> 10.3 Initial setup (one-time, if rebuilding the host)</h3>
+<blockquote>
+<p>If the Lightsail host already has <code>/usr/local/bin/backup-postgres.sh</code> installed, skip this section. Steps below are only for fresh installs or recovery after a host rebuild.</p>
+</blockquote>
+<p><strong>Step A — AWS resources (run once, in the AWS console):</strong></p>
+<ol>
+<li>Create S3 bucket <code>evofaceflow-backups</code> in the same region as <code>evofaceflow-uploads</code>. Enable <strong>Bucket Versioning</strong>. Add a lifecycle rule transitioning current versions to Glacier Instant Retrieval after 30 days and expiring them after 365 days.</li>
+<li>Create IAM user <code>tryon-backup-uploader</code> (no console access). Attach an inline policy:</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Sid&quot;: &quot;PutBackups&quot;,
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [&quot;s3:PutObject&quot;, &quot;s3:AbortMultipartUpload&quot;],
+      &quot;Resource&quot;: &quot;arn:aws:s3:::evofaceflow-backups/postgres/*&quot;
+    },
+    {
+      &quot;Sid&quot;: &quot;ListMultipartsInBucket&quot;,
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: &quot;s3:ListBucketMultipartUploads&quot;,
+      &quot;Resource&quot;: &quot;arn:aws:s3:::evofaceflow-backups&quot;
+    }
+  ]
+}
+</code></pre>
+<ol start="3">
+<li>Generate an access key for the user and save both halves somewhere safe.</li>
+</ol>
+<p><strong>Step B — host setup (on the Lightsail VM):</strong></p>
+<pre><code class="language-bash">sudo apt-get update &amp;&amp; sudo apt-get install -y awscli
+
+# Credentials and config (root-only, exported so child processes inherit them)
+sudo tee /etc/tryon-backup.env &gt; /dev/null &lt;&lt;'EOF'
+export AWS_ACCESS_KEY_ID=&lt;paste-from-step-A3&gt;
+export AWS_SECRET_ACCESS_KEY=&lt;paste-from-step-A3&gt;
+export AWS_DEFAULT_REGION=us-east-1
+export PG_USER=tryon_prod
+export PG_DB=tryon_db
+export S3_BUCKET=evofaceflow-backups
+export PROJECT_DIR=/opt/evofaceflow/TryOn
+export COMPOSE_FILE=docker-compose.prod.yml
+EOF
+sudo chmod 600 /etc/tryon-backup.env
+sudo chown root:root /etc/tryon-backup.env
+</code></pre>
+<blockquote>
+<p><strong><code>export</code> is required</strong>, not optional. <code>source</code>d shell variables without <code>export</code> are not inherited by the <code>aws</code> subprocess; CLI then falls back to the Lightsail instance role and fails with <code>AccessDenied</code>.</p>
+</blockquote>
+<p>Install the backup script:</p>
+<pre><code class="language-bash">sudo tee /usr/local/bin/backup-postgres.sh &gt; /dev/null &lt;&lt;'SCRIPT'
+#!/usr/bin/env bash
+# Nightly Postgres -&gt; S3 backup for TryOn.
+set -euo pipefail
+# shellcheck disable=SC1091
+source /etc/tryon-backup.env
+
+TIMESTAMP=&quot;$(date -u +%Y%m%dT%H%M%SZ)&quot;
+S3_KEY=&quot;postgres/${TIMESTAMP}.sql.gz&quot;
+HOSTNAME_TAG=&quot;$(hostname -s)&quot;
+
+cd &quot;$PROJECT_DIR&quot;
+
+echo &quot;[$(date -u +%FT%TZ)] backup start: $S3_KEY&quot;
+
+docker compose -f &quot;$COMPOSE_FILE&quot; exec -T postgres \
+  pg_dump -U &quot;$PG_USER&quot; -d &quot;$PG_DB&quot; --no-owner --clean --if-exists \
+  | gzip -9 \
+  | aws s3 cp - &quot;s3://${S3_BUCKET}/${S3_KEY}&quot; \
+      --expected-size 1073741824 \
+      --metadata &quot;host=${HOSTNAME_TAG},timestamp=${TIMESTAMP}&quot; \
+      --no-progress
+
+echo &quot;[$(date -u +%FT%TZ)] backup ok: s3://${S3_BUCKET}/${S3_KEY}&quot;
+SCRIPT
+
+sudo chmod +x /usr/local/bin/backup-postgres.sh
+sudo chown root:root /usr/local/bin/backup-postgres.sh
+</code></pre>
+<p>Test once by hand, then install cron + logrotate:</p>
+<pre><code class="language-bash">sudo /usr/local/bin/backup-postgres.sh
+
+# Cron: nightly at 02:00 UTC, log to its own file
+sudo crontab -e
+# Add:
+#   MAILTO=&quot;&quot;
+#   0 2 * * * /usr/local/bin/backup-postgres.sh &gt;&gt; /var/log/tryon-backup.log 2&gt;&amp;1
+
+# Log rotation
+sudo tee /etc/logrotate.d/tryon-backup &gt; /dev/null &lt;&lt;'EOF'
+/var/log/tryon-backup.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 644 root root
+}
+EOF
+</code></pre>
+<h3 id="104-restore-from-a-backup" tabindex="-1"><a class="header-anchor" href="#104-restore-from-a-backup" aria-hidden="true">#</a> 10.4 Restore from a backup</h3>
+<blockquote>
+<p><strong>Test this procedure at least once on a dev instance</strong> before you ever need it in production. An untested backup is a hope, not a backup.</p>
+<p>✅ <strong>Validated on dev 2026-06-07.</strong> The latest S3 dump restored cleanly onto the dev
+stack (<code>docker-compose.dev.yml</code>, DB <code>tryon_db</code>/user <code>tryon_dev</code>) with <strong>0 errors</strong> — the
+<code>--no-owner</code> dump restores fine under a different role. The dump predated the most recent
+prod deploy, so step 5 (<code>prisma migrate deploy</code>) correctly applied the 2 then-pending
+migrations afterward. Take a safety dump of the target first (see §10.5) so the test is
+reversible.</p>
+</blockquote>
+<pre><code class="language-bash"># 1. Download the dump (use your normal admin AWS credentials, NOT tryon-backup-uploader
+#    — that user has no read permission)
+aws s3 cp s3://evofaceflow-backups/postgres/20260512T020001Z.sql.gz ./restore.sql.gz
+
+# 2. Verify the file looks reasonable (size, gzip integrity)
+ls -lh restore.sql.gz
+gunzip -t restore.sql.gz &amp;&amp; echo &quot;gzip OK&quot;
+
+# 3. (PRODUCTION ONLY — irreversible) Stop the backend so no writes happen during restore
+cd /opt/evofaceflow/TryOn
+docker compose -f docker-compose.prod.yml stop backend
+
+# 4. Restore. The dump uses --clean --if-exists, so it drops and recreates objects.
+gunzip -c restore.sql.gz | \
+  docker compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U tryon_prod -d tryon_db
+
+# 5. Apply any newer Prisma migrations (only relevant if the dump pre-dates a migration)
+docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate deploy
+
+# 6. Start the backend
+docker compose -f docker-compose.prod.yml start backend
+
+# 7. Smoke-test
+curl https://api.tryon-mirror.ai/health
+</code></pre>
+<h3 id="105-ad-hoc-pre-migration-manual-dump" tabindex="-1"><a class="header-anchor" href="#105-ad-hoc-pre-migration-manual-dump" aria-hidden="true">#</a> 10.5 Ad-hoc / pre-migration manual dump</h3>
+<p>For one-off safety dumps (e.g. immediately before a risky migration), bypass S3 and just write to local disk:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml exec postgres \
+  pg_dump -U tryon_prod tryon_db &gt; backup_$(date +%Y%m%d_%H%M%S).sql
+</code></pre>
+<p>Keep these local files for the duration of the migration only — they contain unencrypted user data and should be deleted (or moved to S3) afterwards.</p>
+<h2 id="11-backups-snapshots-disaster-recovery" tabindex="-1"><a class="header-anchor" href="#11-backups-snapshots-disaster-recovery" aria-hidden="true">#</a> 11. Backups, Snapshots &amp; Disaster Recovery</h2>
+<p>The production stack is protected at three independent layers. Each survives different failure modes; together they cover everything from a fat-fingered <code>DELETE</code> to a total VM loss.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Granularity</th>
+<th>Cadence</th>
+<th>Restore time</th>
+<th>What it survives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lightsail automatic snapshots</td>
+<td>Whole-VM (disk + state)</td>
+<td>Daily (configured in Lightsail console)</td>
+<td>~10 min to spin a new instance from snapshot</td>
+<td>VM corruption, accidental host-level rm, disk failure</td>
+</tr>
+<tr>
+<td>S3 versioning + lifecycle on <code>evofaceflow-uploads</code></td>
+<td>Object-level (per-photo)</td>
+<td>Per-write (automatic)</td>
+<td>Seconds — restore the prior version in the S3 console</td>
+<td>Accidental overwrite or delete of user photos. 30-day undo window via lifecycle rule expiring noncurrent versions.</td>
+</tr>
+<tr>
+<td>Off-host Postgres dumps to <code>evofaceflow-backups</code></td>
+<td>Database snapshot</td>
+<td>Daily (02:00 UTC)</td>
+<td>Minutes — see §10.4</td>
+<td>Total VM loss, DB corruption, dropped tables. 365-day retention.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="111-lightsail-automatic-snapshots" tabindex="-1"><a class="header-anchor" href="#111-lightsail-automatic-snapshots" aria-hidden="true">#</a> 11.1 Lightsail automatic snapshots</h3>
+<p>Enabled in the AWS Lightsail console (Instances → instance → <strong>Snapshots</strong> tab → <strong>Enable automatic snapshots</strong>). Lightsail keeps the seven most recent automatic snapshots by default; older ones roll off. Manual snapshots can be taken before a risky migration and are retained until explicitly deleted.</p>
+<p>To restore from a snapshot: Lightsail console → Snapshots → <strong>Create new instance from snapshot</strong>. The new instance gets a new public IP, so DNS for <code>evofaceflow.com</code> and <code>api.tryon-mirror.ai</code> must be repointed (or the static IP detached from the old instance and reattached to the new one).</p>
+<h3 id="112-s3-versioning-on-evofaceflow-uploads" tabindex="-1"><a class="header-anchor" href="#112-s3-versioning-on-evofaceflow-uploads" aria-hidden="true">#</a> 11.2 S3 versioning on <code>evofaceflow-uploads</code></h3>
+<p>Enabled in the S3 console with a lifecycle rule that permanently deletes noncurrent object versions after 30 days. Recovering an overwritten or deleted photo:</p>
+<ol>
+<li>AWS Console → S3 → <code>evofaceflow-uploads</code> → toggle <strong>Show versions</strong> (top-right).</li>
+<li>Locate the object's prior version; either copy it to a new key or delete the current (delete-marker) version to expose the old one.</li>
+<li>If the object was deleted entirely, look for a delete marker on the key — removing the delete marker restores the most recent non-deleted version.</li>
+</ol>
+<h3 id="113-postgres-dumps-to-s3" tabindex="-1"><a class="header-anchor" href="#113-postgres-dumps-to-s3" aria-hidden="true">#</a> 11.3 Postgres dumps to S3</h3>
+<p>Covered in detail in §10. The script is idempotent (writes a uniquely timestamped object per run) and immutable from the backup user (no overwrite, no delete).</p>
+<h3 id="114-dns-nameservers-registrar-record-rollback" tabindex="-1"><a class="header-anchor" href="#114-dns-nameservers-registrar-record-rollback" aria-hidden="true">#</a> 11.4 DNS &amp; nameservers (registrar record + rollback)</h3>
+<ul>
+<li><strong>Registrar:</strong> Amazon Registrar, Inc. (managed in AWS Console → <strong>Route 53 → Registered domains → evofaceflow.com</strong>). Auto-renew on.</li>
+<li><strong>Authoritative DNS:</strong> historically the Route 53 hosted zone <code>Z0957115TEZKWSUXKD1W</code>. The domain is being moved behind <strong>Cloudflare</strong> (free plan) for CDN/WAF/DDoS — Cloudflare's free tier requires delegating the <strong>whole zone's nameservers</strong>, so the cutover affects the entire domain (prod <code>api</code>/<code>www</code>/apex + email). All records are replicated into Cloudflare as an exact <strong>grey (DNS-only)</strong> mirror first, so resolution is identical until records are deliberately proxied (orange).</li>
+<li><strong>Nameservers to set at the registrar (Cloudflare):</strong>
+<ul>
+<li><code>daniella.ns.cloudflare.com</code></li>
+<li><code>rommy.ns.cloudflare.com</code></li>
+</ul>
+</li>
+<li><strong>🔙 Original AWS nameservers — ROLLBACK RECORD</strong> (set these four back in Route 53 → Registered domains → <em>Edit name servers</em> to revert to Route 53 DNS; the Route 53 hosted zone still holds the full record set as a live backup):
+<ul>
+<li><code>ns-1092.awsdns-08.org</code></li>
+<li><code>ns-1606.awsdns-08.co.uk</code></li>
+<li><code>ns-278.awsdns-34.com</code></li>
+<li><code>ns-791.awsdns-34.net</code></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> changing nameservers is the one prod-DNS cutover — make it deliberately. Because Cloudflare starts as an exact grey mirror, the switch is seamless (same answers either way). Email records (MX, SPF, <code>_dmarc</code>, the SES DKIM CNAMEs, <code>default._domainkey</code>, <code>bounce</code>, <code>mail</code>, <code>autodiscover</code>) must <strong>always stay DNS-only (grey)</strong> — never proxy them.</p>
+</blockquote>
+<p><strong>Status (2026-06-11): PROD CUTOVER COMPLETE.</strong> <code>api</code>, <code>www</code>, and the apex are <strong>Proxied (orange)</strong>; all email records remain grey. Real-IP validated through the edge (nginx logs true client addresses), <code>/admin</code> allowlist verified working through the proxy — note the allowlist needed the admin's <strong>IPv6 /64</strong> added (behind Cloudflare the connection arrives over IPv6 with privacy-extension rotation; IPv4-only allowlisting 403s). Full functional test pass ran clean through the edge same day. Rollback: set the three web records back to grey (DNS-only) — origin unchanged. Watch item: the next Let's Encrypt renewal (~30 days before expiry) is the first through the proxy — dev has renewed-through-CF precedent, but confirm the certbot renewal email doesn't fire.</p>
+<h4 id="enabling-cloudflare-protection-on-prod-the-cutover-do-atafter-launch" tabindex="-1"><a class="header-anchor" href="#enabling-cloudflare-protection-on-prod-the-cutover-do-atafter-launch" aria-hidden="true">#</a> Enabling Cloudflare protection on prod (the cutover — do at/after launch)</h4>
+<p>This exact sequence was validated on dev (<code>api-dev</code>). The real-IP block is already in <code>nginx/nginx.conf</code> (committed, not yet deployed to prod).</p>
+<ol>
+<li><strong>Deploy the real-IP nginx config to prod FIRST.</strong> On the prod box: <code>git pull</code> → <code>docker compose -f docker-compose.prod.yml up -d --force-recreate nginx</code> (single-file mount → <strong>must force-recreate</strong>, a reload won't pick it up). This is <strong>safe while records are grey</strong> — <code>real_ip</code> only triggers for traffic arriving from a Cloudflare range, of which there is none yet — but it <strong>MUST be live before step 2</strong>, or the <code>/admin</code> IP-allowlist would see Cloudflare's IPs and lock you out. Verify: <code>docker compose -f docker-compose.prod.yml exec nginx grep -c set_real_ip_from /etc/nginx/nginx.conf</code> → <strong>22</strong>.</li>
+<li><strong>Orange-cloud the prod web records</strong> in Cloudflare — set <code>api</code>, <code>www</code>, and the apex <code>evofaceflow.com</code> to <strong>Proxied</strong>. Leave <strong>all email records grey</strong> (MX, SPF, <code>_dmarc</code>, <code>*._domainkey</code>, <code>bounce</code>, <code>mail</code>, <code>autodiscover</code>).</li>
+<li><strong>Validate:</strong> <code>curl -sI https://api.tryon-mirror.ai/health</code> should show <code>server: cloudflare</code> + a <code>cf-ray</code> header + <code>200</code>; prod nginx logs (<code>docker compose -f docker-compose.prod.yml logs nginx</code>) should show <strong>real client IPs</strong>, not Cloudflare IPs; confirm <code>/admin</code> still reaches you (real-IP makes the allowlist match through Cloudflare). To roll back the edge instantly, set the three web records back to <strong>grey</strong> — DNS still resolves to the same origin.</li>
+</ol>
+<h2 id="12-external-monitoring" tabindex="-1"><a class="header-anchor" href="#12-external-monitoring" aria-hidden="true">#</a> 12. External Monitoring</h2>
+<h3 id="121-uptimerobot" tabindex="-1"><a class="header-anchor" href="#121-uptimerobot" aria-hidden="true">#</a> 12.1 UptimeRobot</h3>
+<p>A free UptimeRobot account monitors <code>https://api.tryon-mirror.ai/health</code> every 5 minutes with a 30-second timeout. Alerts go to the configured email contact when the monitor records ≥2 consecutive failures (~10 minutes total downtime before paging).</p>
+<p>This is intentionally <strong>external</strong> — it probes from outside AWS so it catches outages that the application itself can't report (network partitions, Lightsail VM down, nginx misconfig, DNS failure, expired SSL handshake).</p>
+<blockquote>
+<p>The <code>/health</code> endpoint runs a deep check — it probes Postgres (<code>SELECT 1</code>) and Redis (<code>PING</code>) in parallel (2s timeout each) and returns <code>503</code> with per-dependency status when either is down, <code>200 {status:&quot;ok&quot;}</code> when both are up. A separate shallow, dependency-free <code>/health/live</code> backs the Docker liveness probe so a transient dependency blip can't make Docker kill a healthy backend. The UptimeRobot monitor watches <code>/health</code>, so it reports dependency outages, not just a dead process.</p>
+</blockquote>
+<h3 id="122-ssl-certificate-expiry-deferred" tabindex="-1"><a class="header-anchor" href="#122-ssl-certificate-expiry-deferred" aria-hidden="true">#</a> 12.2 SSL certificate expiry (deferred)</h3>
+<p>UptimeRobot's SSL expiry monitoring is a paid feature on their newer plans. For now, expiry alerting falls back to:</p>
+<ol>
+<li><strong>Let's Encrypt's own renewal-failure emails</strong> to the address registered with certbot (fires only if auto-renewal breaks).</li>
+<li><strong>UptimeRobot's HTTPS check</strong> itself — when a cert expires, the monitor goes red immediately because the TLS handshake fails. Not preemptive, but it does fire.</li>
+</ol>
+<p>A preemptive SSL expiry check is planned via the existing vulnerability scanner — <code>VulnerabilityReport.scanType</code> already reserves a <code>SSL_CERTIFICATE</code> enum value (see <code>backend/prisma/schema.prisma</code>). Implementing the worker handler will surface days-remaining in the admin dashboard with no third-party service.</p>
+<h2 id="13-updating-the-application" tabindex="-1"><a class="header-anchor" href="#13-updating-the-application" aria-hidden="true">#</a> 13. Updating the Application</h2>
+<h3 id="backend-server-side" tabindex="-1"><a class="header-anchor" href="#backend-server-side" aria-hidden="true">#</a> Backend (server-side)</h3>
+<p>Deploys are <strong>manual</strong>. A <code>.github/workflows/deploy.yml</code> is occasionally referenced in older notes but <strong>is not present in the repo</strong> and no auto-deploy is configured. To deploy:</p>
+<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
+git pull origin main
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+</code></pre>
+<p>Use <code>up -d</code> (without <code>--build</code>) for env-var-only changes — <code>restart</code> does <strong>not</strong> re-read <code>.env</code> reliably with all Compose versions.</p>
+<blockquote>
+<p><strong>⚠️ ONE-TIME (git history was rewritten 2026-06-03):</strong> the repo history was rewritten to strip an unwanted commit trailer, so every commit hash changed. The first time you deploy after that date, a plain <code>git pull</code> will fail with a &quot;divergent branches&quot; / &quot;refusing to merge unrelated histories&quot; error because the server's local clone still has the old hashes. Resolve it once with a hard reset to the rewritten remote, then continue the normal deploy:</p>
+<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
+git fetch origin
+git reset --hard origin/main        # use origin/develop on the dev server
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+</code></pre>
+<p><code>git reset --hard</code> only updates the checked-out files to match the remote — it does <strong>not</strong> disturb the running containers (those keep serving the already-built image until the <code>up --build</code> above rebuilds them). A full backup bundle of the pre-rewrite history exists at <code>E:\Projects\TryOn\tryon-backup-pre-rewrite.bundle</code> on the dev machine. Once <strong>both</strong> the production and dev servers have been reset this way, this note can be deleted.</p>
+</blockquote>
+<h3 id="frontend-mobile-app" tabindex="-1"><a class="header-anchor" href="#frontend-mobile-app" aria-hidden="true">#</a> Frontend (mobile app)</h3>
+<p>The mobile app is <strong>not</strong> deployed to Lightsail. It's compiled into iOS / Android binaries via EAS Build (Expo's cloud build service) and distributed through TestFlight / App Store.</p>
+<pre><code class="language-powershell"># All commands run on your LOCAL dev machine, not Lightsail.
+cd frontend
+npm install                                    # if dependencies changed
+npx expo prebuild --clean                      # if native deps changed (e.g. new expo-* package)
+eas build --platform ios --profile preview     # for TestFlight / internal QA
+eas build --platform ios --profile production  # for App Store submission
+eas submit --platform ios --profile production --latest  # upload to App Store Connect
+</code></pre>
+<h4 id="eas-profiles-frontendeasjson" tabindex="-1"><a class="header-anchor" href="#eas-profiles-frontendeasjson" aria-hidden="true">#</a> EAS profiles (<code>frontend/eas.json</code>)</h4>
+<table>
+<thead>
+<tr>
+<th>Profile</th>
+<th>Use case</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>development</code></td>
+<td>Dev Client install for hot-reload iteration on a phone</td>
+<td><code>developmentClient: true</code>, <code>distribution: &quot;internal&quot;</code></td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td>TestFlight / internal QA builds</td>
+<td>Production-mode JS, internal distribution. No build-number burn.</td>
+</tr>
+<tr>
+<td><code>production</code></td>
+<td>App Store submission</td>
+<td>Auto-increments build number.</td>
+</tr>
+</tbody>
+</table>
+<p><code>eas build --platform ios</code> with no <code>--profile</code> flag defaults to <code>production</code> — explicit profile is recommended.</p>
+<h3 id="connecting-the-frontend-to-lightsail" tabindex="-1"><a class="header-anchor" href="#connecting-the-frontend-to-lightsail" aria-hidden="true">#</a> Connecting the frontend to Lightsail</h3>
+<p>Always set <code>ENV = 'prod'</code> in <code>frontend/src/config/api.ts</code> before any production <code>eas build</code>. The <code>ENV</code> selector (<code>'local' | 'dev' | 'prod'</code>) picks the backend: <code>'prod'</code> → <code>https://api.tryon-mirror.ai/api</code>, <code>'dev'</code> → <code>https://api-dev.tryon-mirror.ai/api</code>, <code>'local'</code> → your dev URL. A dev build with <code>ENV !== 'prod'</code> logs a <code>console.warn</code> reminder; never ship a non-<code>prod</code> value to the App Store.</p>
+<h2 id="14-rollback-procedure" tabindex="-1"><a class="header-anchor" href="#14-rollback-procedure" aria-hidden="true">#</a> 14. Rollback Procedure</h2>
+<p>If deployment fails:</p>
+<pre><code class="language-bash"># Check which version is running
+git log --oneline -5
+
+# Rollback to previous commit
+git checkout &lt;previous-commit-hash&gt;
+
+# Rebuild and restart
+docker compose -f docker-compose.prod.yml up -d --build
+</code></pre>
+<h2 id="15-local-vs-live-development" tabindex="-1"><a class="header-anchor" href="#15-local-vs-live-development" aria-hidden="true">#</a> 15. Local vs Live Development</h2>
+<p>The frontend can connect to a local backend, the dev Lightsail server, or the live (production) Lightsail server.</p>
+<h3 id="configuration" tabindex="-1"><a class="header-anchor" href="#configuration" aria-hidden="true">#</a> Configuration</h3>
+<p>Edit <code>frontend/src/config/api.ts</code> — the <code>ENV</code> constant is a 3-way switch:</p>
+<pre><code class="language-typescript">// 'local' | 'dev' | 'prod' — picks which backend the app talks to.
+const ENV = 'prod' as ApiEnv;
+
+const LOCAL_URL = 'http://localhost:3000/api';
+const DEV_URL   = 'https://api-dev.tryon-mirror.ai/api';   // dev Lightsail server
+const LIVE_URL  = 'https://api.tryon-mirror.ai/api';        // production
+</code></pre>
+<p>A dev build with <code>ENV !== 'prod'</code> logs a <code>console.warn</code> reminder. See §16 for the dev server itself.</p>
+<h3 id="local-development" tabindex="-1"><a class="header-anchor" href="#local-development" aria-hidden="true">#</a> Local Development</h3>
+<ol>
+<li>Set <code>ENV = 'local'</code> in <code>frontend/src/config/api.ts</code></li>
+<li>Start backend locally:<pre><code class="language-bash">cd backend
+npm run dev
+</code></pre>
+</li>
+<li>Start frontend:<pre><code class="language-bash">cd frontend
+npx expo start
+</code></pre>
+</li>
+</ol>
+<h3 id="testing-against-the-dev-or-live-server" tabindex="-1"><a class="header-anchor" href="#testing-against-the-dev-or-live-server" aria-hidden="true">#</a> Testing Against the Dev or Live Server</h3>
+<ol>
+<li>Set <code>ENV = 'dev'</code> (dev Lightsail server) or <code>ENV = 'prod'</code> (production) in <code>frontend/src/config/api.ts</code>. Use <code>'dev'</code> for testing changes; <code>'prod'</code> only when validating against production.</li>
+<li>Start the metro bundler with tunnel (so a physical device can reach it):<pre><code class="language-bash">cd frontend
+npx expo start --tunnel
+</code></pre>
+</li>
+<li>Open the <strong>dev client</strong> app on your device (NOT Expo Go) and scan the QR code or pick the project from &quot;Recently opened&quot;.</li>
+<li>The backend is already running on Lightsail — no local backend needed.</li>
+</ol>
+<blockquote>
+<p><strong>🚨 Expo Go does NOT work for this app.</strong> The app depends on native modules outside Expo Go's fixed module set (<code>expo-iap</code>, <code>expo-secure-store</code>, etc.). Launching in Expo Go fails at startup with <code>Cannot find native module 'ExpoIap'</code>. <strong>Every device-testing flow requires a dev client build</strong> — either a simulator/emulator build via <code>npx expo run:ios</code> / <code>npx expo run:android</code>, or an installed dev-client app via <code>eas build --profile development</code>. Once the dev client is installed, JS still hot-reloads from <code>npx expo start</code> like normal; only native dependency changes require a rebuild.</p>
+</blockquote>
+<h3 id="pre-commit-checklist" tabindex="-1"><a class="header-anchor" href="#pre-commit-checklist" aria-hidden="true">#</a> Pre-Commit Checklist</h3>
+<p>Before committing changes:</p>
+<ul>
+<li>Ensure <code>ENV = 'prod'</code> in <code>frontend/src/config/api.ts</code></li>
+<li>This ensures production builds always use the live server (a stray <code>'dev'</code>/<code>'local'</code> value shipped to the App Store would point real users at the wrong backend)</li>
+</ul>
+<h2 id="16-dev-server-setup" tabindex="-1"><a class="header-anchor" href="#16-dev-server-setup" aria-hidden="true">#</a> 16. Dev Server Setup</h2>
+<p>A parallel <strong>dev</strong> environment on a separate Lightsail instance lets you test backend changes, schema migrations, and Sandbox in-app purchases without touching production data or the live App Store app. It mirrors the production stack via <code>docker-compose.dev.yml</code> + <code>nginx/nginx.dev.conf</code>, served at <code>https://api-dev.tryon-mirror.ai</code>.</p>
+<p><strong>Branch model:</strong> the dev server tracks the <strong><code>develop</code></strong> branch (production tracks <code>main</code>). Deploys are manual, same as prod.</p>
+<p><strong>What makes it isolated from prod:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Production</th>
+<th>Dev</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server</td>
+<td>prod Lightsail</td>
+<td>separate dev Lightsail</td>
+</tr>
+<tr>
+<td>Compose file</td>
+<td><code>docker-compose.prod.yml</code></td>
+<td><code>docker-compose.dev.yml</code></td>
+</tr>
+<tr>
+<td>Domain / cert</td>
+<td><code>api.tryon-mirror.ai</code></td>
+<td><code>api-dev.tryon-mirror.ai</code></td>
+</tr>
+<tr>
+<td>Database / Redis</td>
+<td>prod volumes</td>
+<td>dev volumes (separate VM)</td>
+</tr>
+<tr>
+<td>S3 bucket</td>
+<td><code>evofaceflow-uploads</code></td>
+<td><code>evofaceflow-uploads-dev</code></td>
+</tr>
+<tr>
+<td>Apple env</td>
+<td><code>APPLE_ENVIRONMENT=Production</code></td>
+<td><code>APPLE_ENVIRONMENT=Sandbox</code></td>
+</tr>
+<tr>
+<td>JWT / admin secrets</td>
+<td>prod values</td>
+<td><strong>separate</strong> values</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Apple IAP note:</strong> there is <strong>no</strong> second App Store app or bundle ID. StoreKit routes any non–App-Store build (Expo dev client / TestFlight) through <strong>Sandbox</strong> automatically, and App Store Connect supports two Server Notification URLs — point the <strong>Sandbox</strong> URL at the dev server and leave <strong>Production</strong> on the live server.</p>
+</blockquote>
+<h3 id="161-provision-aws-dns-console" tabindex="-1"><a class="header-anchor" href="#161-provision-aws-dns-console" aria-hidden="true">#</a> 16.1 Provision (AWS / DNS console)</h3>
+<ol>
+<li>Create the dev Lightsail instance (Ubuntu 22.04) and attach a <strong>static IP</strong>.</li>
+<li>Add a DNS <strong>A record</strong>: <code>api-dev.tryon-mirror.ai</code> → the dev static IP.</li>
+<li>Create the <code>evofaceflow-uploads-dev</code> S3 bucket with the same hardening as prod: <strong>Block Public Access ON</strong>, <strong>versioning ON</strong>, lifecycle rule expiring noncurrent versions after 30 days. Grant the existing IAM user access to it.</li>
+</ol>
+<h3 id="162-base-setup-ssh" tabindex="-1"><a class="header-anchor" href="#162-base-setup-ssh" aria-hidden="true">#</a> 16.2 Base setup (SSH)</h3>
+<pre><code class="language-bash">ssh ubuntu@&lt;dev-static-ip&gt;
+# Docker + Compose + certbot (same as §1)
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker ubuntu
+sudo apt install -y docker-compose-plugin certbot
+exit   # log out/in so the docker group applies
+
+# Add swap BEFORE the first build — see §1 &quot;Configure swap space&quot;.
+# The dev box is typically a small plan; without swap the tsc build hangs.
+# ssh back in, then:
+#   sudo fallocate -l 2G /swapfile &amp;&amp; sudo chmod 600 /swapfile
+#   sudo mkswap /swapfile &amp;&amp; sudo swapon /swapfile
+#   echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+ssh ubuntu@&lt;dev-static-ip&gt;
+sudo mkdir -p /opt/evofaceflow &amp;&amp; sudo chown ubuntu:ubuntu /opt/evofaceflow
+cd /opt/evofaceflow
+# Private repo — set up a read-only deploy key first (see §2 &quot;Clone Repository&quot;)
+git clone git@github.com:bruhnf/TryOn.git
+cd TryOn
+git checkout develop        # ← dev server tracks develop, NOT main
+</code></pre>
+<h3 id="163-tls-cert-before-bringing-up-nginx-ssh" tabindex="-1"><a class="header-anchor" href="#163-tls-cert-before-bringing-up-nginx-ssh" aria-hidden="true">#</a> 16.3 TLS cert — before bringing up nginx (SSH)</h3>
+<p><code>nginx.dev.conf</code> references <code>/etc/letsencrypt/live/api-dev.tryon-mirror.ai/</code>, so the cert must exist <strong>before</strong> nginx starts or the container won't boot. With nothing yet bound to port 80, use the standalone method (wait until the Phase 16.1 DNS record has propagated):</p>
+<pre><code class="language-bash">sudo certbot certonly --standalone -d api-dev.tryon-mirror.ai
+</code></pre>
+<h3 id="164-dev-env-files-ssh" tabindex="-1"><a class="header-anchor" href="#164-dev-env-files-ssh" aria-hidden="true">#</a> 16.4 Dev <code>.env</code> files (SSH)</h3>
+<p>Create both files (NOT committed — back them up; they're the only copy of their secrets):</p>
+<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
+cp .env.example .env                  # root: POSTGRES_USER/PASSWORD/DB (fresh dev values)
+cp backend/.env.example backend/.env  # then edit backend/.env
+</code></pre>
+<p>Values that <strong>must</strong> differ from prod:</p>
+<ul>
+<li><code>APPLE_ENVIRONMENT=Sandbox</code> ← the linchpin</li>
+<li><code>AWS_S3_BUCKET=evofaceflow-uploads-dev</code></li>
+<li>Fresh <code>JWT_SECRET</code>, <code>JWT_REFRESH_SECRET</code>, <code>ADMIN_API_KEY</code> (<code>openssl rand -hex 32</code> each) — so dev tokens can never authenticate against prod</li>
+<li><code>ALLOWED_ORIGINS</code> / <code>APP_URL</code> → dev equivalents</li>
+</ul>
+<p>Reuse from prod: <code>GROK_API_KEY</code> and AWS creds.</p>
+<p><strong>Apple root CAs</strong> need no action — the three <code>.cer</code> files in <code>backend/certs/apple/</code> are committed to the repo, so they arrived with your <code>git clone</code> and the Dockerfile's <code>COPY certs ./certs</code> bakes them into the image. Verify only:</p>
+<pre><code class="language-bash">ls backend/certs/apple/      # AppleIncRootCertificate.cer, AppleRootCA-G2.cer, AppleRootCA-G3.cer
+</code></pre>
+<p><strong>The App Store Server API <code>.p8</code> key</strong> is gitignored, so it is NOT in the repo and must be hand-carried. It powers only the admin &quot;Refresh from Apple&quot; button — Sandbox webhooks and receipt verification work without it. It must live in <code>backend/certs/</code> (not <code>secrets/</code>) so the same <code>COPY certs ./certs</code> step bakes it in. Copy it from your dev machine <strong>before</strong> the §16.5 build:</p>
+<pre><code class="language-powershell"># From the repo root on your local (Windows) machine:
+scp .\backend\certs\AuthKey_&lt;KEYID&gt;.p8 ubuntu@&lt;dev-static-ip&gt;:/opt/evofaceflow/TryOn/backend/certs/
+</code></pre>
+<p>Then set in the dev server's <code>backend/.env</code> (path is relative to the container's <code>/app</code> WORKDIR; the same <code>.p8</code> works for both Sandbox and Production):</p>
+<pre><code class="language-bash">APPLE_API_KEY_PATH=certs/AuthKey_&lt;KEYID&gt;.p8
+APPLE_API_KEY_ID=&lt;KEYID&gt;
+APPLE_API_KEY_ISSUER_ID=&lt;issuer UUID from App Store Connect → Users and Access → Integrations&gt;
+</code></pre>
+<p>Verify it reached the container after §16.5's build:</p>
+<pre><code class="language-bash">docker compose -f docker-compose.dev.yml exec backend ls certs/   # lists AuthKey_&lt;KEYID&gt;.p8 + apple/
+</code></pre>
+<h3 id="165-bring-it-up-migrate-ssh" tabindex="-1"><a class="header-anchor" href="#165-bring-it-up-migrate-ssh" aria-hidden="true">#</a> 16.5 Bring it up + migrate (SSH)</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml exec backend npx prisma migrate deploy
+curl https://api-dev.tryon-mirror.ai/health     # expect 200 with a valid cert
+</code></pre>
+<p>Because the dev DB starts empty, you can freely drop and recreate it while testing migrations.</p>
+<h3 id="166-wire-apple-sandbox-app-store-connect-console" tabindex="-1"><a class="header-anchor" href="#166-wire-apple-sandbox-app-store-connect-console" aria-hidden="true">#</a> 16.6 Wire Apple Sandbox (App Store Connect console)</h3>
+<ol>
+<li>App Store Connect → your app → <strong>App Store Server Notifications</strong> → set the <strong>Sandbox</strong> URL to <code>https://api-dev.tryon-mirror.ai/api/webhooks/apple</code> (leave the <strong>Production</strong> URL on <code>api.tryon-mirror.ai</code>).</li>
+<li><strong>Users and Access → Sandbox → Testers</strong> → create a sandbox tester Apple ID for $0 test purchases.</li>
+</ol>
+<h3 id="167-point-a-dev-client-build-at-it-local" tabindex="-1"><a class="header-anchor" href="#167-point-a-dev-client-build-at-it-local" aria-hidden="true">#</a> 16.7 Point a dev-client build at it (local)</h3>
+<p>Set <code>ENV = 'dev'</code> in <code>frontend/src/config/api.ts</code> (see §15), build a dev client (<code>eas build --profile development</code>), install it, and verify end-to-end — including a Sandbox purchase. <strong>Set <code>ENV = 'prod'</code> again before any production build.</strong></p>
+<h3 id="168-ongoing-dev-deploys" tabindex="-1"><a class="header-anchor" href="#168-ongoing-dev-deploys" aria-hidden="true">#</a> 16.8 Ongoing dev deploys</h3>
+<pre><code class="language-bash">ssh ubuntu@&lt;dev-static-ip&gt;
+cd /opt/evofaceflow/TryOn
+git pull                                            # develop
+docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml exec backend npx prisma migrate deploy
+</code></pre>
+<h2 id="troubleshooting" tabindex="-1"><a class="header-anchor" href="#troubleshooting" aria-hidden="true">#</a> Troubleshooting</h2>
+<h3 id="backend-wont-start" tabindex="-1"><a class="header-anchor" href="#backend-wont-start" aria-hidden="true">#</a> Backend won't start</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.prod.yml logs backend
+</code></pre>
+<p>Common issues:</p>
+<ul>
+<li>Missing environment variables in backend/.env</li>
+<li>Database not ready (wait for postgres healthcheck)</li>
+<li>Prisma schema out of sync (run migrations)</li>
+</ul>
+<h3 id="ssl-certificate-issues" tabindex="-1"><a class="header-anchor" href="#ssl-certificate-issues" aria-hidden="true">#</a> SSL certificate issues</h3>
+<pre><code class="language-bash"># Check certificate status
+sudo certbot certificates
+
+# Force renewal
+sudo certbot renew --force-renewal
+</code></pre>
+<h3 id="database-connection-issues" tabindex="-1"><a class="header-anchor" href="#database-connection-issues" aria-hidden="true">#</a> Database connection issues</h3>
+<pre><code class="language-bash"># Check postgres is running
+docker compose -f docker-compose.prod.yml exec postgres pg_isready
+
+# Connect to database
+docker compose -f docker-compose.prod.yml exec postgres psql -U tryon_prod tryon_db
+</code></pre>
+<h3 id="out-of-memory" tabindex="-1"><a class="header-anchor" href="#out-of-memory" aria-hidden="true">#</a> Out of memory</h3>
+<p><strong>Most common symptom:</strong> a deploy hangs for minutes at the <code>npm run build</code> / <code>tsc</code> step with no output. That's almost always RAM exhaustion during the TypeScript compile, not a broken build.</p>
+<ul>
+<li><strong>First fix — add swap.</strong> If <code>free -h</code> shows <code>Swap: 0B</code>, follow <a href="#1-initial-server-setup">§1 → Configure swap space</a>. A 2 GB swapfile lets <code>tsc</code> finish on a small instance. This resolved a hung dev-server build.</li>
+<li>Build with less contention: <code>docker compose -f &lt;file&gt; build backend</code> first (nothing else competing), then <code>up -d</code>.</li>
+<li>Upgrade to a 1 GB+ instance.</li>
+<li>Reduce Redis <code>maxmemory</code> (currently 256mb in the compose <code>command:</code>).</li>
+<li>Set <code>NODE_OPTIONS=&quot;--max-old-space-size=384&quot;</code> in backend env.</li>
+</ul>
+<hr>
+<h2 id="17-tier-a-lean-ha-build-migration-runbook-planned-not-yet-executed" tabindex="-1"><a class="header-anchor" href="#17-tier-a-lean-ha-build-migration-runbook-planned-not-yet-executed" aria-hidden="true">#</a> 17. Tier A-Lean HA build &amp; migration runbook (⏳ PLANNED — not yet executed)</h2>
+<blockquote>
+<p><strong>Status: future-readiness plan, NOT done.</strong> This turns the single-box prod
+stack (one 2GB box running Postgres+Redis+backend+nginx in one AZ = the SPOF)
+into a <strong>highly-available</strong> setup for ~<strong>$79/mo</strong>. See TODOS.md §9 for the
+strategy/why. <strong>Provisions paid resources (managed DB, LB) and migrates LIVE
+prod data — rehearse the whole thing on the DEV box first, and do the prod DB
+cutover in a scheduled window with rollback ready.</strong> Region: <code>us-east-1</code>.</p>
+<p><strong>Target (Tier A-Lean):</strong> 1× Lightsail Managed DB Postgres HA (<code>micro_ha_2_0</code>,
+1GB, $30) · 1× dedicated Redis instance ($7) · 2× app instances (<code>small_3_0</code>,
+2GB, $12 ea) across AZs 1a+1b · 1× Lightsail Load Balancer ($18). The LB also
+<strong>solves zero-downtime deploys for free</strong> (roll instances one at a time — no
+nginx blue/green hack needed).</p>
+</blockquote>
+<h3 id="phase-0-prerequisites-app-statelessness-do-these-before-provisioning" tabindex="-1"><a class="header-anchor" href="#phase-0-prerequisites-app-statelessness-do-these-before-provisioning" aria-hidden="true">#</a> Phase 0 — Prerequisites &amp; app-statelessness (do these BEFORE provisioning)</h3>
+<p>The app must be stateless to run on 2+ instances. Audit:</p>
+<ul>
+<li>✅ <strong>Auth</strong> is JWT (stateless) — no sticky sessions needed.</li>
+<li>✅ <strong>Uploads</strong> go straight to S3 (multer-s3) — no local disk state.</li>
+<li>✅ <strong>Splash/announcement image</strong> — DONE (2026-06-17): moved from the per-instance
+<code>SPLASH_DIR</code> file to a SINGLETON S3 object (<code>splash/</code> prefix), so it's
+consistent across instances. See <code>services/splashService.ts</code>. (<code>SPLASH_DIR</code> env
+is now deprecated/unused.)</li>
+<li>✅ <strong>BullMQ workers / <code>WORKER_ENABLED</code></strong> — DONE (2026-06-17): workers + schedulers
+start only when <code>env.workerEnabled</code> (default true; <code>index.ts</code> startWorkers via
+gated dynamic import; <code>vulnerabilityWorker</code> self-guards since admin.ts imports
+it). Set <code>WORKER_ENABLED=false</code> in an API-only node's <code>./backend/.env</code> so it
+serves traffic but doesn't process jobs. (BullMQ already prevents double-
+processing across workers; the flag controls total worker/Grok concurrency.)</li>
+<li>⚠️ <strong>fail2ban</strong> is per-instance and reads that box's nginx logs; with the LB in
+front, the real client IP arrives via <code>X-Forwarded-For</code>, and bans are
+per-instance. Edge protection should shift to <strong>Cloudflare WAF/rate-limiting</strong>
+in the multi-instance world (fail2ban stays as per-box defense-in-depth).</li>
+<li>Decide AZs (<code>us-east-1a</code> + <code>us-east-1b</code>) and confirm the ~$79/mo budget.</li>
+</ul>
+<h3 id="phase-1-externalize-redis-decouple-the-queue-from-the-app-box" tabindex="-1"><a class="header-anchor" href="#phase-1-externalize-redis-decouple-the-queue-from-the-app-box" aria-hidden="true">#</a> Phase 1 — Externalize Redis (decouple the queue from the app box)</h3>
+<ol>
+<li>Create a small instance for Redis (cheapest that fits; 1GB is plenty):
+<code>aws lightsail create-instances --instance-names tryon-redis --availability-zone us-east-1a --blueprint-id ubuntu_22_04 --bundle-id micro_3_0 --region us-east-1</code></li>
+<li>Install Docker; run Redis (<code>redis:7-alpine</code>, <code>--appendonly yes --maxmemory 256mb --maxmemory-policy noeviction</code>), bound to the instance's <strong>private</strong> IP only.</li>
+<li>Lightsail firewall on <code>tryon-redis</code>: open TCP 6379 <strong>only</strong> to the app instances' private IPs (not public).</li>
+<li>Repoint <code>REDIS_URL=redis://&lt;redis-private-ip&gt;:6379</code> and verify (BullMQ connects; queue health green).</li>
+</ol>
+<h3 id="phase-2-externalize-postgres-lightsail-managed-db-ha" tabindex="-1"><a class="header-anchor" href="#phase-2-externalize-postgres-lightsail-managed-db-ha" aria-hidden="true">#</a> Phase 2 — Externalize Postgres → Lightsail Managed DB (HA)</h3>
+<ol>
+<li>Provision the managed DB (HA = primary + standby across AZs, auto-failover, automated backups + PITR):
+<code>aws lightsail create-relational-database --relational-database-name tryon-db --relational-database-blueprint-id postgres_15 --relational-database-bundle-id micro_ha_2_0 --master-database-name tryon --master-username &lt;user&gt; --region us-east-1</code>
+(Set a strong master password; keep the DB <strong>private</strong> — no public access.)</li>
+<li><strong>Rehearse the migration on DEV first</strong> (provision a throwaway managed DB, dump/restore, repoint, validate, then tear it down).</li>
+<li><strong>Prod cutover (scheduled window, brief write-downtime):</strong>
+<ul>
+<li>Stop the backend (or enable a maintenance gate) to freeze writes.</li>
+<li><code>pg_dump</code> the on-box Postgres → restore into the managed DB endpoint.</li>
+<li>Repoint <code>DATABASE_URL</code> → the managed endpoint; <code>npx prisma migrate deploy</code>; restart; verify (<code>/health</code> 200, login, feed, a video job).</li>
+<li><strong>Rollback:</strong> if verification fails, repoint <code>DATABASE_URL</code> back to the on-box Postgres and restart (this is why the old box stays alive through cutover). The managed DB is the one near-irreversible step → rehearse it.</li>
+</ul>
+</li>
+<li>This is the same snapshot→restore→repoint procedure used to later resize the DB (1GB→2GB), so it doubles as the resize runbook.</li>
+</ol>
+<h3 id="phase-3-build-the-2-app-instances-app-nginx-only-stateless" tabindex="-1"><a class="header-anchor" href="#phase-3-build-the-2-app-instances-app-nginx-only-stateless" aria-hidden="true">#</a> Phase 3 — Build the 2 app instances (app + nginx only, stateless)</h3>
+<ol>
+<li><code>aws lightsail create-instances --instance-names tryon-app-1a tryon-app-1b --availability-zone us-east-1a</code> (run twice, once per AZ — or two calls) <code>--blueprint-id ubuntu_22_04 --bundle-id small_3_0 --region us-east-1</code>. Add swap (see §1).</li>
+<li>Install Docker, clone repo, create <code>.env</code> with <code>DATABASE_URL</code>→managed DB, <code>REDIS_URL</code>→Redis instance.</li>
+<li>✅ <strong>Compose variant created</strong> — <code>docker-compose.app.yml</code> (backend + nginx + fail2ban + alloy; <strong>no</strong> postgres/redis — external; DATABASE_URL/REDIS_URL/WORKER_ENABLED from <code>./backend/.env</code>; nginx on :80). Ready to use.</li>
+<li>✅ <strong>Behind-LB nginx created</strong> — <code>nginx/nginx.app.conf</code> (listens :80; <code>real_ip</code> via the Cloudflare + LB chain; admin allowlist + blocked-paths + <code>/t/</code> + CORS preserved). <code>nginx -t</code> validated. ⚠️ <strong>One placeholder to fill at provisioning:</strong> the <code>set_real_ip_from</code> for the Lightsail LB's source range (a <code>TODO</code> marks it) — until it's correct the admin allowlist/fail2ban would key on the LB IP. No Let's Encrypt on the instance (LB terminates TLS).</li>
+<li>Deploy on both instances; confirm each is healthy directly (<code>curl instance:80/health/live</code>).</li>
+</ol>
+<h3 id="phase-4-lightsail-load-balancer" tabindex="-1"><a class="header-anchor" href="#phase-4-lightsail-load-balancer" aria-hidden="true">#</a> Phase 4 — Lightsail Load Balancer</h3>
+<ol>
+<li><code>aws lightsail create-load-balancer --load-balancer-name tryon-lb --instance-port 80 --health-check-path /health/live --region us-east-1</code></li>
+<li>Attach both instances: <code>aws lightsail attach-instances-to-load-balancer --load-balancer-name tryon-lb --instance-names tryon-app-1a tryon-app-1b</code></li>
+<li>TLS: attach a Lightsail <strong>managed cert</strong> for <code>api.tryon-mirror.ai</code> (DNS-validated) → the LB terminates HTTPS; LB→instances over HTTP:80.</li>
+<li>Wait for both targets to read <strong>healthy</strong> in the LB.</li>
+</ol>
+<h3 id="phase-5-cutover-decommission" tabindex="-1"><a class="header-anchor" href="#phase-5-cutover-decommission" aria-hidden="true">#</a> Phase 5 — Cutover &amp; decommission</h3>
+<ol>
+<li>DNS: point <code>api.tryon-mirror.ai</code> at the <strong>LB</strong> (in Cloudflare, set the origin to the LB's DNS name; keep Cloudflare orange-cloud). Cloudflare → LB → instances.</li>
+<li>Verify end-to-end against the live domain: <code>/health</code>, login, feed (incl. video posters), a try-on + a video generation, IAP receipt path, <code>/admin</code> (allowlist via the realip chain), <code>/t/&lt;id&gt;</code> share page.</li>
+<li>Keep the <strong>old single box untouched for a few days</strong> as rollback (DNS revert + <code>DATABASE_URL</code> revert). Then snapshot it and delete.</li>
+</ol>
+<h3 id="phase-6-deploys-in-the-ha-world-zero-downtime-replaces-the-bluegreen-todo" tabindex="-1"><a class="header-anchor" href="#phase-6-deploys-in-the-ha-world-zero-downtime-replaces-the-bluegreen-todo" aria-hidden="true">#</a> Phase 6 — Deploys in the HA world (zero-downtime, replaces the blue/green TODO)</h3>
+<p>Deploy by updating <strong>one instance at a time</strong> behind the LB:</p>
+<ol>
+<li>On <code>tryon-app-1a</code>: <code>git pull &amp;&amp; docker compose -f docker-compose.app.yml up -d --build</code> → the LB health-check drops it while it restarts, traffic stays on <code>1b</code>.</li>
+<li>When <code>1a</code> is healthy in the LB, repeat on <code>1b</code>.</li>
+<li>Run <code>prisma migrate deploy</code> <strong>once</strong> (from either instance) — migrations must stay backward-compatible (expand/contract) since both versions briefly share the DB during a rolling deploy.
+This gives the zero-downtime deploys that the single-box blue/green item (TODOS §5) was chasing — for free, via the LB.</li>
+</ol>
+<h3 id="cost-recap" tabindex="-1"><a class="header-anchor" href="#cost-recap" aria-hidden="true">#</a> Cost recap</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Bundle</th>
+<th>$/mo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Managed Postgres HA</td>
+<td><code>micro_ha_2_0</code> (1GB)</td>
+<td>30</td>
+</tr>
+<tr>
+<td>App instance ×2</td>
+<td><code>small_3_0</code> (2GB)</td>
+<td>24</td>
+</tr>
+<tr>
+<td>Load Balancer</td>
+<td>—</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Redis instance</td>
+<td><code>micro_3_0</code> (1GB)</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>≈ 79</strong></td>
+</tr>
+</tbody>
+</table>
+<p>(Dev box stays a single <code>small_3_0</code> — no HA needed. Up-scale to Comfortable later by resizing the DB (Phase 2 procedure) and swapping app instances behind the LB — near-zero-downtime; see TODOS §9.)</p>
+
+  </main>
+</div>
+<footer class="footer">
+  <p>Generated from <code>DEPLOYMENT.md</code>. Run <code>npm run build:docs</code> to regenerate.</p>
+</footer>
+</body>
+</html>

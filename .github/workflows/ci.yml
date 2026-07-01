@@ -1,0 +1,112 @@
+# Tests-only CI. Deploys remain DELIBERATELY manual (SSH + docker compose on
+# Lightsail — see CLAUDE.md "CI/CD"); this workflow never touches a server.
+# It exists to catch what a local "looks fine" misses: type errors, test
+# regressions, and a dev API target accidentally committed for release.
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend — tsc + unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20 # match the production Docker image
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      # The unit tests are pure (no DB/network), but importing the services they
+      # cover triggers module-level init: config/env.ts hard-requires these JWT/
+      # admin vars, and some services construct a PrismaClient (which needs a
+      # syntactically valid DATABASE_URL). These are throwaway CI values — no
+      # real secret, no DB connection is made — they only let the imports load.
+      - run: npm test
+        env:
+          JWT_SECRET: ci-test-secret
+          JWT_REFRESH_SECRET: ci-test-refresh-secret
+          ADMIN_API_KEY: ci-test-admin-key
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+
+  frontend:
+    name: Frontend — tsc + jest-expo
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npx jest --ci --passWithNoTests
+      # Release safety: a committed ENV of 'dev'/'local' in api.ts would point
+      # an App Store build at the wrong backend. The working tree may flip it
+      # freely; committed code must always say 'prod'.
+      - name: Guard — api.ts must target prod
+        run: |
+          if ! grep -q "const ENV = 'prod' as ApiEnv" src/config/api.ts; then
+            echo "::error file=frontend/src/config/api.ts::Committed ENV must be 'prod' (found something else). Flip it back before committing."
+            exit 1
+          fi
+
+  audit:
+    name: Dependency audit (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true # advisory only — the runtime vulnerability scanner is the enforcing layer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Backend audit
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
+      - name: Frontend audit
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+  format:
+    name: Prettier format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+
+  docker:
+    name: Docker build (backend image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Verifies the backend image builds end-to-end (npm ci, prisma generate,
+      # tsc, runtime file copies) so a broken Dockerfile fails here instead of
+      # during a manual deploy. No push; gha cache keeps it fast.
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

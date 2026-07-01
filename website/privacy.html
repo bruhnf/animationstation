@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | TryOn Mirror</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .legal-page { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 6rem; line-height: 1.65; color: #1a1a1a; }
+    .legal-page h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+    .legal-page .updated { color: #707070; font-size: 0.875rem; margin-bottom: 2rem; }
+    .legal-page h2 { font-size: 1.25rem; margin-top: 2.5rem; margin-bottom: 0.75rem; }
+    .legal-page h3 { font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    .legal-page p, .legal-page li { font-size: 0.95rem; }
+    .legal-page ul { margin: 0.75rem 0 0.75rem 1.25rem; }
+    .legal-page li { margin-bottom: 0.4rem; }
+    .legal-page a { color: #000; }
+    .legal-page table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .legal-page th, .legal-page td { border: 1px solid #e8e8e8; padding: 0.6rem 0.75rem; text-align: left; vertical-align: top; }
+    .legal-page th { background: #f8f8f8; }
+    .legal-page .summary { background: #f8f8f8; border-left: 3px solid #000; padding: 1rem 1.25rem; margin: 1.5rem 0 2rem; border-radius: 4px; }
+    .legal-page .summary p { margin: 0 0 0.5rem; }
+    .legal-page .summary p:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo"><span class="logo-evo">TryOn</span><span class="logo-face">&nbsp;Mirror</span></a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/terms.html">Terms</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="legal-page">
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: June 11, 2026</p>
+
+    <p>This Privacy Policy describes how TryOn Mirror (a sole proprietorship of Bruhn Freeman; "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") collects, uses, and shares information when you use the TryOn Mirror mobile application and the tryon-mirror.ai website (collectively, the "<strong>Service</strong>"). By using the Service you agree to the practices described here.</p>
+
+    <div class="summary">
+      <p><strong>At a glance.</strong></p>
+      <p>&bull; The Service uses third-party AI (xAI's Grok Imagine API) to generate try-on images from photos you upload. We obtain your explicit in-app consent before any photo is sent.</p>
+      <p>&bull; We <strong>do not</strong> use your photos or AI-generated results to train any AI model &mdash; ours or anyone else's.</p>
+      <p>&bull; We <strong>do not</strong> sell your data, do not show third-party ads, do not include analytics or tracking SDKs, and do not track you across other companies' apps or websites.</p>
+      <p>&bull; You can delete all your photos, export your data, and permanently delete your account in-app from Settings &rarr; Privacy &amp; Data.</p>
+      <p>&bull; If you opt in to SMS, we send only transactional texts (account alerts &amp; verification codes) and <strong>never</strong> sell or share your mobile number or opt-in information with third parties for marketing. Reply STOP to cancel any time.</p>
+    </div>
+
+    <h2>1. Information We Collect</h2>
+
+    <h3>Information you provide</h3>
+    <ul>
+      <li><strong>Account information.</strong> Email address, username, password (stored as a one-way bcrypt hash), and optional first name, last name, bio, city, and state.</li>
+      <li><strong>Mobile phone number.</strong> Collected only if you opt in to our SMS program (see Section 16). Used solely to send transactional text messages (account notifications, security alerts, and one-time passcodes).</li>
+      <li><strong>Body photos.</strong> Up to three photos you choose to upload: a close-up profile photo, a full-body front photo, and a medium (waist-up) photo.</li>
+      <li><strong>Clothing photos.</strong> Photos of clothing items you photograph for try-on.</li>
+      <li><strong>Try-on results.</strong> AI-generated images produced from your body photos and clothing photos.</li>
+      <li><strong>Communications.</strong> Messages, comments, follows, likes, reports, and other content you create within the app.</li>
+      <li><strong>AI processing consent.</strong> The timestamp of your most recent affirmative in-app consent to send body and clothing photos to our AI provider.</li>
+    </ul>
+
+    <h3>Information collected automatically</h3>
+    <ul>
+      <li><strong>Usage data.</strong> Try-on counts, session activity, in-app navigation, and basic crash reports captured by the operating system.</li>
+      <li><strong>Device data.</strong> Device model, operating system version, app version, and approximate IP-based location (country, region, city). We do not collect precise GPS location.</li>
+      <li><strong>Login locations.</strong> The IP address and approximate location of each login and session-token refresh, used for security alerts. We retain only the most recent ten records per account.</li>
+    </ul>
+
+    <h3>Information from third parties</h3>
+    <ul>
+      <li><strong>Apple.</strong> When you make an in-app purchase, Apple sends us a verified transaction identifier and product details. We never receive your full payment-card information.</li>
+    </ul>
+
+    <h2>2. iOS Permissions We Request</h2>
+    <p>The Service requests the following iOS permissions. You can grant or revoke each one at any time in iOS Settings &rarr; TryOn Mirror.</p>
+    <table>
+      <thead><tr><th>Permission</th><th>Purpose</th><th>Optional?</th></tr></thead>
+      <tbody>
+        <tr><td>Camera</td><td>To photograph clothing items for virtual try-on. Clothing photos are processed by AI to generate images of you wearing them.</td><td>Yes &mdash; without it, you can still upload clothing photos from your photo library.</td></tr>
+        <tr><td>Photo Library</td><td>To upload body and clothing photos. Body photos are processed by AI (xAI Grok) to generate try-on images. You can delete them at any time from Settings.</td><td>Required to use the try-on feature.</td></tr>
+      </tbody>
+    </table>
+    <p>The Service does <strong>not</strong> request access to your contacts, calendar, microphone, motion sensors, health data, or precise location.</p>
+
+    <h2>3. How We Use Your Information</h2>
+    <ul>
+      <li>Provide the core try-on feature, including processing your body photos through AI to generate try-on images.</li>
+      <li>Maintain your account, authenticate logins, and detect suspicious activity.</li>
+      <li>Process subscriptions and credit purchases via Apple In-App Purchase.</li>
+      <li>Send transactional emails such as account verification, password reset, and security alerts. We do not send marketing emails.</li>
+      <li>Operate community features (feed, follows, likes, comments).</li>
+      <li>Moderate content and respond to user-submitted reports and blocks.</li>
+      <li>Comply with legal obligations and enforce our Terms of Service.</li>
+      <li>Improve the Service through aggregated, non-identifying analytics. We do not sell your personal information.</li>
+    </ul>
+
+    <h2>4. Legal Bases for Processing (EEA / UK)</h2>
+    <p>If you are in the European Economic Area or the United Kingdom, our legal bases under the GDPR / UK GDPR for processing your personal data are:</p>
+    <ul>
+      <li><strong>Performance of a contract</strong> (Art. 6(1)(b)) &mdash; for providing the Service, creating your account, and operating try-on, comments, follows, and likes.</li>
+      <li><strong>Consent</strong> (Art. 6(1)(a)) &mdash; for transmitting body and clothing photos to our third-party AI provider (xAI). You give this consent through the in-app consent dialog described in Section 5, and you may withdraw it at any time in Settings &rarr; Privacy &amp; Data.</li>
+      <li><strong>Legitimate interests</strong> (Art. 6(1)(f)) &mdash; for security alerts and suspicious-login detection, anti-abuse measures, and aggregated product analytics. Our interest is preventing fraud, abuse, and account takeover; we have assessed that this does not override your privacy interests because the data used (IP, approximate location) is minimal and retention is short.</li>
+      <li><strong>Legal obligation</strong> (Art. 6(1)(c)) &mdash; for retaining transaction records required by tax or consumer-protection law, and for responding to lawful requests from authorities.</li>
+    </ul>
+    <p>We do not engage in automated decision-making (including profiling) that produces legal or similarly significant effects on you. AI try-on generation is initiated by you, is cosmetic, and has no legal effect.</p>
+
+    <h2>5. AI Processing of Body Photos</h2>
+    <p>When you initiate a try-on, the Service sends your body photo (full-body and/or medium) and the clothing photo you supplied to <strong>xAI, Inc.</strong> via the Grok Imagine API, a third-party AI image-generation service. The result is returned to us, stored on our infrastructure, and made available to you in the app.</p>
+    <ul>
+      <li>The close-up / profile photo is <strong>never</strong> sent to AI services. It is used only as your profile picture inside the app.</li>
+      <li>Before any photo is transmitted to xAI, the app shows an explicit in-app consent dialog that names xAI, lists exactly what data will be sent, and requires you to tap "I Agree and Continue." Try-on requests are blocked server-side until that consent is on file.</li>
+      <li>You may revoke this consent at any time from Settings &rarr; Privacy &amp; Data &rarr; Revoke AI Processing Consent. Revoking blocks future try-ons until you re-confirm; previously generated results are not affected.</li>
+      <li>You may also delete your body photos and any AI-generated derivatives at any time from Settings.</li>
+      <li>xAI's processing of these images is governed by xAI's own privacy policy, available at <a href="https://x.ai/legal/privacy-policy">x.ai/legal/privacy-policy</a>.</li>
+    </ul>
+
+    <h3>5.1 We do not use your photos to train AI</h3>
+    <p>We do not use your body photos, clothing photos, or AI-generated results to train, fine-tune, evaluate, or develop any AI or machine-learning model &mdash; ours or anyone else's. The photos exist solely to generate the try-on result you requested and to be displayed back to you (and, only if you choose, to other users via the community feed).</p>
+
+    <h3>5.2 Generative AI labeling and safety</h3>
+    <p>Consistent with App Store Review Guideline 4.0 (Design &mdash; AI-Generated Content) and 5.1.8 (Privacy &mdash; Generative AI), every AI-generated image surfaced in the Service is clearly labeled with an "AI-generated" badge. We also provide in-app reporting and blocking tools so users can flag content for human review (see Section 14).</p>
+
+    <h2>6. Face Data</h2>
+    <p>Because the photos you upload (close-up profile, full-body, and waist-up) and the AI-generated try-on results all visually depict your face, this section describes how we treat that face data specifically.</p>
+
+    <h3>What face data we collect</h3>
+    <p>The only "face data" the Service collects is the photographic images themselves: the photos you choose to upload and the AI-generated try-on results derived from them. <strong>We do not perform face recognition, face detection, facial geometry mapping, biometric identification, or any other automated analysis of facial features.</strong> We do not extract or store face templates, embeddings, landmarks, or any biometric descriptors derived from your photos. We do not use ARKit Face APIs, the iOS Vision framework's face APIs, TrueDepth APIs, FaceID, or any other facial-analysis API.</p>
+
+    <h3>How we use face data</h3>
+    <p>The photos you upload are used for exactly three purposes, and nothing else:</p>
+    <ul>
+      <li><strong>Profile display.</strong> The close-up photo is shown as your profile picture inside the app. The full-body and waist-up photos are visible to you on your Profile screen so you can manage them.</li>
+      <li><strong>AI try-on generation.</strong> The full-body and waist-up photos are sent to xAI's Grok Imagine API together with a clothing photo you provide. The AI generates a new image of you wearing that clothing. The close-up photo is <strong>never</strong> sent to the AI service.</li>
+      <li><strong>Try-on history.</strong> AI-generated try-on results are saved to your account so you can view past try-ons, and&mdash;if you choose to make them public&mdash;display them on the in-app community feed under your username. Each result is also clearly labeled as AI-generated.</li>
+    </ul>
+    <p>We do <strong>not</strong> use face data for marketing, advertising, behavioral profiling, training our own or anyone else's machine-learning models, targeting recommendations, or analytics. We do not sell face data.</p>
+
+    <h3>Third parties that receive face data</h3>
+    <p>Face data is shared only with the service providers strictly required to operate the Service:</p>
+    <ul>
+      <li><strong>xAI, Inc. (Grok Imagine API).</strong> Receives your full-body and/or waist-up photo together with a clothing photo each time you initiate a try-on. xAI uses these images solely to generate the requested try-on result; their handling is governed by xAI's own privacy policy at <a href="https://x.ai/legal/privacy-policy">x.ai/legal/privacy-policy</a>. The close-up profile photo is never sent to xAI.</li>
+      <li><strong>Amazon Web Services (S3).</strong> Stores all uploaded photos and AI-generated results in a private S3 bucket with Block Public Access enabled. The Service does not make these objects publicly readable; the app retrieves them through short-lived presigned URLs.</li>
+    </ul>
+    <p>No other third party receives face data. We do not share face data with advertising networks, analytics providers, social networks, or data brokers.</p>
+
+    <h3>State biometric laws</h3>
+    <p>For users in Illinois (Biometric Information Privacy Act, BIPA), Texas (Capture or Use of Biometric Identifier Act, CUBI), Washington (RCW 19.375), and any other jurisdiction with a biometric-information statute: as stated above, the Service does <strong>not</strong> collect, capture, purchase, receive through trade, or otherwise obtain any biometric identifier or biometric information as defined by those statutes. The Service stores photographic images only, and does not derive any biometric template, scan, geometry, or other biological/behavioral characteristic from them. To the extent any of those statutes might be interpreted to cover the photographic images themselves, by uploading photos to the Service you provide written, informed consent to their collection, storage, and disclosure to the AI provider and storage provider identified in this Policy, for the purposes described herein.</p>
+
+    <h3>Where face data is stored</h3>
+    <p>All face data is stored in our private Amazon Web Services S3 bucket in the United States. Access is gated by short-lived signed URLs generated server-side; there is no public bucket policy permitting unauthenticated reads.</p>
+
+    <h3>How long face data is retained</h3>
+    <ul>
+      <li>Uploaded photos (close-up, full-body, waist-up) are retained until you delete them in Settings, replace them, or delete your account.</li>
+      <li>AI-generated try-on results are retained until you delete the individual result in the app or delete your account.</li>
+      <li>When you delete your account, your face data (all uploaded photos and all AI-generated results) is removed from our database and from our S3 storage within 30 days of the account-deletion request. Aggregated, non-identifying analytics may be retained.</li>
+      <li>There is no automatic expiration; nothing happens to your photos until you take an explicit action.</li>
+    </ul>
+
+    <h3>Your control over face data</h3>
+    <p>From the in-app Settings &gt; Privacy &amp; Data screen, you can at any time: delete all body photos, export all your data including face data, revoke AI processing consent, or permanently delete your account (which deletes all face data).</p>
+
+    <h2>7. How We Share Information</h2>
+    <p>We share information only with the service providers required to operate the Service:</p>
+    <table>
+      <thead><tr><th>Provider</th><th>Purpose</th><th>Data shared</th></tr></thead>
+      <tbody>
+        <tr><td>xAI, Inc. (Grok Imagine)</td><td>AI try-on image generation</td><td>Body photo (full-body or medium), clothing photo</td></tr>
+        <tr><td>Amazon Web Services (S3, SES)</td><td>Image storage and transactional email</td><td>All user content; account email</td></tr>
+        <tr><td>Apple, Inc.</td><td>In-app purchase processing and App Store Server Notifications</td><td>Apple Account identifier, transaction metadata</td></tr>
+        <tr><td>ip-api.com</td><td>IP-based geolocation for security alerts</td><td>IP address only</td></tr>
+        <tr><td>Functional Software, Inc. (Sentry)</td><td>Crash and error reporting (diagnostics only)</td><td>Error stack traces, device/OS model, app version, and an internal account ID; no photos, no email, no name, no IP retention &mdash; identifying fields are scrubbed before sending</td></tr>
+      </tbody>
+    </table>
+    <p>Each of these providers is contractually required (through their standard data processing addenda, business associate agreements, or equivalent commitments) to protect your information with safeguards substantially equivalent to those we use, to process your data only for the purpose for which we engaged them, and to comply with applicable privacy and data-protection law. We do not sell your personal information to third parties for advertising or other commercial purposes, and we do not "share" your personal information for cross-context behavioral advertising as defined by the California Consumer Privacy Act.</p>
+
+    <p>We also disclose information if we are legally required to do so by valid subpoena, court order, or other lawful demand, or to protect the rights, property, or safety of TryOn Mirror, our users, or the public.</p>
+
+    <h2>8. App Tracking, Analytics, and Advertising</h2>
+    <p>We do not engage in any of the following, on iOS or elsewhere:</p>
+    <ul>
+      <li><strong>Cross-app or cross-website tracking.</strong> We do not track your activity in other companies' apps or websites, and we do not request authorization under Apple's App Tracking Transparency framework because we have nothing to track.</li>
+      <li><strong>Third-party advertising.</strong> The Service contains no third-party advertisements and no advertising SDKs.</li>
+      <li><strong>Third-party analytics or attribution SDKs.</strong> No Google Analytics, no Firebase Analytics, no Crashlytics, no Amplitude, no Mixpanel, no Segment, no Branch, no AppsFlyer, no Adjust, no Facebook SDK, no TikTok SDK.</li>
+      <li><strong>Advertising identifiers.</strong> We do not read or store the iOS Identifier for Advertisers (IDFA).</li>
+      <li><strong>Cookies for tracking.</strong> The marketing website (tryon-mirror.ai) does not set tracking or advertising cookies. The app does not use cookies.</li>
+    </ul>
+    <p><strong>Crash and error reporting (Sentry).</strong> The app uses Sentry (Functional Software, Inc.) solely to report crashes and errors so we can find and fix bugs. Sentry receives error stack traces, device and OS model, app version, and an internal account ID used only to gauge how many users an error affects. We configure Sentry to exclude personal information: no photos, no email address, no name, and no performance/session tracking &mdash; errors only. Sentry is a diagnostics tool, not an analytics or advertising service, and the data is never used for marketing or profiling. Crash diagnostics that the iOS operating system separately collects and shares with Apple (and, if you opt in, with developers via the standard App Store crash reports) are subject to Apple's privacy policy, not ours.</p>
+
+    <h2>9. Data Retention</h2>
+    <ul>
+      <li><strong>Account data</strong> is retained for as long as your account is active.</li>
+      <li><strong>Body photos and AI-generated try-on results</strong> are retained until you delete them in Settings or delete your account.</li>
+      <li><strong>Login location records</strong> are pruned to the last ten entries per account automatically.</li>
+      <li><strong>Server logs</strong> containing IP addresses are retained for up to 30 days for security investigation, then deleted.</li>
+      <li><strong>Apple purchase records</strong> are retained for as long as required by tax and consumer-protection law (typically 7 years).</li>
+      <li><strong>After account deletion,</strong> we delete your account record, body photos, AI results, and personal data within 30 days. Aggregated, non-identifying analytics may be retained.</li>
+    </ul>
+
+    <h2>10. Your Privacy Rights</h2>
+
+    <h3>Rights available to all users</h3>
+    <p>From in-app Settings, you can at any time:</p>
+    <ul>
+      <li><strong>Access</strong> the personal data we hold about you by tapping <em>Export My Data (GDPR/CCPA)</em>. The export is delivered as a JSON file you can save or share.</li>
+      <li><strong>Correct</strong> account information from your profile.</li>
+      <li><strong>Delete</strong> your body photos, individual try-on results, or your entire account from Settings &rarr; Privacy &amp; Data. Account deletion is permanent and removes all personal data within 30 days as described in Section 9.</li>
+      <li><strong>Withdraw consent</strong> to AI processing at any time by tapping <em>Revoke AI Processing Consent</em>. Future try-ons will be blocked until you re-confirm consent.</li>
+      <li><strong>Block</strong> other users to make their content invisible to you and yours invisible to them.</li>
+    </ul>
+
+    <h3>Additional rights for residents of the European Economic Area, the United Kingdom, and Switzerland</h3>
+    <p>Under the GDPR / UK GDPR you also have the right to: <strong>access</strong> the personal data we hold about you (Art. 15); request <strong>rectification</strong> of inaccurate data (Art. 16); request <strong>erasure</strong> (Art. 17); request <strong>restriction</strong> of processing (Art. 18); object to processing based on legitimate interests (Art. 21); receive your data in a portable format (Art. 20); and <strong>withdraw consent</strong> at any time without affecting the lawfulness of processing carried out before withdrawal. To exercise any of these rights, contact <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a>. You also have the right to lodge a complaint with a supervisory authority in the EU/UK member state where you live or work.</p>
+
+    <h3>Additional rights for California residents (CCPA / CPRA)</h3>
+    <p>If you are a California resident, the California Consumer Privacy Act, as amended by the California Privacy Rights Act, gives you the following rights with respect to "personal information" as defined under California law:</p>
+    <ul>
+      <li><strong>Right to know</strong> what categories and specific pieces of personal information we have collected about you, the sources, the business or commercial purpose, and the categories of third parties we share it with.</li>
+      <li><strong>Right to delete</strong> personal information we have collected from you, subject to certain legal exceptions.</li>
+      <li><strong>Right to correct</strong> inaccurate personal information.</li>
+      <li><strong>Right to opt-out of the sale or sharing</strong> of personal information. <strong>We do not sell your personal information and we do not "share" it for cross-context behavioral advertising</strong>, so there is no opt-out link to provide.</li>
+      <li><strong>Right to limit the use and disclosure of sensitive personal information</strong>. We use sensitive personal information (the photos you upload) only for the limited purposes described in Section 5 (AI try-on generation, profile display, and try-on history) &mdash; uses that fall within the exceptions in Cal. Civ. Code § 1798.121(a) &mdash; so no further limitation right applies.</li>
+      <li><strong>Right to non-discrimination</strong> for exercising any of these rights.</li>
+    </ul>
+    <p>To exercise these rights, contact <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a>. We will verify your request using your account email and may ask for additional information to confirm your identity. Authorized agents may submit requests on your behalf with written authorization.</p>
+    <p><strong>Categories of personal information we have collected in the past 12 months</strong>, mapped to Cal. Civ. Code § 1798.140(v):</p>
+    <table>
+      <thead><tr><th>Category</th><th>Collected?</th></tr></thead>
+      <tbody>
+        <tr><td>Identifiers (email, username, IP address, device IDs)</td><td>Yes</td></tr>
+        <tr><td>Customer records (name, billing reference via Apple)</td><td>Yes</td></tr>
+        <tr><td>Protected classification characteristics</td><td>No</td></tr>
+        <tr><td>Commercial information (purchase history via Apple In-App Purchase)</td><td>Yes</td></tr>
+        <tr><td>Biometric information</td><td>No &mdash; photographic images only; no biometric template extraction (see Section 6)</td></tr>
+        <tr><td>Internet or network activity (app usage, session activity)</td><td>Yes</td></tr>
+        <tr><td>Geolocation data (approximate, IP-based)</td><td>Yes</td></tr>
+        <tr><td>Audio, electronic, visual, thermal, olfactory, or similar information (the photos you upload)</td><td>Yes &mdash; sensitive PI</td></tr>
+        <tr><td>Professional or employment information</td><td>No</td></tr>
+        <tr><td>Education information</td><td>No</td></tr>
+        <tr><td>Inferences drawn from the above</td><td>No</td></tr>
+        <tr><td>Sensitive personal information (photos depicting your face)</td><td>Yes &mdash; processed only for purposes in Section 5</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Other U.S. state privacy laws</h3>
+    <p>If you are a resident of Colorado (CPA), Connecticut (CTDPA), Virginia (VCDPA), Utah (UCPA), Texas (TDPSA), Oregon (OCPA), Montana, Tennessee, Iowa, Indiana, or any other state with a comprehensive consumer privacy law in effect, you have rights substantially similar to the California rights described above. To exercise them, contact <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a>.</p>
+
+    <h2>11. Security</h2>
+    <p>We protect your information with industry-standard safeguards including: bcrypt password hashing (cost factor &ge; 12); short-lived JWT access tokens and rotating refresh tokens; HTTPS-only transport (TLS 1.2+); private S3 buckets with Block Public Access enabled and short-lived presigned URL access; rate limiting and intrusion-detection (fail2ban) on the API; encryption at rest for backups; and least-privilege IAM policies for backup uploaders.</p>
+    <p>Despite these efforts, no system is fully secure. If a breach affecting your personal data occurs, we will notify you and the relevant supervisory authorities in accordance with applicable law (including GDPR Art. 33&ndash;34 and applicable U.S. state breach-notification statutes), generally within 72 hours of becoming aware.</p>
+
+    <h2>12. Children</h2>
+    <p>The Service is not directed to and is not intended for use by children under the age of 13 (or under 16 in the European Economic Area / United Kingdom). We do not knowingly collect personal information from children under these ages. If you are a parent or guardian and believe a child has provided us with personal information, contact <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a> and we will delete it as required by the Children's Online Privacy Protection Act (COPPA) and applicable law.</p>
+
+    <h2>13. International Transfers</h2>
+    <p>We operate the Service from infrastructure located in the United States. If you access the Service from outside the United States, your information will be transferred to, stored in, and processed in the United States. Where required by law &mdash; in particular for personal data originating in the European Economic Area, the United Kingdom, or Switzerland &mdash; we rely on appropriate safeguards, including the European Commission's Standard Contractual Clauses, the UK International Data Transfer Addendum, and (where applicable) the EU&ndash;U.S. Data Privacy Framework and its UK/Swiss extensions, to lawfully transfer your data. A copy of the relevant safeguards is available on request from <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a>.</p>
+
+    <h2>14. Content Moderation, Reporting, and Account Deletion</h2>
+    <p>Consistent with App Store Review Guidelines 1.2 (User-Generated Content) and 5.1.1(v) (Account Deletion):</p>
+    <ul>
+      <li><strong>In-app reporting and blocking</strong> are available from the three-dot menu on any try-on result, comment, or user profile. Reports are reviewed by us within 24 hours, and we may remove content, suspend accounts, or take other action.</li>
+      <li><strong>Account deletion</strong> is available in-app from Settings &rarr; Privacy &amp; Data &rarr; Delete Account. Deletion is permanent and removes all body photos, try-on results, personal data, comments, likes, follows, and Apple purchase records (subject to Section 9 retention exceptions). You do not need to email us to delete your account.</li>
+      <li><strong>AI-generated content labeling.</strong> Every AI-generated try-on result image is visibly labeled with an "AI-generated" badge whenever it is displayed in the Service.</li>
+    </ul>
+
+    <h2>15. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. The "Last updated" date at the top of this page reflects the most recent change. Material changes will be communicated by in-app notice or email. If a change expands the categories of data we collect, the uses we make of it, or the third parties with whom we share it, we will obtain renewed consent where required by law before applying the change to data we have already collected from you.</p>
+
+    <h2>16. SMS / Text Messaging Program</h2>
+    <p>If you opt in, TryOn Mirror sends <strong>transactional</strong> SMS text messages &mdash; account notifications, security and login alerts, and one-time passcodes (OTP) &mdash; to the U.S. mobile number you provide. This is not a marketing program; we do not send promotional texts.</p>
+    <ul>
+      <li><strong>Opt-in / consent.</strong> You consent to receive these messages by submitting your mobile number and checking the consent box on our SMS sign-up page at <a href="https://tryon-mirror.ai/sms.html">tryon-mirror.ai/sms.html</a> (or by providing your number and agreeing within the app). Consent is not a condition of any purchase.</li>
+      <li><strong>Message frequency.</strong> Message frequency varies based on your account activity.</li>
+      <li><strong>Cost.</strong> Message and data rates may apply, depending on your mobile carrier and plan.</li>
+      <li><strong>Opt-out.</strong> You can cancel at any time by replying <strong>STOP</strong> to any message. We will send one confirmation message and then stop sending SMS to that number. For help, reply <strong>HELP</strong> or contact <a href="mailto:support@tryon-mirror.ai">support@tryon-mirror.ai</a>.</li>
+      <li><strong>No sharing of mobile information.</strong> We do <strong>not</strong> sell, rent, or share your mobile phone number or your SMS consent / opt-in information with any third parties or affiliates for their own marketing or promotional purposes. Mobile opt-in data is used solely to deliver the messages described above; it is shared only with the messaging carriers and aggregators strictly necessary to transmit those messages to you.</li>
+      <li><strong>Data we store for this program.</strong> The mobile number you provide, your consent and its timestamp, and message-delivery metadata. You can request deletion of your number by replying STOP or contacting <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a>.</li>
+      <li><strong>Carrier disclaimer.</strong> Mobile carriers are not liable for delayed or undelivered messages.</li>
+    </ul>
+
+    <h2>17. Contact</h2>
+    <p>For privacy questions, requests to exercise your rights, or to report a concern, contact us at:</p>
+    <p>
+      <strong>TryOn Mirror</strong> (a sole proprietorship of Bruhn Freeman)<br>
+      2767 Route 44/55<br>
+      Gardiner, NY 12525, United States<br>
+      Privacy inquiries: <a href="mailto:privacy@tryon-mirror.ai">privacy@tryon-mirror.ai</a><br>
+      General support: <a href="mailto:support@tryon-mirror.ai">support@tryon-mirror.ai</a>
+    </p>
+    <p>If you are in the European Economic Area or the United Kingdom and we have not satisfactorily resolved your concern, you may lodge a complaint with your local data-protection supervisory authority.</p>
+
+    <p style="margin-top: 3rem;"><a href="/">&larr; Back to home</a></p>
+  </main>
+</body>
+</html>

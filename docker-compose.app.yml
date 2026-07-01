@@ -1,0 +1,135 @@
+# App-only stack for the Tier A-Lean HA setup (see DEPLOYMENT.md §17).
+#
+# Unlike docker-compose.dev.yml / .prod.yml (all-in-one box), this runs ONLY the
+# stateless app tier — backend + nginx + fail2ban + alloy — on each of the 2+
+# instances behind the Lightsail Load Balancer. Postgres and Redis are EXTERNAL
+# (Lightsail Managed DB HA + a dedicated Redis instance); their endpoints come
+# from this box's ./backend/.env (DATABASE_URL, REDIS_URL) — NOT hardcoded here.
+#
+# Per-instance role:
+#   WORKER_ENABLED=true  (default) → this instance also runs the BullMQ workers.
+#   WORKER_ENABLED=false           → API-only node (serves traffic, no job
+#                                    processing). Set it in this box's ./backend/.env.
+#
+# TLS is terminated at the Load Balancer, so nginx here listens on :80 only
+# (nginx.app.conf). NOT used yet — staged for the HA migration.
+#
+# Deploy on an app instance:
+#   git pull
+#   docker compose -f docker-compose.app.yml up -d --build
+#   # migrations run once from any instance: docker compose -f docker-compose.app.yml exec backend npx prisma migrate deploy
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    restart: always
+    env_file:
+      - ./backend/.env # provides DATABASE_URL (managed DB), REDIS_URL (Redis instance), WORKER_ENABLED
+    environment:
+      NODE_ENV: production
+      LOG_DIR: /var/log/tryon
+      FRONTEND_AUDIT_DIR: /app/frontend-audit
+      NODE_OPTIONS: --max-old-space-size=896
+      # NOTE: DATABASE_URL / REDIS_URL are intentionally NOT set here — they point
+      # at the EXTERNAL managed DB + Redis and come from ./backend/.env so each
+      # environment supplies its own endpoints.
+    volumes:
+      - backend_logs:/var/log/tryon
+      - ./frontend/package.json:/app/frontend-audit/package.json:ro
+      - ./frontend/package-lock.json:/app/frontend-audit/package-lock.json:ro
+      # No splash bind-mount: the splash now lives in S3 (splashService.ts), so it
+      # is consistent across all instances. No external Postgres/Redis services.
+    group_add:
+      - '1000'
+    # No depends_on — Postgres/Redis are external (not in this compose).
+    healthcheck:
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/health/live']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      # TLS terminates at the Lightsail Load Balancer; the LB forwards HTTP to
+      # the instance on :80. No :443 / Let's Encrypt on the instance.
+      - '80:80'
+    volumes:
+      - ./nginx/nginx.app.conf:/etc/nginx/nginx.conf:ro
+      - ./website:/var/www/website:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+      - external
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    restart: always
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./fail2ban/jail.local:/etc/fail2ban/jail.local:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - nginx_logs:/var/log/nginx:ro
+      - fail2ban_data:/data
+    environment:
+      - TZ=UTC
+      - F2B_LOG_LEVEL=INFO
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  alloy:
+    image: grafana/alloy:latest
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy_data:/var/lib/alloy/data
+    env_file:
+      - ./alloy/.env
+    depends_on:
+      - backend
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+volumes:
+  nginx_logs:
+  fail2ban_data:
+  backend_logs:
+  alloy_data:
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: bridge

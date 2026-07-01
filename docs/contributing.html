@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CONTRIBUTING — TryOn Docs</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <a href="index.html" class="brand">TryOn Docs</a>
+  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html">CLAUDE</a><a href="deployment.html">DEPLOYMENT</a><a href="contributing.html" class="active">CONTRIBUTING</a><a href="todos.html">TODOS</a><a href="release-notes.html">RELEASE NOTES</a><a href="testflight-checklist.html">TESTFLIGHT CHECKLIST</a></nav>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <h2 class="toc-title">On this page</h2>
+    <ul class="toc"><li><a href="#the-two-long-lived-branches">The two long-lived branches</a></li><li><a href="#tldr-the-standard-cycle">TL;DR — the standard cycle</a></li><li><a href="#1-why-branch-at-all">1. Why branch at all?</a><ul><li><a href="#branch-naming-convention">Branch naming convention</a></li></ul></li><li><a href="#2-making-commits">2. Making commits</a><ul><li><a href="#why-stage-specific-files-matters">Why &amp;quot;stage specific files&amp;quot; matters</a></li><li><a href="#commit-message-style">Commit message style</a></li><li><a href="#atomic-commits">Atomic commits</a></li></ul></li><li><a href="#3-pushing-to-github">3. Pushing to GitHub</a><ul><li><a href="#checking-sync-status">Checking sync status</a></li></ul></li><li><a href="#4-reviewing-the-diff-before-merging">4. Reviewing the diff before merging</a><ul><li><a href="#4a-terminal-quick-stats">4a. Terminal: quick stats</a></li><li><a href="#4b-terminal-actual-diffs">4b. Terminal: actual diffs</a></li><li><a href="#4c-github-pull-request-recommended-for-non-trivial-work">4c. GitHub Pull Request (recommended for non-trivial work)</a></li></ul></li><li><a href="#5-merging-into-main">5. Merging into main</a><ul><li><a href="#path-a-github-pull-request">Path A — GitHub Pull Request</a></li><li><a href="#path-b-terminal-fast-forward-merge">Path B — Terminal fast-forward merge</a></li></ul></li><li><a href="#6-cleanup-after-merge">6. Cleanup after merge</a></li><li><a href="#7-common-situations-gotchas">7. Common situations &amp;amp; gotchas</a><ul><li><a href="#i-committed-to-the-wrong-branch">&amp;quot;I committed to the wrong branch&amp;quot;</a></li><li><a href="#i-want-to-undo-my-last-commit-but-keep-the-changes">&amp;quot;I want to undo my last commit but keep the changes&amp;quot;</a></li><li><a href="#my-branch-is-out-of-date-with-main">&amp;quot;My branch is out of date with main&amp;quot;</a></li><li><a href="#i-accidentally-pushed-env-or-another-secret">&amp;quot;I accidentally pushed .env or another secret&amp;quot;</a></li><li><a href="#i-want-to-see-whats-on-a-remote-branch-without-checking-it-out">&amp;quot;I want to see what's on a remote branch without checking it out&amp;quot;</a></li><li><a href="#how-do-i-know-if-main-was-force-pushed">&amp;quot;How do I know if main was force-pushed?&amp;quot;</a></li></ul></li><li><a href="#8-generating-the-html-docs">8. Generating the HTML docs</a><ul><li><a href="#when-to-regenerate">When to regenerate</a></li><li><a href="#commands">Commands</a></li><li><a href="#adding-a-new-doc">Adding a new doc</a></li><li><a href="#what-the-script-does">What the script does</a></li><li><a href="#what-it-does-not-do">What it does NOT do</a></li></ul></li><li><a href="#9-what-this-project-does-not-use">9. What this project does NOT use</a></li><li><a href="#10-quick-reference-cheat-sheet">10. Quick-reference cheat sheet</a></li></ul>
+  </aside>
+  <main class="content">
+<h1 id="contributing-git-workflow" tabindex="-1"><a class="header-anchor" href="#contributing-git-workflow" aria-hidden="true">#</a> Contributing — Git Workflow</h1>
+<p>This file is the quick-reference for making changes to the TryOn codebase. It assumes you're a solo developer with a GitHub remote for hosting and review, using a <strong>two-line branch model</strong>: <code>develop</code> (dev) and <code>main</code> (production).</p>
+<blockquote>
+<p><strong>Related docs:</strong></p>
+<ul>
+<li><a href="deployment.html">DEPLOYMENT.md</a> — how to ship merged code to the Lightsail servers (deploys are manual, not auto-triggered by merges).</li>
+<li><a href="claude.html">CLAUDE.md</a> — repo architecture and conventions.</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="the-two-long-lived-branches" tabindex="-1"><a class="header-anchor" href="#the-two-long-lived-branches" aria-hidden="true">#</a> The two long-lived branches</h2>
+<table>
+<thead>
+<tr>
+<th>Branch</th>
+<th>Mirrors</th>
+<th>Deployed to</th>
+<th>Apple env</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>develop</code></td>
+<td>What's on <strong>dev</strong></td>
+<td>dev Lightsail (<code>docker-compose.dev.yml</code>)</td>
+<td>Sandbox</td>
+</tr>
+<tr>
+<td><code>main</code></td>
+<td>What's <strong>live</strong> in the App Store backend</td>
+<td>production Lightsail (<code>docker-compose.prod.yml</code>)</td>
+<td>Production</td>
+</tr>
+</tbody>
+</table>
+<p>Feature/fix branches are cut from <strong><code>develop</code></strong>, merged back into <strong><code>develop</code></strong>, tested on the dev server (and in an Expo dev-client build pointed at dev — see the <code>ENV</code> switch in <a href="frontend/src/config/api.ts">frontend/src/config/api.ts</a>), and only <strong>promoted to <code>main</code></strong> once verified. The live app and live data are only ever touched when you deploy <code>main</code>.</p>
+<p>Neither branch auto-deploys — both production and dev change only when you SSH in and <code>git pull</code> + <code>docker compose ... up</code> (see <a href="deployment.html">DEPLOYMENT.md</a>).</p>
+<hr>
+<h2 id="tldr-the-standard-cycle" tabindex="-1"><a class="header-anchor" href="#tldr-the-standard-cycle" aria-hidden="true">#</a> TL;DR — the standard cycle</h2>
+<p>For any non-trivial change:</p>
+<pre><code class="language-bash"># 1. Start from a fresh develop
+git checkout develop
+git pull origin develop
+
+# 2. Create a branch named for the work
+git checkout -b feature/short-description
+
+# 3. Edit code, commit small atomic chunks
+git add &lt;files&gt;
+git commit -m &quot;Short imperative message&quot;
+
+# 4. Push the branch to GitHub
+git push -u origin feature/short-description
+
+# 5. Open a PR on GitHub (base = develop), review the diff, merge (Rebase and merge)
+
+# 6. Back on your machine: sync develop and clean up
+git checkout develop
+git pull origin develop
+git fetch --prune
+git branch -d feature/short-description
+
+# 7. Deploy develop to dev and test on device (incl. Sandbox IAP).
+#    When it's verified, promote to production:
+git checkout main
+git pull origin main
+git merge --ff-only develop      # or open a develop -&gt; main PR
+git push origin main
+#    Then set ENV='prod' in config/api.ts, build the production EAS build,
+#    and deploy main to the production server.
+</code></pre>
+<p>That's the whole loop. The rest of this file explains the <em>why</em> behind each step and the gotchas.</p>
+<hr>
+<h2 id="1-why-branch-at-all" tabindex="-1"><a class="header-anchor" href="#1-why-branch-at-all" aria-hidden="true">#</a> 1. Why branch at all?</h2>
+<p>A branch is just a movable label pointing at a commit. Working on a branch (rather than directly on <code>main</code>) gives you four things:</p>
+<ol>
+<li><strong>A safety net.</strong> If the changes turn out to be wrong, you delete the branch — <code>main</code> was never touched.</li>
+<li><strong>A review checkpoint.</strong> You can diff the branch against <code>main</code> before merging, catching mistakes early.</li>
+<li><strong>Atomic merges.</strong> A whole feature lands as one logical unit. History stays readable.</li>
+<li><strong>Isolation from <code>main</code>'s state.</strong> If <code>main</code> is in App Store review and you don't want any new commits affecting production, branches keep your work staged.</li>
+</ol>
+<blockquote>
+<p><strong>TryOn-specific:</strong> Deploys to Lightsail are <strong>manual</strong> (<code>ssh + git pull + docker compose up</code>). Merging to <code>develop</code> or <code>main</code> does NOT auto-deploy. Feature work branches off <strong><code>develop</code></strong> and merges back into <code>develop</code> (the dev line); <code>main</code> only changes when you promote a verified <code>develop</code>. Neither line reaches a server until you SSH and pull.</p>
+</blockquote>
+<blockquote>
+<p><strong>Base-branch note:</strong> the diff/merge commands below are written against <code>main</code> for generality. When you're working a feature off <code>develop</code>, substitute <code>develop</code> for <code>main</code> in the <code>git diff develop...HEAD</code> / <code>git log develop..HEAD</code> comparisons. The promotion step (<code>develop → main</code>) is the one place you really do compare against <code>main</code>.</p>
+</blockquote>
+<h3 id="branch-naming-convention" tabindex="-1"><a class="header-anchor" href="#branch-naming-convention" aria-hidden="true">#</a> Branch naming convention</h3>
+<p>Pick a prefix that says <em>what kind of work</em>:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Use for</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>feature/</code></td>
+<td>New functionality or doc additions</td>
+<td><code>feature/docupdate</code>, <code>feature/deep-healthcheck</code></td>
+</tr>
+<tr>
+<td><code>fix/</code></td>
+<td>Bug fixes</td>
+<td><code>fix/login-rate-limit</code></td>
+</tr>
+<tr>
+<td><code>chore/</code></td>
+<td>Refactors, dep updates, cleanup</td>
+<td><code>chore/upgrade-prisma</code></td>
+</tr>
+<tr>
+<td><code>ops/</code></td>
+<td>Infra/deployment changes</td>
+<td><code>ops/hardening</code></td>
+</tr>
+</tbody>
+</table>
+<p>The text after the slash is short kebab-case. The name doesn't matter much technically — it's just a label — but consistent naming helps you (and future-you) scan branch lists.</p>
+<hr>
+<h2 id="2-making-commits" tabindex="-1"><a class="header-anchor" href="#2-making-commits" aria-hidden="true">#</a> 2. Making commits</h2>
+<pre><code class="language-bash"># See what changed
+git status                # Which files are modified / staged / untracked
+git diff                  # Show unstaged changes (working tree vs index)
+git diff --staged         # Show staged changes (index vs last commit)
+
+# Stage specific files (preferred — don't blindly `git add .`)
+git add CLAUDE.md DEPLOYMENT.md
+
+# Or stage interactively, one chunk at a time
+git add -p
+
+# Commit with a message
+git commit -m &quot;Short imperative summary (under 60 chars)&quot;
+</code></pre>
+<h3 id="why-stage-specific-files-matters" tabindex="-1"><a class="header-anchor" href="#why-stage-specific-files-matters" aria-hidden="true">#</a> Why &quot;stage specific files&quot; matters</h3>
+<p><code>git add .</code> or <code>git add -A</code> adds <em>everything</em> in the working tree — including files you didn't mean to commit (<code>.env</code> accidentally tracked, build output, scratch files, secrets). Adding specific files is a five-second habit that prevents very bad days. Use it.</p>
+<h3 id="commit-message-style" tabindex="-1"><a class="header-anchor" href="#commit-message-style" aria-hidden="true">#</a> Commit message style</h3>
+<ul>
+<li><strong>First line:</strong> imperative (&quot;Add X&quot;, &quot;Fix Y&quot;, &quot;Update Z&quot;), under ~60 chars, no trailing period.</li>
+<li><strong>Blank line, then a body</strong> for non-trivial changes — explain the <em>why</em>, not the <em>what</em> (the diff already shows what).</li>
+<li>Reference issue/PR numbers if relevant: <code>Fix #42</code>.</li>
+</ul>
+<p>Bad: <code>stuff</code>, <code>wip</code>, <code>more changes</code>
+Good: <code>Add deep /health endpoint that probes Postgres + Redis</code></p>
+<h3 id="atomic-commits" tabindex="-1"><a class="header-anchor" href="#atomic-commits" aria-hidden="true">#</a> Atomic commits</h3>
+<p>A commit should represent one logical change. If you've done two unrelated things (added a feature AND fixed a typo), make two commits — <code>git add</code> only the relevant files for each. This makes review, revert, and <code>git bisect</code> (finding when a bug was introduced) much easier later.</p>
+<hr>
+<h2 id="3-pushing-to-github" tabindex="-1"><a class="header-anchor" href="#3-pushing-to-github" aria-hidden="true">#</a> 3. Pushing to GitHub</h2>
+<pre><code class="language-bash"># First push of a new branch — sets upstream tracking
+git push -u origin feature/your-branch
+
+# Subsequent pushes — tracking is already set
+git push
+</code></pre>
+<p>The <code>-u</code> (<code>--set-upstream</code>) flag tells git &quot;remember that this local branch tracks this remote branch.&quot; After that, <code>git status</code> will tell you when your local copy is ahead/behind the remote, and <code>git push</code> / <code>git pull</code> work without arguments.</p>
+<h3 id="checking-sync-status" tabindex="-1"><a class="header-anchor" href="#checking-sync-status" aria-hidden="true">#</a> Checking sync status</h3>
+<pre><code class="language-bash">git branch -vv
+</code></pre>
+<p>Shows each local branch with its tracking info. The bracketed string after the commit hash is the upstream — <code>[origin/feature/x]</code> means &quot;this branch tracks <code>origin/feature/x</code> on GitHub.&quot; Missing brackets = local-only branch.</p>
+<hr>
+<h2 id="4-reviewing-the-diff-before-merging" tabindex="-1"><a class="header-anchor" href="#4-reviewing-the-diff-before-merging" aria-hidden="true">#</a> 4. Reviewing the diff before merging</h2>
+<p>This is the most important step and the one most people skip. Three ways, in increasing order of friendliness:</p>
+<h3 id="4a-terminal-quick-stats" tabindex="-1"><a class="header-anchor" href="#4a-terminal-quick-stats" aria-hidden="true">#</a> 4a. Terminal: quick stats</h3>
+<pre><code class="language-bash"># File-level summary (which files changed, how many lines)
+git diff main...HEAD --stat
+
+# Just the names of changed files
+git diff main...HEAD --name-only
+
+# List commits on this branch that aren't on main
+git log main..HEAD --oneline
+</code></pre>
+<h3 id="4b-terminal-actual-diffs" tabindex="-1"><a class="header-anchor" href="#4b-terminal-actual-diffs" aria-hidden="true">#</a> 4b. Terminal: actual diffs</h3>
+<pre><code class="language-bash"># Full diff of every change against main
+git diff main...HEAD
+
+# Diff for one file only
+git diff main...HEAD -- backend/src/index.ts
+
+# Commit-by-commit with full diff for each
+git log -p main..HEAD
+</code></pre>
+<p><strong><code>..</code> vs <code>...</code> gotcha:</strong> in <code>git diff</code>, use <strong>three dots</strong> (<code>main...HEAD</code>) to compare the branch against the common ancestor with <code>main</code>. With <code>git log</code>, use <strong>two dots</strong> (<code>main..HEAD</code>) to list commits unique to the branch. Most people just memorize &quot;three dots for diff, two dots for log.&quot;</p>
+<h3 id="4c-github-pull-request-recommended-for-non-trivial-work" tabindex="-1"><a class="header-anchor" href="#4c-github-pull-request-recommended-for-non-trivial-work" aria-hidden="true">#</a> 4c. GitHub Pull Request (recommended for non-trivial work)</h3>
+<pre><code class="language-bash"># Push the branch first, then open a PR via the GitHub UI
+git push -u origin feature/your-branch
+</code></pre>
+<p>Then either:</p>
+<ul>
+<li>Visit <code>https://github.com/&lt;your-username&gt;/&lt;your-repo&gt;/compare/main...feature/your-branch</code> directly, or</li>
+<li>Go to your repo on GitHub → <strong>Pull requests</strong> tab → <strong>New pull request</strong> → set base=<code>main</code>, compare=your branch.</li>
+</ul>
+<p>The GitHub UI gives you:</p>
+<ul>
+<li>Side-by-side or unified diff with syntax highlighting</li>
+<li>File-by-file navigation with collapse/expand</li>
+<li>Line-by-line commenting (useful even when reviewing your own work — leaves a paper trail)</li>
+<li>A status check area where CI runs would surface (we don't have CI yet)</li>
+</ul>
+<p>A PR is overkill for a one-line typo fix. It's invaluable for anything you'd want to look at carefully or refer back to later.</p>
+<hr>
+<h2 id="5-merging-into-main" tabindex="-1"><a class="header-anchor" href="#5-merging-into-main" aria-hidden="true">#</a> 5. Merging into main</h2>
+<h3 id="path-a-github-pull-request" tabindex="-1"><a class="header-anchor" href="#path-a-github-pull-request" aria-hidden="true">#</a> Path A — GitHub Pull Request</h3>
+<p>After opening the PR (see §4c):</p>
+<ol>
+<li>Review the <strong>Files changed</strong> tab.</li>
+<li>Click the <strong>Merge pull request</strong> button.</li>
+<li><strong>Important — pick a merge style</strong> from the dropdown next to the button:
+<ul>
+<li><strong>Create a merge commit</strong> (default) — preserves the branch structure in history, creates a &quot;merged X into main&quot; commit.</li>
+<li><strong>Squash and merge</strong> — combines all your branch commits into a single commit on main. Tidy for PRs with many small WIP commits.</li>
+<li><strong>Rebase and merge</strong> — replays your branch commits onto main one at a time, no merge commit. Cleanest linear history. <strong>Recommended for solo work</strong> if you wrote good commit messages.</li>
+</ul>
+</li>
+<li>Confirm. GitHub also offers a <strong>Delete branch</strong> button after merge — click it to remove the remote branch.</li>
+</ol>
+<h3 id="path-b-terminal-fast-forward-merge" tabindex="-1"><a class="header-anchor" href="#path-b-terminal-fast-forward-merge" aria-hidden="true">#</a> Path B — Terminal fast-forward merge</h3>
+<pre><code class="language-bash">git checkout main
+git pull origin main                  # sync with remote first
+git merge feature/your-branch         # merge
+git push origin main                  # publish
+</code></pre>
+<p>If <code>main</code> hasn't moved since you branched, the merge will print <strong><code>Fast-forward</code></strong> — git just moves the <code>main</code> pointer to your branch's tip with no merge commit. Linear history preserved.</p>
+<p>If <code>main</code> HAS moved (someone else committed, or you committed to main directly while your branch was open), git will create a merge commit by default. To force a clean history in that case:</p>
+<pre><code class="language-bash"># Rebase your branch onto the latest main first, then fast-forward merge
+git checkout feature/your-branch
+git rebase main
+git checkout main
+git merge feature/your-branch         # now a clean fast-forward
+</code></pre>
+<p>Rebasing rewrites your branch's commits to appear <em>after</em> main's latest commit. Don't rebase a branch that someone else has based work on — it changes commit hashes and confuses their copy.</p>
+<hr>
+<h2 id="6-cleanup-after-merge" tabindex="-1"><a class="header-anchor" href="#6-cleanup-after-merge" aria-hidden="true">#</a> 6. Cleanup after merge</h2>
+<pre><code class="language-bash"># Switch back to main
+git checkout main
+
+# Pull the merge down (if you merged via GitHub PR; skip if you merged in terminal)
+git pull origin main
+
+# Remove tracking references for branches that GitHub deleted
+git fetch --prune
+
+# Delete the local copy of the merged branch
+git branch -d feature/your-branch
+
+# Delete the remote copy (if not already deleted via GitHub's &quot;Delete branch&quot; button)
+git push origin --delete feature/your-branch
+
+# Sanity check
+git branch -vv
+</code></pre>
+<p><strong>Flag meanings:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--prune</code></td>
+<td>Remove local tracking refs (like <code>origin/feature/x</code>) whose remote branch no longer exists. Stale tracking refs accumulate over time; this cleans them up.</td>
+</tr>
+<tr>
+<td><code>-d</code> (lowercase)</td>
+<td>&quot;Safe delete&quot; — refuses if the branch has commits not merged into upstream. After a successful merge, the safety check passes.</td>
+</tr>
+<tr>
+<td><code>-D</code> (uppercase)</td>
+<td>Force-delete, even unmerged. Almost always wrong — use it only if you knowingly want to discard work.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-common-situations-gotchas" tabindex="-1"><a class="header-anchor" href="#7-common-situations-gotchas" aria-hidden="true">#</a> 7. Common situations &amp; gotchas</h2>
+<h3 id="i-committed-to-the-wrong-branch" tabindex="-1"><a class="header-anchor" href="#i-committed-to-the-wrong-branch" aria-hidden="true">#</a> &quot;I committed to the wrong branch&quot;</h3>
+<pre><code class="language-bash"># You meant to commit on feature/x but you're on main with uncommitted changes
+git stash                             # park the work
+git checkout feature/x                # switch to the right branch
+git stash pop                         # restore the work
+
+# Or, if you already committed to main:
+git log -1                            # note the commit hash
+git reset --hard HEAD~1               # roll main back one commit (destructive — only if local-only)
+git checkout feature/x
+git cherry-pick &lt;commit-hash&gt;         # apply the commit on the right branch
+</code></pre>
+<h3 id="i-want-to-undo-my-last-commit-but-keep-the-changes" tabindex="-1"><a class="header-anchor" href="#i-want-to-undo-my-last-commit-but-keep-the-changes" aria-hidden="true">#</a> &quot;I want to undo my last commit but keep the changes&quot;</h3>
+<pre><code class="language-bash">git reset --soft HEAD~1               # undoes the commit, keeps changes staged
+git reset --mixed HEAD~1              # undoes commit, keeps changes unstaged (default)
+git reset --hard HEAD~1               # undoes commit AND throws away changes — irreversible
+</code></pre>
+<p>Never <code>--hard</code> reset commits that have been pushed and others may have pulled.</p>
+<h3 id="my-branch-is-out-of-date-with-main" tabindex="-1"><a class="header-anchor" href="#my-branch-is-out-of-date-with-main" aria-hidden="true">#</a> &quot;My branch is out of date with main&quot;</h3>
+<pre><code class="language-bash">git checkout feature/your-branch
+git fetch origin
+git rebase origin/main                # replay your commits on top of latest main
+# Resolve any conflicts, then:
+git push --force-with-lease           # only force-push if you're the only person on the branch
+</code></pre>
+<p><code>--force-with-lease</code> is safer than <code>--force</code>: it refuses to push if someone else has updated the remote branch in the meantime, preventing accidental overwrites.</p>
+<h3 id="i-accidentally-pushed-env-or-another-secret" tabindex="-1"><a class="header-anchor" href="#i-accidentally-pushed-env-or-another-secret" aria-hidden="true">#</a> &quot;I accidentally pushed <code>.env</code> or another secret&quot;</h3>
+<ol>
+<li><strong>Rotate the secret immediately.</strong> The git history is already on GitHub; the secret must be treated as compromised regardless of any history rewriting.</li>
+<li>Remove the file from history with <code>git filter-repo</code> or BFG Repo-Cleaner.</li>
+<li>Force-push the cleaned history.</li>
+<li>The old commits may still be cached by GitHub for a while; the secret rotation in step 1 is what actually protects you.</li>
+</ol>
+<p>This is why staging specific files (§2) and keeping <code>.env</code> in <code>.gitignore</code> matters.</p>
+<h3 id="i-want-to-see-whats-on-a-remote-branch-without-checking-it-out" tabindex="-1"><a class="header-anchor" href="#i-want-to-see-whats-on-a-remote-branch-without-checking-it-out" aria-hidden="true">#</a> &quot;I want to see what's on a remote branch without checking it out&quot;</h3>
+<pre><code class="language-bash">git fetch origin
+git log origin/main --oneline -10     # last 10 commits on remote main
+git diff main origin/main             # what does remote main have that local main doesn't
+</code></pre>
+<h3 id="how-do-i-know-if-main-was-force-pushed" tabindex="-1"><a class="header-anchor" href="#how-do-i-know-if-main-was-force-pushed" aria-hidden="true">#</a> &quot;How do I know if main was force-pushed?&quot;</h3>
+<pre><code class="language-bash">git fetch origin
+git log HEAD..origin/main             # commits on remote not in local
+git log origin/main..HEAD             # commits on local not in remote
+</code></pre>
+<p>If both lists are non-empty after fetch, history has diverged — someone force-pushed. Investigate before pulling.</p>
+<hr>
+<h2 id="8-generating-the-html-docs" tabindex="-1"><a class="header-anchor" href="#8-generating-the-html-docs" aria-hidden="true">#</a> 8. Generating the HTML docs</h2>
+<p>This repo ships HTML versions of the three top-level docs under <code>docs/</code>. They're regenerated from the <code>.md</code> sources by a Node script using <code>markdown-it</code>.</p>
+<h3 id="when-to-regenerate" tabindex="-1"><a class="header-anchor" href="#when-to-regenerate" aria-hidden="true">#</a> When to regenerate</h3>
+<p>After editing any of: <code>CLAUDE.md</code>, <code>DEPLOYMENT.md</code>, <code>CONTRIBUTING.md</code>. The <code>.md</code> files are the source of truth; the HTML is build output.</p>
+<h3 id="commands" tabindex="-1"><a class="header-anchor" href="#commands" aria-hidden="true">#</a> Commands</h3>
+<pre><code class="language-bash"># One-time setup (or after pulling new devDependencies):
+npm install
+
+# Regenerate docs/*.html from the markdown sources:
+npm run build:docs
+</code></pre>
+<p>Output goes to <code>docs/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/index.html</code></td>
+<td>(landing page, generated by the script itself)</td>
+</tr>
+<tr>
+<td><code>docs/claude.html</code></td>
+<td><code>CLAUDE.md</code></td>
+</tr>
+<tr>
+<td><code>docs/deployment.html</code></td>
+<td><code>DEPLOYMENT.md</code></td>
+</tr>
+<tr>
+<td><code>docs/contributing.html</code></td>
+<td><code>CONTRIBUTING.md</code></td>
+</tr>
+<tr>
+<td><code>docs/styles.css</code></td>
+<td>hand-maintained, not regenerated by the script</td>
+</tr>
+</tbody>
+</table>
+<p>Open any of them directly in a browser (<code>file://...</code>) or serve the <code>docs/</code> folder via any static server.</p>
+<h3 id="adding-a-new-doc" tabindex="-1"><a class="header-anchor" href="#adding-a-new-doc" aria-hidden="true">#</a> Adding a new doc</h3>
+<ol>
+<li>Create the <code>.md</code> file at the repo root.</li>
+<li>In <code>scripts/build-docs.js</code>, append an entry to the <code>sources</code> array:<pre><code class="language-js">{ md: 'YOUR_DOC.md', html: 'your-doc.html', title: 'YOUR_DOC', blurb: 'Short description.' },
+</code></pre>
+</li>
+<li>Run <code>npm run build:docs</code>. The new doc appears in the top nav of all pages and on the landing page.</li>
+</ol>
+<h3 id="what-the-script-does" tabindex="-1"><a class="header-anchor" href="#what-the-script-does" aria-hidden="true">#</a> What the script does</h3>
+<ul>
+<li>Parses each <code>.md</code> with <code>markdown-it</code> (GFM tables, fenced code, raw HTML allowed).</li>
+<li>Adds <code>id=&quot;slug&quot;</code> attributes to all H1–H4 headings via <code>markdown-it-anchor</code>.</li>
+<li>Extracts H2 + H3 headings to build a sidebar table of contents per page.</li>
+<li>Rewrites internal <code>.md</code> links to <code>.html</code> (case-insensitive) so cross-doc navigation works in the browser.</li>
+<li>Strips GitHub line-number anchors (<code>#L468</code>) that don't exist in the HTML.</li>
+<li>Wraps each rendered body in a layout template with the top nav and sidebar.</li>
+</ul>
+<h3 id="what-it-does-not-do" tabindex="-1"><a class="header-anchor" href="#what-it-does-not-do" aria-hidden="true">#</a> What it does NOT do</h3>
+<ul>
+<li>No syntax highlighting in code blocks (intentional — keeps the dependency surface tiny). If you want this later, add <code>highlight.js</code> or <code>prism</code> to the script.</li>
+<li>No CI step regenerates docs on push. Run <code>npm run build:docs</code> manually and commit the output.</li>
+</ul>
+<h2 id="9-what-this-project-does-not-use" tabindex="-1"><a class="header-anchor" href="#9-what-this-project-does-not-use" aria-hidden="true">#</a> 9. What this project does NOT use</h2>
+<ul>
+<li><strong>No CI/CD on push.</strong> No GitHub Actions are wired up. Merging to <code>main</code> does not trigger any automated build, test, or deploy. Production deploys are explicit SSH actions (see <a href="deployment.html#13-updating-the-application">DEPLOYMENT.md §13</a>).</li>
+<li><strong>No required code review.</strong> Solo dev — you review your own PRs. The discipline of opening one anyway gives you a paper trail and a moment to second-guess yourself.</li>
+<li><strong>No conventional-commits enforcement.</strong> Commit message style is encouraged but not mechanically required.</li>
+<li><strong>No branch protection rules on <code>main</code>.</strong> You <em>can</em> push directly to <code>main</code>, but the branch-then-PR flow gives you a habit and a checkpoint. Use it.</li>
+</ul>
+<hr>
+<h2 id="10-quick-reference-cheat-sheet" tabindex="-1"><a class="header-anchor" href="#10-quick-reference-cheat-sheet" aria-hidden="true">#</a> 10. Quick-reference cheat sheet</h2>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start a new branch from latest develop</td>
+<td><code>git checkout develop &amp;&amp; git pull &amp;&amp; git checkout -b feature/x</code></td>
+</tr>
+<tr>
+<td>Promote dev to production</td>
+<td><code>git checkout main &amp;&amp; git pull &amp;&amp; git merge --ff-only develop &amp;&amp; git push</code></td>
+</tr>
+<tr>
+<td>See what changed</td>
+<td><code>git status</code> / <code>git diff</code></td>
+</tr>
+<tr>
+<td>Stage and commit</td>
+<td><code>git add &lt;files&gt; &amp;&amp; git commit -m &quot;...&quot;</code></td>
+</tr>
+<tr>
+<td>Push first time</td>
+<td><code>git push -u origin feature/x</code></td>
+</tr>
+<tr>
+<td>Push again</td>
+<td><code>git push</code></td>
+</tr>
+<tr>
+<td>Compare branch to main</td>
+<td><code>git diff main...HEAD --stat</code></td>
+</tr>
+<tr>
+<td>List your branch's commits</td>
+<td><code>git log main..HEAD --oneline</code></td>
+</tr>
+<tr>
+<td>Merge via terminal</td>
+<td><code>git checkout main &amp;&amp; git pull &amp;&amp; git merge feature/x &amp;&amp; git push</code></td>
+</tr>
+<tr>
+<td>Delete local branch</td>
+<td><code>git branch -d feature/x</code></td>
+</tr>
+<tr>
+<td>Delete remote branch</td>
+<td><code>git push origin --delete feature/x</code></td>
+</tr>
+<tr>
+<td>Clean up stale refs</td>
+<td><code>git fetch --prune</code></td>
+</tr>
+<tr>
+<td>See all branches with tracking</td>
+<td><code>git branch -vv</code></td>
+</tr>
+<tr>
+<td>Undo last commit (keep changes)</td>
+<td><code>git reset --soft HEAD~1</code></td>
+</tr>
+<tr>
+<td>Stash uncommitted work</td>
+<td><code>git stash</code> / <code>git stash pop</code></td>
+</tr>
+</tbody>
+</table>
+
+  </main>
+</div>
+<footer class="footer">
+  <p>Generated from <code>CONTRIBUTING.md</code>. Run <code>npm run build:docs</code> to regenerate.</p>
+</footer>
+</body>
+</html>

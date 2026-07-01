@@ -1,0 +1,215 @@
+# ===========================================
+# TryOn Monorepo .gitignore
+# Backend: Node.js/Express + Prisma
+# Frontend: React Native/Expo
+# ===========================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+
+# Published splash/announcement images are runtime content, not source —
+# publish via the admin dashboard or a file drop on the server. Keep the dir
+# itself tracked (.gitkeep) so the docker bind mount always has a host dir.
+backend/splash/*
+!backend/splash/.gitkeep
+
+# Environment files (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+backend/.env
+frontend/.env
+alloy/.env
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+.next/
+
+# Logs
+logs/
+backend/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# IDE/Editor
+.idea/
+*.swp
+*.swo
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# OS files
+.DS_Store
+Thumbs.db
+*.DS_Store
+ehthumbs.db
+Desktop.ini
+._*
+
+# ===========================================
+# React Native / Expo
+# ===========================================
+
+# Expo local folders (device/user specific)
+.expo/
+.expo-shared/
+frontend/.expo/
+
+# EAS build artifacts
+*.eas-build-local.json
+eas-build-local.json
+
+# Expo web build
+web-build/
+frontend/web-build/
+
+# Expo generated types
+expo-env.d.ts
+
+# Generated native folders (Expo prebuild/eject)
+ios/
+android/
+frontend/ios/
+frontend/android/
+
+# Metro bundler
+.metro-health-check*
+
+# React Native cache
+.haste_map.fb.js
+
+# Kotlin build
+.kotlin/
+
+# Code signing (iOS/Android)
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+*.orig.*
+*.provisionprofile
+
+# ===========================================
+# Backend / Prisma
+# ===========================================
+
+# Prisma generated client (regenerated on install)
+backend/node_modules/.prisma/
+
+# SQLite (if used for local dev)
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal
+
+# ===========================================
+# Docker
+# ===========================================
+docker-data/
+postgres-data/
+redis-data/
+
+# ===========================================
+# Testing
+# ===========================================
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+__snapshots__/
+
+# ===========================================
+# AWS / Cloud
+# ===========================================
+.aws/
+.serverless/
+
+# ===========================================
+# Security / Secrets
+# ===========================================
+*.pem
+*.secret
+secrets/
+*.cert
+*.crt
+ssl/
+
+# ===========================================
+# Misc
+# ===========================================
+.cache/
+.turbo/
+*.tmp
+*.temp
+temp/
+/tmp/
+uploads/
+
+# Process/lock files
+*.pid
+*.seed
+*.pid.lock
+
+# Debug
+.fusebox/
+.dynamodb/
+
+# Parcel (if used)
+.parcel-cache/
+
+# Backup files
+*.bak
+*.backup
+*~
+*.seed
+
+# Optional npm cache
+.npm/
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache (.prettierignore is config and IS tracked)
+.prettiercache
+
+# Debug
+.node_repl_history
+
+# Claude Code personal/local settings (per-machine, not shared via the repo)
+.claude/settings.local.json
+
+# User-simulator test credentials (tests/.sim-credentials.example.json stays tracked)
+tests/.sim-credentials.json
+
+# User-simulator run reports (timestamped output, regenerated every run)
+tests/results/
+
+# App Store reviewer notes — contains demo-account passwords; keep local
+AppReviewerSummary.md
+
+# Public App Store "What's New" copy (per-version, user-facing) — kept local
+WHATS_NEW.md
+
+# Session work reports / AWS account inventory — local only. Contain account
+# structure, IAM user names, IPs, and resource names; do NOT publish to the remote.
+/EveNingWork.md
+/AWS_INVENTORY.md
+

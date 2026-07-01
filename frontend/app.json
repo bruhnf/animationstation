@@ -1,0 +1,204 @@
+{
+  "expo": {
+    "name": "AnimationStation",
+    "slug": "animationstation",
+    "version": "1.4.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bruhnfreeman.animationstation",
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "AnimationStation saves your AI-generated images and videos to your photo library when you choose to.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "C617.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "35F9.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "E174.1"
+            ]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeEmailAddress",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeName",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeUserID",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePhotosorVideos",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeOtherUserContent",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeCoarseLocation",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality",
+              "NSPrivacyCollectedDataTypePurposeAnalytics"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypePurchaseHistory",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          },
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          }
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.bruhnfreeman.animationstation",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "animationstation",
+    "plugins": [
+      "expo-secure-store",
+      "expo-iap",
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "AnimationStation uses your camera to capture photos for AI image and video generation. Photos are processed by AI (xAI Grok) to create your generated images and videos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "AnimationStation uses your photo library to upload photos and reference images, or a photo to animate into a video. These images are processed by AI (xAI Grok) to generate your images and videos. You can delete them at any time from Settings."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-font",
+      "expo-video",
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "bruhnfreemancom",
+          "project": "react-native"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "209e84f3-f3fa-458f-a26a-8b76023b2197"
+      },
+      "appleProducts": {
+        "subscriptions": {
+          "basicMonthly": "com.bruhnfreeman.animationstation.basic.monthly.v1",
+          "premiumMonthly": "com.bruhnfreeman.animationstation.premium.monthly.v1"
+        },
+        "credits": {
+          "FREE": {
+            "10": "com.bruhnfreeman.animationstation.credits.10.free.v1",
+            "25": "com.bruhnfreeman.animationstation.credits.25.free.v1",
+            "50": "com.bruhnfreeman.animationstation.credits.50.free.v1",
+            "100": "com.bruhnfreeman.animationstation.credits.100.free.v1"
+          },
+          "BASIC": {
+            "10": "com.bruhnfreeman.animationstation.credits.10.basic.v1",
+            "25": "com.bruhnfreeman.animationstation.credits.25.basic.v1",
+            "50": "com.bruhnfreeman.animationstation.credits.50.basic.v1",
+            "100": "com.bruhnfreeman.animationstation.credits.100.basic.v1"
+          },
+          "PREMIUM": {
+            "10": "com.bruhnfreeman.animationstation.credits.10.premium.v1",
+            "25": "com.bruhnfreeman.animationstation.credits.25.premium.v1",
+            "50": "com.bruhnfreeman.animationstation.credits.50.premium.v1",
+            "100": "com.bruhnfreeman.animationstation.credits.100.premium.v1"
+          }
+        }
+      }
+    },
+    "owner": "bruhnf"
+  }
+}

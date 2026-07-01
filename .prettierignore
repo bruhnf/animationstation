@@ -1,0 +1,28 @@
+# Dependencies & build output
+**/node_modules/
+backend/dist/
+frontend/.expo/
+frontend/android/
+frontend/ios/
+docs/
+**/coverage/
+
+# Generated / vendored
+backend/prisma/migrations/
+**/*.min.js
+package-lock.json
+
+# Markdown is owned by the docs-build pipeline (scripts/build-docs.js) and
+# prettier reflows prose — leave it out so formatting and docs stay decoupled.
+**/*.md
+
+# Static marketing site is separate from the app code the CI tests cover.
+website/
+**/*.html
+
+# Non-source assets
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.webp
+**/*.ico

@@ -1,0 +1,600 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+// Discriminates a clothing try-on (IMAGE) from an AI-animated clip (VIDEO).
+// Both live in the TryOnJob table so all downstream surfaces are shared.
+enum TryOnKind {
+  IMAGE
+  VIDEO
+}
+
+enum CreditTransactionType {
+  PURCHASE
+  GRANT
+  USAGE
+  REFUND
+}
+
+enum UserTier {
+  FREE
+  BASIC
+  PREMIUM
+}
+
+enum NotificationType {
+  FOLLOW
+  LIKE
+  TRYON_COMPLETE
+  COMMENT
+  COMMENT_REPLY
+  COMMENT_LIKE
+}
+
+enum ReportTargetType {
+  TRYON_JOB
+  USER
+  COMMENT
+}
+
+enum ReportReason {
+  INAPPROPRIATE
+  HARASSMENT
+  IMPERSONATION
+  SPAM
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED_REMOVED
+  RESOLVED_NO_ACTION
+}
+
+model User {
+  id                       String    @id @default(uuid())
+  // citext = case-insensitive at the DB level: the @unique index rejects
+  // "Bruhn" when "bruhn" exists, and every equality lookup matches either.
+  username                 String    @unique @db.Citext
+  // Nullable for guest accounts (isGuest=true), which are minted on first app
+  // open with no email/password so a user can browse and run a free try-on
+  // before signing up. Postgres allows multiple NULLs under a unique index, so
+  // @unique still enforces uniqueness for real (non-null) emails. A guest is
+  // upgraded to a real account via POST /auth/claim, which sets these fields.
+  // citext: case-insensitive uniqueness AND lookups — "Bruhn@x.com" can't
+  // register alongside "bruhn@x.com", and either form works at login.
+  email                    String?   @unique @db.Citext
+  // Anti-farming canonical form of `email` (lowercased, "+tag" subaddress
+  // stripped, Gmail dots removed — see utils/emailNormalize.ts). Used ONLY for
+  // duplicate detection at signup/claim so one inbox can't mint many accounts
+  // (and thus farm welcome + referral credits). Display/transactional mail
+  // still uses the verbatim `email`. Nullable for guests; @unique enforces the
+  // dedup for real accounts (Postgres allows multiple NULLs).
+  emailNormalized          String?   @unique @db.Citext
+  passwordHash             String?
+  // True for anonymous guest accounts. Guests carry real JWT tokens (so every
+  // requireAuth read endpoint works for them) but are rejected from social
+  // write endpoints by the blockGuests middleware, and their try-on results are
+  // forced private until they convert.
+  isGuest                  Boolean   @default(false)
+  // iOS identifierForVendor of the device that created this guest. Lets
+  // POST /auth/guest reuse the device's existing guest (isGuest=true) instead of
+  // minting a fresh row on every logout/reopen — eliminating churn and granting
+  // the welcome credits once per device. Stays set after conversion (harmless;
+  // the reuse lookup filters on isGuest=true). Null for web/Android/real signups.
+  deviceId                 String?
+  verified                 Boolean   @default(false)
+  verifyToken              String?
+  verifyTokenExpiry        DateTime?
+  passwordResetToken       String?
+  passwordResetTokenExpiry DateTime?
+  tier                     UserTier  @default(FREE)
+  credits                  Int       @default(0)
+  // Lifetime count of try-on sessions generated
+  tryOnCount               Int       @default(0)
+  // Lifetime count of try-on generations blocked by the AI provider's content
+  // moderation (revealing/sexual/banned-content attempts). Incremented by the
+  // try-on worker on a terminal CONTENT_MODERATED failure; surfaced in the admin
+  // dashboard and used to alert admins on repeat offenders (see moderationService).
+  moderationBlockCount     Int       @default(0)
+  // Timestamp of the user's most recent content-moderation block.
+  lastModerationBlockAt    DateTime?
+  // Set once at email verification when the one-time signup credit grant is
+  // applied. Retained for audit; no longer drives any logic.
+  lastFreeCreditGrantAt    DateTime?
+  // Timestamp of the user's most recent explicit consent to send body +
+  // clothing photos to xAI's Grok Imagine API. Null = no consent on file or
+  // revoked. Required by App Store Review Guidelines 5.1.1(i) / 5.1.2(i):
+  // the try-on submit endpoint refuses with AI_CONSENT_REQUIRED when null,
+  // and the client surfaces an explicit opt-in dialog before re-submitting.
+  aiProcessingConsentAt    DateTime?
+  // When set, the soft try-on throttle ignores jobs created before this time, so
+  // the user starts again with a clean burst. Stamped on every successful credit
+  // purchase / subscription so a user who buys credits is never left stuck in the
+  // pacing queue. See services/throttleService.ts (resetUserThrottle).
+  throttleResetAt          DateTime?
+  firstName                String?
+  lastName                 String?
+  bio                      String?
+  // The *Url columns below store an S3 key (e.g. "body-photos/<userId>/<file>.jpg"),
+  // not a public URL. The bucket is private; presigned GET URLs are minted at
+  // response time by services/imageUrlService.ts. Legacy rows may still hold
+  // full https://...amazonaws.com/... URLs — the presign helpers tolerate both.
+  // avatarUrl = close-up photo — used for profile display ONLY, never sent to Grok
+  avatarUrl                String?
+  // fullBodyUrl and mediumBodyUrl are the inputs for the Grok try-on API
+  fullBodyUrl              String?
+  mediumBodyUrl            String?
+  followingCount           Int       @default(0)
+  followersCount           Int       @default(0)
+  likesCount               Int       @default(0)
+  address                  String?
+  city                     String?
+  state                    String?
+  // Stable share code for the referral program (the user's username can change;
+  // this can't). Generated lazily the first time the user opens Invite Friends.
+  referralCode             String?   @unique
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  tryOnJobs          TryOnJob[]
+  locations          UserLocation[]
+  following          Follow[]            @relation("Follower")
+  followers          Follow[]            @relation("Following")
+  refreshTokens      RefreshToken[]
+  creditTransactions CreditTransaction[]
+  likes              Like[]
+  comments           Comment[]
+  commentLikes       CommentLike[]
+  notifications      Notification[]      @relation("NotificationRecipient")
+  actorNotifications Notification[]      @relation("NotificationActor")
+  applePurchases     ApplePurchase[]
+  reportsFiled       Report[]            @relation("ReportReporter")
+  blocking           UserBlock[]         @relation("BlockerUser")
+  blockedBy          UserBlock[]         @relation("BlockedUser")
+  closetItems        ClosetItem[]
+  referralsMade      Referral[]          @relation("Referrer")
+  referralReceived   Referral?           @relation("Referred")
+  savedLooks         SavedLook[]
+
+  // Fast lookup for device-scoped guest reuse (POST /auth/guest).
+  @@index([deviceId])
+  @@map("users")
+}
+
+// A user's bookmarked try-on result ("Saved Looks"). One row per (user, job).
+// Lets a user keep results they love in one place to re-view, re-share, or
+// re-run. Unique constraint makes a repeat save idempotent.
+model SavedLook {
+  id        String   @id @default(uuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  TryOnJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId, createdAt])
+  @@index([jobId])
+  @@map("saved_looks")
+}
+
+// Referral program: one row per referred user (a new account that signed up
+// with someone's referral code). Reward (credits to BOTH sides) is granted once,
+// at the referred user's email verification, when referralCreditGrant > 0.
+// referredUserId is unique so a user can only ever be referred once.
+model Referral {
+  id             String    @id @default(uuid())
+  referrerId     String
+  referredUserId String    @unique
+  // Credits granted to EACH side when the reward fired (0 until rewarded, or if
+  // the offer was disabled at verification time). rewardedAt marks completion.
+  creditsAwarded Int       @default(0)
+  rewardedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User @relation("Referred", fields: [referredUserId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId])
+  @@map("referrals")
+}
+
+// A virtual "custom clothing" item in the user's closet — an outfit image
+// generated by Grok Imagine from the user's text description (Outfit Designer).
+// The image lives in S3 under closet/<userId>/. When a closet item is used in
+// a try-on, its image is COPIED into clothing-photos/ for that job, so closet
+// deletion can never dangle a TryOnJob reference (the dead-image-ref lesson).
+model ClosetItem {
+  id          String   @id @default(uuid())
+  userId      String
+  // Short display label, derived from the description (editable later).
+  name        String
+  // The user's original outfit description (the wrapped prompt is rebuilt
+  // server-side at generation time and never stored).
+  description String
+  // S3 key (closet/<userId>/<uuid>.jpg) — presigned at response time.
+  imageUrl    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("closet_items")
+}
+
+// User-submitted report of objectionable content or behavior.
+// Required by App Store Review Guideline 1.2 for apps with UGC.
+model Report {
+  id           String           @id @default(uuid())
+  reporterId   String
+  targetType   ReportTargetType
+  // ID of the reported entity (TryOnJob.id when targetType=TRYON_JOB, User.id when targetType=USER).
+  targetId     String
+  reason       ReportReason
+  // Optional free-text from the reporter for additional context.
+  details      String?
+  status       ReportStatus     @default(OPEN)
+  // Admin's note when resolving the report.
+  resolverNote String?
+  resolvedAt   DateTime?
+  createdAt    DateTime         @default(now())
+
+  reporter User @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+// One row per "user A has blocked user B". Used to filter feeds and profile
+// visibility in both directions: blocked users do not see the blocker's
+// content either, to prevent retaliation discovery.
+model UserBlock {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("user_blocks")
+}
+
+// Records of Apple In-App Purchase / StoreKit subscription receipts.
+// One row per StoreKit transaction; the `originalTransactionId` ties together
+// renewals of the same subscription so we can resolve the active entitlement.
+model ApplePurchase {
+  id                    String    @id @default(uuid())
+  userId                String
+  // Apple StoreKit transaction identifier (unique per renewal/purchase).
+  transactionId         String    @unique
+  // Original transaction id — stable across renewals of the same subscription.
+  originalTransactionId String
+  // App Store product identifier (e.g. com.evofaceflow.tryon.basic.monthly).
+  productId             String
+  // Subscription tier this purchase grants on our side.
+  tier                  UserTier
+  // Subscription expiration date as reported by Apple (null for non-subscription IAPs).
+  expiresAt             DateTime?
+  // Raw signed receipt / JWS payload for audit + re-verification.
+  rawReceipt            String?
+  // Set when StoreKit reports the user revoked/refunded the purchase.
+  revokedAt             DateTime?
+  // Most recent auto-renew preference reported by Apple's signedRenewalInfo.
+  // true  = will renew at expiresAt
+  // false = user turned off auto-renew; subscription ends at expiresAt (pending cancellation)
+  // null  = unknown (credit-pack purchase, or pre-existing row written before this field shipped)
+  autoRenewStatus       Boolean?
+  // Apple's Status enum from the Server API (Get All Subscription Statuses).
+  // 1 = ACTIVE, 2 = EXPIRED, 3 = BILLING_RETRY, 4 = BILLING_GRACE_PERIOD, 5 = REVOKED.
+  // Populated only by the admin "Refresh from Apple" action; webhooks don't carry this directly.
+  appleStatus           Int?
+  // When we last successfully pulled status from the App Store Server API for this row.
+  // Used in admin UI to show "Last synced X ago" so operators know how fresh the snapshot is.
+  lastSyncedFromAppleAt DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([originalTransactionId])
+  @@map("apple_purchases")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  // Rotation bookkeeping (only used when REFRESH_TOKEN_ROTATION is on).
+  // rotatedAt: when this token was consumed by a rotation (null = still active).
+  // replacedByToken: SHA-256 hash of the successor token minted at rotation.
+  // Together they let /auth/refresh tolerate a crash-in-the-gap (client rotated
+  // but force-closed before persisting the new token) without nuking the
+  // session — see authController.refreshToken. A rotated token whose successor
+  // was never itself used is that benign case; one whose successor has advanced
+  // is genuine reuse and revokes the family.
+  rotatedAt       DateTime?
+  replacedByToken String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model TryOnJob {
+  id                String    @id @default(uuid())
+  userId            String
+  status            JobStatus @default(PENDING)
+  isPrivate         Boolean   @default(false)
+  // IMAGE = a clothing try-on (the original feature). VIDEO = an AI-animated
+  // clip generated from a source image + a motion prompt (see VideoScreen).
+  // Videos reuse this table so every existing surface (feed, profile, looks,
+  // comments, likes, share, moderation, S3 cleanup) works unchanged.
+  kind              TryOnKind @default(IMAGE)
+  // The *Url columns below store an S3 key, not a public URL — the bucket is
+  // private and presigned GET URLs are minted at response time by
+  // services/imageUrlService.ts. Legacy rows may still hold full
+  // https://...amazonaws.com/... URLs; the presign helpers tolerate both.
+  // Nullable: VIDEO jobs have no clothing item (their input is a single source
+  // image stored in bodyPhotoUrl). IMAGE (try-on) jobs always set this.
+  clothingPhoto1Url String?
+  clothingPhoto2Url String?
+  resultFullBodyUrl String?
+  resultMediumUrl   String?
+  // IMAGE: primary body photo used as input (full body preferred, medium fallback).
+  // VIDEO: the source image being animated — also serves as the poster/thumbnail.
+  bodyPhotoUrl      String?
+  // VIDEO only: S3 key of the generated .mp4 result. Null for image try-ons.
+  videoUrl          String?
+  // VIDEO only: the user's motion/animation prompt (e.g. "wave and smile").
+  motionPrompt      String?   @db.VarChar(300)
+  // IMAGE (multi-image compose) only: the user's optional free-form prompt that
+  // drives the composition. Null/empty = neutral combine/enhance.
+  promptText        String?   @db.VarChar(300)
+  // which user body photo perspectives were used as inputs
+  perspectivesUsed  String[]
+  // denormalized like count for feed performance
+  likesCount        Int       @default(0)
+  // denormalized comment count for feed performance
+  commentsCount     Int       @default(0)
+  // user's credit balance at the moment the try-on was submitted (before any deduction)
+  creditsAtTime     Int?
+  // When the worker is scheduled to actually start this job. Null = start
+  // immediately. Non-null when the soft throttle deferred the submission so
+  // the client can render a "starts in X:XX" countdown. The BullMQ delay is
+  // the authoritative timer; this column is for client display only.
+  scheduledStartAt  DateTime?
+  // Optional user-authored title/caption shown under the result image on the
+  // community feed and on the web "My Try-Ons" page. Trimmed + length-capped
+  // (TRYON_TITLE_MAX_LENGTH) in the controller; null/empty = no caption.
+  title             String?   @db.VarChar(140)
+  errorMessage      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes         Like[]
+  comments      Comment[]
+  notifications Notification[]
+  savedLooks    SavedLook[]
+
+  @@map("tryon_jobs")
+}
+
+// User-authored comment on a TryOnJob. Comments are public when the parent
+// TryOnJob is public; private TryOnJobs are not commentable from the feed.
+// Authors can delete their own comment; the post owner can delete any
+// comment on their own post. Other users can Report instead.
+//
+// Threading: single-level (Instagram/TikTok-style). A reply has parentId set
+// to a top-level comment; replies cannot themselves have replies. Deleting a
+// parent cascades to its replies via the FK ON DELETE CASCADE.
+model Comment {
+  id        String   @id @default(uuid())
+  jobId     String
+  userId    String
+  body      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job           TryOnJob       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        Comment?       @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       Comment[]      @relation("CommentReplies")
+  likes         CommentLike[]
+  notifications Notification[]
+
+  @@index([jobId, createdAt])
+  @@index([userId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+// One row per (user, comment) like. Unique constraint enforces idempotency
+// — a second POST is a no-op rather than creating a duplicate.
+model CommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@map("comment_likes")
+}
+
+model UserLocation {
+  id                 String   @id @default(uuid())
+  userId             String
+  ip                 String
+  country            String?
+  region             String?
+  city               String?
+  latitude           Float?
+  longitude          Float?
+  timezone           String?
+  trigger            String?
+  suspiciousLocation Boolean  @default(false)
+  distanceFromLast   Float?
+  timestamp          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_locations")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
+model CreditTransaction {
+  id          String                @id @default(uuid())
+  userId      String
+  type        CreditTransactionType
+  amount      Int // positive for grants/purchases, negative for usage
+  description String?
+  createdAt   DateTime              @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("credit_transactions")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  TryOnJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([jobId])
+  @@map("likes")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  // recipient of the notification
+  userId    String
+  type      NotificationType
+  // user who triggered the notification (e.g., the follower or liker)
+  actorId   String?
+  // optional related try-on job (e.g., for LIKE or TRYON_COMPLETE)
+  jobId     String?
+  // optional related comment — set for COMMENT_REPLY (the parent comment that
+  // was replied to) and COMMENT_LIKE (the comment that was liked). Lets the
+  // mobile app deep-link into the thread and auto-scroll to that comment.
+  commentId String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user    User      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor   User?     @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  job     TryOnJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  comment Comment?  @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum ScanType {
+  NPM_BACKEND
+  NPM_FRONTEND
+  SYSTEM_PACKAGES
+  DOCKER_IMAGES
+  SSL_CERTIFICATE
+}
+
+enum VulnerabilitySeverity {
+  INFO
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+model VulnerabilityReport {
+  id                   String   @id @default(uuid())
+  scanType             ScanType
+  totalVulnerabilities Int      @default(0)
+  criticalCount        Int      @default(0)
+  highCount            Int      @default(0)
+  moderateCount        Int      @default(0)
+  lowCount             Int      @default(0)
+  infoCount            Int      @default(0)
+  details              String? // JSON string with full audit report
+  systemInfo           String? // OS version, Docker version, etc.
+  packagesChecked      Int? // Number of packages scanned
+  fixAvailable         Boolean  @default(false)
+  scanDurationMs       Int? // How long the scan took
+  errorMessage         String? // If scan failed
+  createdAt            DateTime @default(now())
+
+  @@index([scanType, createdAt])
+  @@map("vulnerability_reports")
+}
+
+// Consent records for the SMS messaging program (website opt-in at /sms.html).
+// One row per mobile number; re-opting-in upserts. STOP keyword opt-outs are
+// handled by AWS End User Messaging's opt-out list at the carrier layer; this
+// table records the web/app consent for compliance + future sending.
+model SmsOptIn {
+  id          String    @id @default(uuid())
+  phoneNumber String    @unique // E.164, e.g. +15551234567
+  consent     Boolean   @default(true)
+  consentText String? // snapshot of the disclosure the user agreed to
+  source      String? // e.g. "web:sms.html"
+  ipAddress   String?
+  optedInAt   DateTime  @default(now())
+  optedOutAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("sms_opt_ins")
+}

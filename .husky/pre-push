@@ -1,0 +1,17 @@
+# Pre-push guardrail — mirrors the CI checks (minus the Docker build, too heavy
+# for a local hook; CI covers that). Free stand-in for branch protection, which
+# GitHub gates behind Pro/public for private repos.
+#
+# Bypass in a genuine emergency with:  git push --no-verify
+set -e
+
+echo "[pre-push] Prettier format check…"
+npm run format:check
+
+echo "[pre-push] backend: lint + types + tests…"
+( cd backend && npm run lint && npx tsc --noEmit && npm test )
+
+echo "[pre-push] frontend: lint + types + tests…"
+( cd frontend && npm run lint && npx tsc --noEmit && npx jest --ci --passWithNoTests )
+
+echo "[pre-push] ✓ all checks passed"

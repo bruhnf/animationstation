@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Opt in to receive SMS account notifications, security alerts, and one-time passcodes from TryOn Mirror.">
+  <title>SMS Notifications | TryOn Mirror</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .sms-card { max-width: 540px; }
+    .sms-card .program { background: #f8f8f8; border-left: 3px solid #000; padding: 1rem 1.25rem; margin: 0 0 1.5rem; border-radius: 4px; font-size: 0.9rem; line-height: 1.55; }
+    .sms-card .program strong { display: block; margin-bottom: 0.35rem; }
+    .sms-consent { display: flex; gap: 0.6rem; align-items: flex-start; margin: 0.5rem 0 0.25rem; }
+    .sms-consent input[type="checkbox"] { margin-top: 0.2rem; width: 18px; height: 18px; flex-shrink: 0; }
+    .sms-consent label { font-size: 0.82rem; line-height: 1.5; color: #333; }
+    .sms-fineprint { font-size: 0.78rem; color: #707070; line-height: 1.5; margin-top: 1rem; }
+    .sms-fineprint a { color: #000; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="/" class="nav-logo"><span class="logo-evo">TryOn</span><span class="logo-face">&nbsp;Mirror</span></a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="auth-page">
+    <div class="auth-card sms-card">
+      <div class="auth-header">
+        <a href="/" class="nav-logo" style="font-size: 1.75rem;">
+          <span class="logo-evo">TryOn</span><span class="logo-face">&nbsp;Mirror</span>
+        </a>
+        <h1>SMS Notifications</h1>
+        <p>Get account alerts and verification codes by text</p>
+      </div>
+
+      <div class="program">
+        <strong>About this messaging program</strong>
+        TryOn Mirror sends <strong>account notifications, security &amp; login alerts, and one-time passcodes (OTP)</strong> by SMS to numbers that opt in below. This is a transactional program &mdash; we do not send marketing or promotional texts, and we never share your mobile number or opt-in information with third parties or affiliates for their marketing.
+      </div>
+
+      <div class="auth-error" id="errorMsg"></div>
+      <div class="auth-success" id="successMsg"></div>
+
+      <form id="smsForm" onsubmit="handleSmsOptIn(event)">
+        <div class="form-group">
+          <label for="phone">Mobile number</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            placeholder="(555) 123-4567"
+            required
+            autocomplete="tel"
+            inputmode="tel"
+          >
+          <small style="color: var(--color-gray-500); display: block; margin-top: 0.25rem;">
+            U.S. mobile number that can receive SMS.
+          </small>
+        </div>
+
+        <div class="sms-consent">
+          <input type="checkbox" id="consent" name="consent" required>
+          <label for="consent">
+            By checking this box, I agree to receive recurring automated text messages
+            (account notifications, security alerts, and one-time passcodes) from
+            TryOn Mirror at the mobile number provided. Consent is not a condition of any
+            purchase. Message frequency varies. Message and data rates may apply.
+            Reply <strong>STOP</strong> to unsubscribe or <strong>HELP</strong> for help.
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="margin-top: 1rem;">
+          Sign up for SMS alerts
+        </button>
+      </form>
+
+      <p class="sms-fineprint">
+        Message frequency varies. Message and data rates may apply. Reply <strong>STOP</strong>
+        to cancel at any time; reply <strong>HELP</strong> for help or contact
+        <a href="mailto:support@tryon-mirror.ai">support@tryon-mirror.ai</a>. Carriers are not
+        liable for delayed or undelivered messages. See our
+        <a href="/privacy.html">Privacy Policy</a> and
+        <a href="/terms.html">Terms of Service</a>.
+      </p>
+
+      <div class="auth-footer">
+        <p><a href="/">&larr; Back to home</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://api.tryon-mirror.ai/api';
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.innerHTML = msg;
+      el.classList.add('visible');
+    }
+    function hideError() { document.getElementById('errorMsg').classList.remove('visible'); }
+    function showSuccess(msg) {
+      const el = document.getElementById('successMsg');
+      el.innerHTML = msg;
+      el.classList.add('visible');
+    }
+
+    // Normalize a US number to E.164 (+1XXXXXXXXXX). Returns null if not 10/11 digits.
+    function toE164US(raw) {
+      const digits = (raw || '').replace(/\D/g, '');
+      if (digits.length === 10) return '+1' + digits;
+      if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
+      return null;
+    }
+
+    async function handleSmsOptIn(e) {
+      e.preventDefault();
+      hideError();
+
+      const phoneRaw = document.getElementById('phone').value;
+      const consent = document.getElementById('consent').checked;
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!consent) {
+        showError('Please check the consent box to opt in.');
+        return;
+      }
+      const phone = toE164US(phoneRaw);
+      if (!phone) {
+        showError('Please enter a valid 10-digit U.S. mobile number.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      try {
+        const res = await fetch(`${API_BASE}/sms/opt-in`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: phone,
+            consent: true,
+            source: 'web:sms.html',
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Something went wrong. Please try again.');
+        }
+
+        document.getElementById('smsForm').style.display = 'none';
+        showSuccess(`
+          <strong>You're opted in.</strong><br><br>
+          We've recorded your consent to receive SMS messages at <strong>${phone}</strong>.
+          You can reply <strong>STOP</strong> at any time to unsubscribe, or <strong>HELP</strong> for help.
+        `);
+      } catch (err) {
+        showError(err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign up for SMS alerts';
+      }
+    }
+  </script>
+</body>
+</html>

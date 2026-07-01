@@ -1,0 +1,208 @@
+# Dev stack — mirrors docker-compose.prod.yml but for the dev Lightsail
+# server. The ONLY structural difference from prod is the nginx config mount
+# (nginx.dev.conf instead of nginx.conf), which carries the dev domain
+# (api-dev.tryon-mirror.ai) and its own Let's Encrypt cert path.
+#
+# Everything else (service-name hostnames, named volumes) is intentionally
+# identical: this runs on a SEPARATE VM, so there is no collision with prod —
+# the dev Postgres/Redis volumes live only on the dev host.
+#
+# Dev-specific values (separate DB creds, separate S3 bucket,
+# APPLE_ENVIRONMENT=Sandbox, separate JWT/admin secrets) come from the dev
+# server's own ./backend/.env and root .env — NOT from this file.
+#
+# Deploy on the dev server:
+#   git pull                                               # develop branch
+#   docker compose -f docker-compose.dev.yml up -d --build
+#   docker compose -f docker-compose.dev.yml exec backend npx prisma migrate deploy
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    restart: always
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      LOG_DIR: /var/log/tryon
+      # Where the frontend package.json + package-lock.json are bind-mounted (see
+      # volumes below) so the vulnerability scanner can `npm audit` the frontend
+      # from inside the backend container — the ./backend build context has no
+      # ../frontend. See services/vulnerabilityService.ts.
+      FRONTEND_AUDIT_DIR: /app/frontend-audit
+      # Cap V8's old-space below the container limit so the heap is GC'd hard
+      # before Docker OOM-kills the process. Leaves ~128MB of the 1G ceiling for
+      # off-heap allocations (Sharp/libvips native buffers, stacks, code).
+      NODE_OPTIONS: --max-old-space-size=896
+      # Rotation ON in dev. The old force-close-between-rotate-and-persist
+      # logout is now handled SERVER-side: a rotated token is tombstoned (not
+      # deleted), and a replay whose successor was never itself used is treated
+      # as that benign crash-in-the-gap and recovered with a fresh token rather
+      # than revoking the family (see authController.refreshToken). Prod stays
+      # OFF until this grace logic has soaked on dev.
+      REFRESH_TOKEN_ROTATION: "true"
+      # Sentry (error tracking) is configured via ./backend/.env (env_file above),
+      # NOT here — listing the vars in this `environment:` block would override
+      # env_file with empty shell values. The whole integration is GATED on
+      # SENTRY_DSN: unset = disabled no-op. Optional vars: SENTRY_ENVIRONMENT,
+      # SENTRY_RELEASE, SENTRY_TRACES_SAMPLE_RATE, and — for the dashboard's
+      # "recent issues" feed — SENTRY_AUTH_TOKEN, SENTRY_ORG_SLUG,
+      # SENTRY_PROJECT_SLUG. See CLAUDE.md → Observability.
+    volumes:
+      - backend_logs:/var/log/tryon
+      # Frontend dependency manifests (read-only) for the vulnerability scanner's
+      # "Frontend (NPM)" audit — the ./backend build context has no ../frontend,
+      # so mount the two files the lockfile-only audit needs.
+      - ./frontend/package.json:/app/frontend-audit/package.json:ro
+      - ./frontend/package-lock.json:/app/frontend-audit/package-lock.json:ro
+      # Splash/announcement image dir (SPLASH_DIR). Bind-mounted so publishing,
+      # replacing, or removing the splash (admin dashboard upload, or a file
+      # drop into backend/splash/ on the host) takes effect immediately —
+      # no rebuild, no restart.
+      - ./backend/splash:/app/splash
+    # Add the host's primary group (gid 1000 = ubuntu) so the non-root container
+    # user (nodejs, uid 1001) can read the git-pull-owned manifests above even
+    # when umask 007 leaves them mode 660. Required for the frontend npm audit.
+    group_add:
+      - "1000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Liveness probe ONLY (/health/live is dependency-free). The deep /health
+    # probe returns 503 when Postgres/Redis are degraded — pointing Docker at it
+    # would kill an otherwise-healthy backend during a transient dep blip.
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./website:/var/www/website:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+      - external
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    restart: always
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./fail2ban/jail.local:/etc/fail2ban/jail.local:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - nginx_logs:/var/log/nginx:ro
+      - fail2ban_data:/data
+    environment:
+      - TZ=UTC
+      - F2B_LOG_LEVEL=INFO
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  # Grafana Alloy — scrapes the backend's Prometheus /metrics (reachable only on
+  # the internal network as backend:3000) and remote_writes to Grafana Cloud.
+  # Credentials live in ./alloy/.env (gitignored); config is alloy/config.alloy.
+  # NOTE: requires ./alloy/.env to exist on the host (GRAFANA_CLOUD_RW_URL/USER/
+  # PASSWORD). Not in backend's dependency chain, so it can't affect the app.
+  alloy:
+    image: grafana/alloy:latest
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy_data:/var/lib/alloy/data
+    env_file:
+      - ./alloy/.env
+    depends_on:
+      - backend
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+volumes:
+  postgres_data:
+  redis_data:
+  nginx_logs:
+  fail2ban_data:
+  backend_logs:
+  alloy_data:
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: bridge

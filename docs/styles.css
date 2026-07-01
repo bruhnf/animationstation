@@ -1,0 +1,385 @@
+/* TryOn Docs — shared stylesheet
+ * Generated alongside the HTML by scripts/build-docs.js
+ */
+
+:root {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #656d76;
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --code-bg: #f6f8fa;
+  --code-fg: #1f2328;
+  --border: #d0d7de;
+  --border-soft: #eaeef2;
+  --sidebar-bg: #fafbfc;
+  --callout-bg: #f6f8fa;
+  --callout-border: #0969da;
+  --max-content-width: 800px;
+  --sidebar-width: 260px;
+  --topbar-height: 56px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--topbar-height) + 12px); }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+/* -----  top bar  ----- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--topbar-height);
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.brand {
+  font-weight: 600;
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.docnav a {
+  margin-left: 1.25rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.docnav a:hover {
+  color: var(--accent);
+}
+
+.docnav a.active {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* -----  layout  ----- */
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.sidebar {
+  position: sticky;
+  top: calc(var(--topbar-height) + 1.5rem);
+  align-self: start;
+  max-height: calc(100vh - var(--topbar-height) - 3rem);
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.toc-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.toc, .toc ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc ul {
+  padding-left: 0.875rem;
+  margin: 0.125rem 0;
+  border-left: 1px solid var(--border-soft);
+  padding-left: 0.875rem;
+}
+
+.toc li {
+  margin: 0.3rem 0;
+  line-height: 1.4;
+}
+
+.toc a {
+  color: var(--fg);
+  text-decoration: none;
+  display: block;
+  padding: 0.05rem 0;
+}
+
+.toc a:hover {
+  color: var(--accent);
+}
+
+.toc-empty {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* -----  content  ----- */
+.content {
+  max-width: var(--max-content-width);
+  min-width: 0;  /* allows flex/grid children to shrink properly */
+}
+
+.content > *:first-child {
+  margin-top: 0;
+}
+
+.content h1, .content h2, .content h3, .content h4 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.content h1 {
+  font-size: 2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-top: 0;
+}
+
+.content h2 {
+  font-size: 1.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-soft);
+  margin-top: 2.5rem;
+}
+
+.content h3 {
+  font-size: 1.2rem;
+  margin-top: 1.75rem;
+}
+
+.content h4 {
+  font-size: 1rem;
+  margin-top: 1.5rem;
+}
+
+.content p {
+  margin: 0.75rem 0;
+}
+
+.content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.content a:hover {
+  text-decoration: underline;
+  color: var(--accent-hover);
+}
+
+/* Header permalinks (the # symbol added by markdown-it-anchor) */
+.content h1 .header-anchor,
+.content h2 .header-anchor,
+.content h3 .header-anchor,
+.content h4 .header-anchor {
+  color: var(--muted);
+  margin-left: -1.25rem;
+  margin-right: 0.25rem;
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.content h1:hover .header-anchor,
+.content h2:hover .header-anchor,
+.content h3:hover .header-anchor,
+.content h4:hover .header-anchor {
+  opacity: 1;
+}
+
+/* -----  code  ----- */
+.content code {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.875em;
+  font-family: ui-monospace, "SF Mono", Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.content pre {
+  background: var(--code-bg);
+  padding: 1rem 1.25rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.875em;
+  line-height: 1.5;
+  margin: 1rem 0;
+}
+
+.content pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: var(--code-fg);
+}
+
+/* -----  blockquotes / callouts  ----- */
+.content blockquote {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid var(--callout-border);
+  background: var(--callout-bg);
+  color: var(--fg);
+  border-radius: 0 4px 4px 0;
+}
+
+.content blockquote > *:first-child { margin-top: 0; }
+.content blockquote > *:last-child { margin-bottom: 0; }
+
+/* -----  tables  ----- */
+.content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+}
+
+.content th, .content td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.content th {
+  background: var(--code-bg);
+  font-weight: 600;
+}
+
+.content tbody tr:nth-child(2n) {
+  background: #fafbfc;
+}
+
+/* -----  lists  ----- */
+.content ul, .content ol {
+  padding-left: 1.75rem;
+  margin: 0.75rem 0;
+}
+
+.content li {
+  margin: 0.25rem 0;
+}
+
+.content li > ul, .content li > ol {
+  margin: 0.25rem 0;
+}
+
+/* -----  misc  ----- */
+.content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+.content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.content strong { font-weight: 600; }
+
+/* -----  landing page cards  ----- */
+.doc-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.doc-card {
+  display: block;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--fg);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  background: var(--bg);
+}
+
+.doc-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(9, 105, 218, 0.08);
+  text-decoration: none;
+}
+
+.doc-card h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.2rem;
+  border: none;
+  padding: 0;
+}
+
+.doc-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* -----  footer  ----- */
+.footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.footer code {
+  background: var(--code-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+/* -----  responsive  ----- */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .sidebar {
+    position: static;
+    max-height: none;
+    order: 2;
+  }
+  .content {
+    order: 1;
+  }
+  .docnav a {
+    margin-left: 0.75rem;
+    font-size: 0.85rem;
+  }
+}

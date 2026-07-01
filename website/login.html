@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Log in to your TryOn Mirror account">
+  <title>Log In | TryOn Mirror</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+      <div class="auth-header">
+        <a href="/" class="nav-logo" style="font-size: 1.75rem;">
+          <span class="logo-evo">TryOn</span><span class="logo-face">&nbsp;Mirror</span>
+        </a>
+        <h1>Welcome back</h1>
+        <p>Log in to your account</p>
+      </div>
+      
+      <div class="auth-error" id="errorMsg"></div>
+      <div class="auth-success" id="successMsg"></div>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="you@example.com" 
+            required
+            autocomplete="email"
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="••••••••" 
+            required
+            autocomplete="current-password"
+          >
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          Log In
+        </button>
+      </form>
+      
+      <div class="auth-footer">
+        <p><a href="/reset-password.html">Forgot password?</a></p>
+        <p>Don't have an account? <a href="/signup.html">Sign up</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    // Check if already logged in
+    if (checkAuthState()) {
+      window.location.href = '/';
+    }
+    
+    // Check for verification success from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('verified') === 'true') {
+      showSuccess('Email verified successfully! You can now log in.');
+    }
+    
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('submitBtn');
+      
+      hideError();
+      hideSuccess();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
+      
+      try {
+        const data = await login(email, password);
+        
+        // Check if email is verified
+        if (!data.user.verified) {
+          showError('Please verify your email before logging in. <a href="#" onclick="handleResend(\'' + email + '\');return false">Resend verification email</a>');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Log In';
+          clearTokens();
+          return;
+        }
+        
+        // Redirect to home
+        window.location.href = '/';
+      } catch (err) {
+        showError(err.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Log In';
+      }
+    }
+    
+    async function handleResend(email) {
+      try {
+        await resendVerification(email);
+        showSuccess('Verification email sent! Check your inbox.');
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+    
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.innerHTML = msg;
+      el.classList.add('visible');
+    }
+    
+    function hideError() {
+      document.getElementById('errorMsg').classList.remove('visible');
+    }
+    
+    function showSuccess(msg) {
+      const el = document.getElementById('successMsg');
+      el.innerHTML = msg;
+      el.classList.add('visible');
+    }
+    
+    function hideSuccess() {
+      document.getElementById('successMsg').classList.remove('visible');
+    }
+  </script>
+</body>
+</html>
