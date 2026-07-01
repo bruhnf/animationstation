@@ -9,10 +9,11 @@ export const tryonQueue = new Queue('tryon', { connection });
 export interface TryOnJobData {
   jobId: string;
   userId: string;
+  // The reference image(s) the user is transforming (S3 keys). At least one.
   clothingUrls: string[];
-  bodyPhotos: Array<{ perspective: 'full_body' | 'medium'; url: string }>;
-  // Optional free-form user prompt (multi-image compose, feature 2). Carried
-  // from the job row into the worker and forwarded to generateTryOnImage.
+  // Free-form prompt describing the requested transform. Carried from the job
+  // row into the worker and forwarded to generateTryOnImage. Optional — a blank
+  // prompt falls back to a neutral enhance/combine instruction.
   promptText?: string | null;
 }
 

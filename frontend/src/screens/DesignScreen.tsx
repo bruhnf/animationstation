@@ -18,7 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
-import { useClosetStore } from '../store/useClosetStore';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import CreditDisplay from '../components/CreditDisplay';
@@ -39,7 +39,7 @@ export default function DesignScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<DesignNavProp>();
   const refreshUser = useUserStore((s) => s.refreshUser);
-  const setPendingSelection = useClosetStore((s) => s.setPendingSelection);
+  const setPendingSource = useVideoSourceStore((s) => s.setPendingSource);
 
   const [description, setDescription] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -154,10 +154,13 @@ export default function DesignScreen() {
   // Keep + hand off to the Video screen with this creation pre-selected.
   function handleTryOn() {
     if (!result) return;
-    setPendingSelection(result);
+    // Seed the Video screen's source box with this image. VideoScreen consumes
+    // `useVideoSourceStore` on focus — writing the closet store + navigating to
+    // the (body-photo-gated) TryOn screen dropped the image and dead-ended.
+    setPendingSource({ imageUrl: result.imageUrl });
     setResult(null);
     setDescription('');
-    navigation.navigate('TryOn');
+    navigation.navigate('Video');
   }
 
   return (

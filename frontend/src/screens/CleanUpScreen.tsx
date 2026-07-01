@@ -17,7 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
-import { useClosetStore } from '../store/useClosetStore';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { processImageForUpload } from '../utils/imageUtils';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams } from '../navigation';
@@ -40,8 +40,8 @@ export default function CleanUpScreen() {
   const insets = useSafeAreaInsets();
   const refreshUser = useUserStore((s) => s.refreshUser);
   const credits = useUserStore((s) => s.user?.credits ?? 0);
-  // Hand-off channel to the Video screen (it consumes this on focus) — same path the Library uses.
-  const setPendingSelection = useClosetStore((s) => s.setPendingSelection);
+  // Hand-off channel to the Video screen (it consumes this on focus).
+  const setPendingSource = useVideoSourceStore((s) => s.setPendingSource);
 
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -170,10 +170,11 @@ export default function CleanUpScreen() {
               fullWidth
               onPress={() => {
                 if (!result) return;
-                // Park the transformed item; the Video screen consumes it on focus and loads it
-                // as the source image (without this, the screen opened with an empty slot).
-                setPendingSelection(result);
-                navigation.navigate('TryOn');
+                // Park the transformed image; the Video screen consumes it on focus and loads it
+                // as the source image. Must write useVideoSourceStore + navigate to 'Video' — the
+                // old closet-store + 'TryOn' hand-off dropped the image and dead-ended.
+                setPendingSource({ imageUrl: result.imageUrl });
+                navigation.navigate('Video');
               }}
             />
             <View style={{ height: Spacing.sm }} />

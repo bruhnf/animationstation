@@ -1,9 +1,11 @@
 /**
- * Functional tests for the ProfileScreen focus-refresh fix (2026-06-10):
- * the try-on history grid must re-fetch every time the Profile tab gains
- * focus — not just on first mount — so a try-on completed over on the TryOn
- * tab appears without pull-to-refresh. (The tab navigator keeps screens
- * mounted, so the old mount-only effect went permanently stale.)
+ * Functional tests for ProfileScreen's focus-refresh contract.
+ *
+ * The creations grid (history + closet fetching) now lives in the embedded
+ * <CreationsGrid>, which is stubbed here so these tests exercise only what
+ * ProfileScreen itself owns: on every tab focus it calls refreshUser() to keep
+ * the header stats (credits, try-on count) current. The tab navigator keeps the
+ * screen mounted, so this must fire on EVERY focus, not just first mount.
  */
 import React from 'react';
 import { render, act, waitFor } from '@testing-library/react-native';
@@ -54,7 +56,10 @@ jest.mock('../../utils/imageUtils', () => ({
   confirmLowResolution: jest.fn(),
 }));
 // Child components are out of scope here — stub them as host components so
-// this test exercises only ProfileScreen's data-fetching contract.
+// this test exercises only ProfileScreen's data-fetching contract. CreationsGrid
+// owns the history/closet fetching + its own focus refresh; stubbing it isolates
+// ProfileScreen's own contract (refreshUser on focus).
+jest.mock('../../components/CreationsGrid', () => 'CreationsGrid');
 jest.mock('../../components/TryOnDetailModal', () => 'TryOnDetailModal');
 jest.mock('../../components/RetryableImage', () => 'RetryableImage');
 jest.mock('../../components/UploadTipsSheet', () => 'UploadTipsSheet');
@@ -80,7 +85,6 @@ const profileUser = {
 
 function mockApiRoutes() {
   (api.get as jest.Mock).mockImplementation((url: string) => {
-    if (url === '/tryon/history') return Promise.resolve({ data: { jobs: [] } });
     if (url === '/profile/me') return Promise.resolve({ data: profileUser });
     return Promise.reject(new Error(`unexpected GET ${url}`));
   });
@@ -114,30 +118,28 @@ beforeEach(() => {
 });
 
 describe('ProfileScreen focus refresh', () => {
-  it('fetches history and user stats when the tab gains focus', async () => {
+  it('refreshes user stats when the tab gains focus', async () => {
     render(<ProfileScreen />);
     await focusScreen();
 
-    expect(api.get).toHaveBeenCalledWith('/tryon/history');
     expect(api.get).toHaveBeenCalledWith('/profile/me');
   });
 
-  it('re-fetches on EVERY focus, not just the first (the stale-grid bug)', async () => {
+  it('re-fetches on EVERY focus, not just the first (the stale-header bug)', async () => {
     render(<ProfileScreen />);
 
     await focusScreen(); // initial load
     (api.get as jest.Mock).mockClear();
     mockApiRoutes();
 
-    await focusScreen(); // user comes back from the TryOn tab
-    expect(api.get).toHaveBeenCalledWith('/tryon/history');
+    await focusScreen(); // user comes back from another tab
     expect(api.get).toHaveBeenCalledWith('/profile/me');
 
     (api.get as jest.Mock).mockClear();
     mockApiRoutes();
 
     await focusScreen(); // and again — every focus re-fetches
-    expect(api.get).toHaveBeenCalledWith('/tryon/history');
+    expect(api.get).toHaveBeenCalledWith('/profile/me');
   });
 
   it('updates the stored user from the focus refresh (stats stay current)', async () => {

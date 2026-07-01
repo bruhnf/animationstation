@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { navigationRef } from '../navigation/navigationRef';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Gradients, Spacing, Radius, Typography } from '../constants/theme';
 import { useUserStore } from '../store/useUserStore';
@@ -30,11 +30,20 @@ export interface HubSplashProps {
 }
 
 export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
-  const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const user = useUserStore((s) => s.user);
   const unread = useNotificationStore((s) => s.unreadCount);
   const isGuest = user?.isGuest === true;
+
+  // This screen renders as the welcome splash — a <Modal> mounted OUTSIDE the
+  // navigator (navigation/index.tsx) — so useNavigation() would throw ("no
+  // navigation object"). Navigate through the global ref instead (a no-op until
+  // the tree is ready). Loose string arg mirrors the previous useNavigation<any>().
+  const navigate = (name: string) => {
+    if (navigationRef.isReady()) {
+      (navigationRef.navigate as unknown as (n: string) => void)(name);
+    }
+  };
 
   // In splash mode, dismiss the overlay before navigating so the destination
   // isn't rendered underneath the modal.
@@ -42,10 +51,10 @@ export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
     if (splash) splash.onDismiss();
     fn();
   };
-  const goCreate = () => go(() => navigation.navigate('Create'));
-  const goImage = () => go(() => navigation.navigate('TryOn'));
-  const goVideo = () => go(() => navigation.navigate('Video'));
-  const goDesign = () => go(() => navigation.navigate('Design'));
+  const goCreate = () => go(() => navigate('Create'));
+  const goImage = () => go(() => navigate('TryOn'));
+  const goVideo = () => go(() => navigate('Video'));
+  const goDesign = () => go(() => navigate('Design'));
 
   return (
     <View style={styles.root}>
@@ -78,7 +87,7 @@ export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
             <View style={styles.headerRight}>
               <TouchableOpacity
                 style={styles.iconBtn}
-                onPress={() => navigation.navigate(isGuest ? 'Profile' : 'Inbox')}
+                onPress={() => navigate(isGuest ? 'Profile' : 'Inbox')}
                 accessibilityLabel="Notifications"
               >
                 <Ionicons name="notifications-outline" size={20} color={Colors.textPrimary} />
@@ -86,7 +95,7 @@ export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.avatarBtn}
-                onPress={() => navigation.navigate('Profile')}
+                onPress={() => navigate('Profile')}
                 accessibilityLabel="Profile"
               >
                 <LinearGradient colors={Gradients.primary} style={styles.avatarRing}>

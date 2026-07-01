@@ -19,7 +19,7 @@ import RetryableImage from './RetryableImage';
 import TryOnDetailModal from './TryOnDetailModal';
 import VideoPlayerModal from './VideoPlayerModal';
 import AiGeneratedBadge from './AiGeneratedBadge';
-import { useClosetStore } from '../store/useClosetStore';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 
 // A unified "creations" grid — the single view of everything a user has
 // generated, merged from BOTH backend collections:
@@ -65,7 +65,7 @@ export default function CreationsGrid({
   reloadToken?: number;
 }) {
   const navigation = useNavigation<any>();
-  const setPendingSelection = useClosetStore((s) => s.setPendingSelection);
+  const setPendingSource = useVideoSourceStore((s) => s.setPendingSource);
 
   const [creations, setCreations] = useState<Creation[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -359,7 +359,9 @@ export default function CreationsGrid({
                 onPress={() => {
                   const item = closetViewer;
                   setClosetViewer(null);
-                  setPendingSelection(item);
+                  // VideoScreen consumes useVideoSourceStore on focus; the old
+                  // closet-store write left the source box empty on arrival.
+                  setPendingSource({ imageUrl: item.imageUrl });
                   navigation.navigate('Video');
                 }}
               >

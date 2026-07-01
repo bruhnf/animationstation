@@ -26,7 +26,7 @@ import VideoPlayerModal from '../components/VideoPlayerModal';
 import RetryableImage from '../components/RetryableImage';
 import CreditDisplay from '../components/CreditDisplay';
 import CreationsGrid, { CreationCounts } from '../components/CreationsGrid';
-import { processImageForUpload, isLowResolution, confirmLowResolution } from '../utils/imageUtils';
+import { processImageForUpload } from '../utils/imageUtils';
 
 type Nav = NativeStackNavigationProp<RootStackParams>;
 
@@ -102,11 +102,7 @@ export default function ProfileScreen() {
     setRefreshing(false);
   }, []);
 
-  async function handlePhotoUpload(
-    field: 'avatar' | 'fullBody' | 'medium',
-    endpoint: string,
-    aspect: [number, number],
-  ) {
+  async function handlePhotoUpload(field: 'avatar', endpoint: string, aspect: [number, number]) {
     // No permission request here — launchImageLibraryAsync uses
     // PHPickerViewController on iOS 14+, which runs out-of-process and only
     // returns photos the user explicitly selects. No library-wide access is
@@ -114,28 +110,19 @@ export default function ProfileScreen() {
     // would be unnecessary friction (and over-collection per Apple's HIG).
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: field === 'avatar',
-      aspect: field === 'avatar' ? aspect : undefined,
+      allowsEditing: true,
+      aspect,
       quality: 0.85,
     });
     if (result.canceled || !result.assets[0]) return;
 
-    // Body photos set the quality ceiling for every future try-on, so warn on
-    // low-res sources up front. Avatars are display-only — never AI input.
-    if (
-      field !== 'avatar' &&
-      isLowResolution(result.assets[0].width, result.assets[0].height) &&
-      !(await confirmLowResolution('body'))
-    ) {
-      return;
-    }
-
+    // The avatar is display-only (never sent to AI), so no low-res warning.
     setUploading(field);
     try {
       // Convert HEIF/HEIC to JPEG for server compatibility
       const processedImage = await processImageForUpload(result.assets[0].uri, {
-        maxWidth: field === 'avatar' ? 512 : 1536,
-        maxHeight: field === 'avatar' ? 512 : 2048,
+        maxWidth: 512,
+        maxHeight: 512,
         compress: 0.85,
       });
 
@@ -145,8 +132,6 @@ export default function ProfileScreen() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       if (field === 'avatar') updateUser({ avatarUrl: data.url });
-      if (field === 'fullBody') updateUser({ fullBodyUrl: data.url });
-      if (field === 'medium') updateUser({ mediumBodyUrl: data.url });
     } catch {
       Alert.alert('Upload Failed', 'Could not upload photo. Please try again.');
     } finally {
@@ -154,7 +139,7 @@ export default function ProfileScreen() {
     }
   }
 
-  async function handlePhotoDelete(field: 'avatar' | 'fullBody' | 'medium', endpoint: string) {
+  async function handlePhotoDelete(field: 'avatar', endpoint: string) {
     Alert.alert('Remove Photo', 'Are you sure you want to remove this photo?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -164,8 +149,6 @@ export default function ProfileScreen() {
           try {
             await api.delete(endpoint);
             if (field === 'avatar') updateUser({ avatarUrl: undefined });
-            if (field === 'fullBody') updateUser({ fullBodyUrl: undefined });
-            if (field === 'medium') updateUser({ mediumBodyUrl: undefined });
           } catch {
             Alert.alert('Error', 'Could not remove photo.');
           }

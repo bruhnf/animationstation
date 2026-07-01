@@ -31,7 +31,6 @@ import RetryableImage from '../components/RetryableImage';
 import AiConsentModal from '../components/AiConsentModal';
 import UploadTipsSheet from '../components/UploadTipsSheet';
 import AppButton from '../components/ui/AppButton';
-import { Ionicons } from '@expo/vector-icons';
 import { RootStackParams } from '../navigation';
 import { processImageForUpload, isLowResolution, confirmLowResolution } from '../utils/imageUtils';
 
@@ -109,10 +108,6 @@ export default function TryOnScreen() {
   function dismissTipsCard() {
     setTipsCardDismissed(true);
     SecureStore.setItemAsync(TIPS_CARD_DISMISSED_KEY, '1').catch(() => {});
-  }
-
-  function hasBodyPhoto(): boolean {
-    return !!(user?.fullBodyUrl || user?.mediumBodyUrl);
   }
 
   // Consume a closet pick handed over by ClosetScreen (set there, cleared
@@ -207,13 +202,6 @@ export default function TryOnScreen() {
   }
 
   async function handleSubmit() {
-    if (!hasBodyPhoto()) {
-      Alert.alert(
-        'Photos Required',
-        'To create an image, please add a photo in your Profile.',
-      );
-      return;
-    }
     if (clothingPhotos.length === 0 && !closetItem) {
       Alert.alert('No Image', 'Please add a reference image or pick one from your library.');
       return;
@@ -313,9 +301,7 @@ export default function TryOnScreen() {
     } catch (err: unknown) {
       const error = (err as { response?: { data?: { error?: string; message?: string } } })
         ?.response?.data;
-      if (error?.error === 'NO_BODY_PHOTOS') {
-        Alert.alert('Upload Photos', error.message ?? 'Please upload a photo in your Profile.');
-      } else if (error?.error === 'CLOSET_ITEM_NOT_FOUND') {
+      if (error?.error === 'CLOSET_ITEM_NOT_FOUND') {
         setClosetItem(null);
         Alert.alert(
           'Image Missing',
@@ -427,8 +413,6 @@ export default function TryOnScreen() {
     setActiveJob(null);
   }
 
-  const noBodyPhotos = user && !hasBodyPhoto();
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <HeaderMenu
@@ -448,25 +432,6 @@ export default function TryOnScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
-        {noBodyPhotos && (
-          <View style={styles.addPhotosCard}>
-            <View style={styles.addPhotosIcon}>
-              <Ionicons name="body-outline" size={28} color={Colors.textPrimary} />
-            </View>
-            <Text style={styles.addPhotosTitle}>Add your photos to start</Text>
-            <Text style={styles.addPhotosText}>
-              Add a photo in your Profile so we can transform it with AI. One photo is enough to
-              begin.
-            </Text>
-            <AppButton
-              title="Add Photos"
-              icon="add"
-              fullWidth
-              onPress={() => navigation.navigate('Main', { screen: 'Profile' })}
-            />
-          </View>
-        )}
-
         {!activeJob && (
           <>
             <View style={styles.sectionLabelRow}>
@@ -594,9 +559,9 @@ export default function TryOnScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.submitBtn, (submitting || noBodyPhotos) && styles.disabled]}
+              style={[styles.submitBtn, submitting && styles.disabled]}
               onPress={handleSubmit}
-              disabled={submitting || !!noBodyPhotos}
+              disabled={submitting}
             >
               {submitting ? (
                 <ActivityIndicator color={Colors.white} />
@@ -763,36 +728,6 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.warning,
   },
   warningText: { fontSize: Typography.fontSizeSM, color: Colors.gray800, lineHeight: 20 },
-  addPhotosCard: {
-    backgroundColor: Colors.accentSoft,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  addPhotosIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.xs,
-  },
-  addPhotosTitle: {
-    fontSize: Typography.fontSizeXL,
-    fontWeight: Typography.fontWeightHeavy,
-    color: Colors.textPrimary,
-  },
-  addPhotosText: {
-    fontSize: Typography.fontSizeSM,
-    color: Colors.gray600,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
-  },
   partialNoticeBox: {
     backgroundColor: 'rgba(251,191,36,0.12)',
     borderRadius: Radius.md,
@@ -974,7 +909,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   divider: { height: 1, backgroundColor: Colors.gray200, marginVertical: Spacing.lg },
-  bodyPhotoStatus: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.lg },
   captionBlock: {
     marginBottom: Spacing.md,
   },

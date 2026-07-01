@@ -16,7 +16,6 @@ import { Colors, Gradients } from '../constants/theme';
 
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
-import OnboardingPhotoScreen from '../screens/OnboardingPhotoScreen';
 import AboutScreen from '../screens/AboutScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TryOnScreen from '../screens/TryOnScreen';
@@ -48,7 +47,6 @@ import { navigationRef } from './navigationRef';
 export type AuthStackParams = {
   Login: undefined;
   Signup: undefined;
-  OnboardingPhoto: undefined;
   // About is reachable pre-signup so prospective users can see the value
   // proposition, tier features, and live StoreKit pricing before being asked
   // to register. Required for App Store Guideline 5.1.1(v) compliance.
@@ -130,7 +128,6 @@ function AuthNavigator() {
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignupScreen} />
-      <AuthStack.Screen name="OnboardingPhoto" component={OnboardingPhotoScreen} />
       <AuthStack.Screen name="About" component={AboutScreen} />
     </AuthStack.Navigator>
   );

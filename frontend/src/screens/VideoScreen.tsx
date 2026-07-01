@@ -51,8 +51,7 @@ const MOTION_IDEAS = [
 // The chosen source image to animate.
 type Source =
   | { type: 'photo'; uri: string }
-  | { type: 'tryon'; jobId: string; previewUrl: string }
-  | { type: 'body'; which: 'full' | 'medium'; previewUrl: string };
+  | { type: 'tryon'; jobId: string; previewUrl: string };
 
 // A pickable past creation for the "Use a Creation" picker — unified across both
 // generation collections so a video can start from ANY image the user has made:
@@ -195,10 +194,6 @@ export default function VideoScreen() {
       },
       { text: 'Use a Creation', onPress: () => openTryOnPicker(slot) },
     ];
-    if (user?.fullBodyUrl)
-      opts.push({ text: 'Use My Full Photo', onPress: () => selectBodyPhoto(slot, 'full') });
-    if (user?.mediumBodyUrl)
-      opts.push({ text: 'Use My Waist-Up Photo', onPress: () => selectBodyPhoto(slot, 'medium') });
     // Let the user clear an already-populated box (either one).
     if (current) {
       opts.push({
@@ -226,12 +221,6 @@ export default function VideoScreen() {
     if (!result.canceled && result.assets[0]) {
       applySource(slot, { type: 'photo', uri: result.assets[0].uri });
     }
-  }
-
-  function selectBodyPhoto(slot: 1 | 2, which: 'full' | 'medium') {
-    const url = which === 'full' ? user?.fullBodyUrl : user?.mediumBodyUrl;
-    if (!url) return;
-    applySource(slot, { type: 'body', which, previewUrl: url });
   }
 
   async function openTryOnPicker(slot: 1 | 2) {
@@ -299,8 +288,6 @@ export default function VideoScreen() {
       formData.append(`photo${suffix}`, processed as unknown as Blob);
     } else if (s.type === 'tryon') {
       formData.append(`sourceJobId${suffix}`, s.jobId);
-    } else {
-      formData.append(`bodyPhoto${suffix}`, s.which);
     }
   }
 
