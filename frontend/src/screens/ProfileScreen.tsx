@@ -24,7 +24,6 @@ import { RootStackParams } from '../navigation';
 import TryOnDetailModal from '../components/TryOnDetailModal';
 import VideoPlayerModal from '../components/VideoPlayerModal';
 import RetryableImage from '../components/RetryableImage';
-import UploadTipsSheet from '../components/UploadTipsSheet';
 import CreditDisplay from '../components/CreditDisplay';
 import { processImageForUpload, isLowResolution, confirmLowResolution } from '../utils/imageUtils';
 
@@ -89,7 +88,6 @@ export default function ProfileScreen() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
-  const [tipsVisible, setTipsVisible] = useState(false);
 
   function exitSelectionMode() {
     setSelectionMode(false);
@@ -405,40 +403,8 @@ export default function ProfileScreen() {
 
         {user.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
 
-        {/* Body Photos Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionTitleRow}>
-            <Text style={styles.sectionTitle}>My Photos</Text>
-            <TouchableOpacity onPress={() => setTipsVisible(true)} hitSlop={8}>
-              <Text style={styles.tipsLink}>📸 Tips</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.sectionHint}>
-            These are used to generate your images. Tap to change. Long-press to remove.
-          </Text>
-          <View style={styles.bodyPhotosRow}>
-            <BodyPhotoSlot
-              label="Full Body"
-              url={user.fullBodyUrl}
-              loading={uploading === 'fullBody'}
-              onPress={() => handlePhotoUpload('fullBody', '/upload/full-body', [3, 4])}
-              onLongPress={() =>
-                user.fullBodyUrl && handlePhotoDelete('fullBody', '/upload/full-body')
-              }
-            />
-            <BodyPhotoSlot
-              label="Waist Up (optional)"
-              url={user.mediumBodyUrl}
-              loading={uploading === 'medium'}
-              onPress={() => handlePhotoUpload('medium', '/upload/medium-body', [3, 4])}
-              onLongPress={() =>
-                user.mediumBodyUrl && handlePhotoDelete('medium', '/upload/medium-body')
-              }
-            />
-          </View>
-        </View>
-
-        {/* Creation History */}
+        {/* Creation History — the user's generated assets are the only content
+            below the profile header (the old TryOn body-photo uploads are gone). */}
         <View style={styles.section}>
           <View style={styles.historyHeader}>
             <Text style={styles.sectionTitle}>My Creations</Text>
@@ -586,8 +552,6 @@ export default function ProfileScreen() {
         </View>
       ) : null}
 
-      <UploadTipsSheet visible={tipsVisible} kind="body" onClose={() => setTipsVisible(false)} />
-
       {/* Try-On Detail Modal */}
       <VideoPlayerModal
         visible={videoUri !== null}
@@ -634,40 +598,6 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </Modal>
     </View>
-  );
-}
-
-function BodyPhotoSlot({
-  label,
-  url,
-  loading,
-  onPress,
-  onLongPress,
-}: {
-  label: string;
-  url?: string;
-  loading: boolean;
-  onPress: () => void;
-  onLongPress: () => void;
-}) {
-  return (
-    <TouchableOpacity style={styles.bodyPhotoSlot} onPress={onPress} onLongPress={onLongPress}>
-      {loading ? (
-        <ActivityIndicator color={Colors.gray400} />
-      ) : url ? (
-        <RetryableImage uri={url} style={styles.bodyPhotoImage} resizeMode="cover" />
-      ) : (
-        <View style={styles.bodyPhotoEmpty}>
-          <Text style={styles.bodyPhotoPlusIcon}>+</Text>
-          <Text style={styles.bodyPhotoEmptyLabel}>{label}</Text>
-        </View>
-      )}
-      {url && (
-        <View style={styles.bodyPhotoLabel}>
-          <Text style={styles.bodyPhotoLabelText}>{label}</Text>
-        </View>
-      )}
-    </TouchableOpacity>
   );
 }
 

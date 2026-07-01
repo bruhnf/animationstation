@@ -11,7 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
@@ -61,9 +61,16 @@ export default function ClosetScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    void loadCloset();
-  }, [loadCloset]);
+  // Refetch every time the screen gains focus (not just on mount). The Library
+  // TAB stays mounted for the whole session, so a mount-only load showed a stale
+  // list: a creation made after first mount never appeared until the tab was
+  // re-created. Focusing the tab now re-pulls the latest library. (First load
+  // shows the spinner; later focuses refresh silently in place.)
+  useFocusEffect(
+    useCallback(() => {
+      void loadCloset();
+    }, [loadCloset]),
+  );
 
   function handleTryOn(item: ClosetItem) {
     setPendingSelection(item);
