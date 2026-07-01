@@ -13,7 +13,7 @@
  * entitlements must be granted only via StoreKit. Hardcoded prices and
  * server-side "purchase" endpoints are disallowed.
  */
-import * as IAP from 'expo-iap';
+import IAP, { IAP_AVAILABLE } from './iapNative';
 import Constants from 'expo-constants';
 import api from '../config/api';
 import { UserTier } from '../types';
@@ -82,6 +82,9 @@ export interface DisplayProduct {
 let connectionInitialized = false;
 
 export async function initIap(): Promise<void> {
+  // Expo Go has no StoreKit native module — no-op so screens that call this on
+  // mount (About/Purchase) don't crash. See services/iapNative.ts.
+  if (!IAP_AVAILABLE) return;
   if (connectionInitialized) return;
   await IAP.initConnection();
   connectionInitialized = true;
@@ -134,6 +137,7 @@ export async function loadProductsForTier(tier: UserTier): Promise<{
   subscriptions: DisplayProduct[];
   credits: DisplayProduct[];
 }> {
+  if (!IAP_AVAILABLE) return { subscriptions: [], credits: [] };
   await initIap();
   const creditSkus = creditPackSkusForTier(tier);
   const [subs, credits] = await Promise.all([
@@ -271,6 +275,7 @@ export async function verifyAndFinish(purchase: PurchaseLike): Promise<{
 // includes consumables — so unfinished credit-pack transactions would be
 // invisible to the flush and never drained.
 export async function flushPendingTransactions(): Promise<void> {
+  if (!IAP_AVAILABLE) return;
   await initIap();
   try {
     const pending = (await IAP.getAvailablePurchases({
@@ -296,6 +301,7 @@ export async function flushPendingTransactions(): Promise<void> {
  * lands in the correct tier even on a fresh install.
  */
 export async function restorePurchases(): Promise<{ restoredCount: number }> {
+  if (!IAP_AVAILABLE) return { restoredCount: 0 };
   await initIap();
   const purchases = (await IAP.getAvailablePurchases()) as unknown as PurchaseLike[];
   let restoredCount = 0;

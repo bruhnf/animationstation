@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as IAP from 'expo-iap';
+import IAP, { IAP_AVAILABLE } from '../services/iapNative';
 import * as WebBrowser from 'expo-web-browser';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL, SUPPORT_EMAIL } from '../constants/legal';
@@ -232,6 +232,9 @@ export default function PurchaseScreen() {
   // re-delivered transaction, skipping both finishTransaction and setBusy(null)
   // — so the stale transaction never drained and the wheel spun forever.
   useEffect(() => {
+    // Expo Go has no StoreKit — skip registering native listeners so the
+    // screen renders (purchases require a dev build / TestFlight).
+    if (!IAP_AVAILABLE) return;
     const updateSub = IAP.purchaseUpdatedListener(async (purchase: unknown) => {
       const purchaseSku = (purchase as { productId?: string })?.productId;
       const isUserInitiated = !!purchaseSku && purchaseSku === expectingPurchaseSku.current;
