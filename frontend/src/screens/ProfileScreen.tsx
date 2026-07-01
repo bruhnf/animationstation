@@ -25,6 +25,7 @@ import TryOnDetailModal from '../components/TryOnDetailModal';
 import VideoPlayerModal from '../components/VideoPlayerModal';
 import RetryableImage from '../components/RetryableImage';
 import CreditDisplay from '../components/CreditDisplay';
+import CreationsGrid, { CreationCounts } from '../components/CreationsGrid';
 import { processImageForUpload, isLowResolution, confirmLowResolution } from '../utils/imageUtils';
 
 type Nav = NativeStackNavigationProp<RootStackParams>;
@@ -73,109 +74,31 @@ export default function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, updateUser, logout, refreshUser } = useUserStore();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [history, setHistory] = useState<TryOnJob[]>([]);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
-  // Count of saved closet items (Designs) — fetched separately from history.
-  const [designCount, setDesignCount] = useState(0);
+  // Live counts of the unified creations grid (images + videos + total), fed by
+  // CreationsGrid so the creator-stat tiles stay accurate.
+  const [creationCounts, setCreationCounts] = useState<CreationCounts>({
+    images: 0,
+    videos: 0,
+    total: 0,
+  });
+  // Bumped on pull-to-refresh to force the embedded CreationsGrid to reload.
+  const [reloadToken, setReloadToken] = useState(0);
   const [uploading, setUploading] = useState<string | null>(null);
-  const [selectedJob, setSelectedJob] = useState<TryOnJob | null>(null);
-  // Presigned mp4 URL for the full-screen video player (null = closed) + the
-  // creator's motion prompt to show under it.
-  const [videoUri, setVideoUri] = useState<string | null>(null);
-  const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  // Multi-select state for bulk-delete on the user's own try-on history.
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [deleting, setDeleting] = useState(false);
 
-  function exitSelectionMode() {
-    setSelectionMode(false);
-    setSelectedIds(new Set());
-  }
-
-  function toggleSelected(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function enterSelectionWith(id: string) {
-    setSelectionMode(true);
-    setSelectedIds(new Set([id]));
-  }
-
-  async function deleteSelected() {
-    if (selectedIds.size === 0) return;
-    const ids = Array.from(selectedIds);
-    Alert.alert(
-      'Delete Creations',
-      `Permanently delete ${ids.length} ${ids.length === 1 ? 'creation' : 'creations'}? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              const { data } = await api.post<{ deleted: number }>('/tryon/bulk-delete', {
-                jobIds: ids,
-              });
-              setHistory((prev) => prev.filter((j) => !selectedIds.has(j.id)));
-              exitSelectionMode();
-              if (data.deleted < ids.length) {
-                Alert.alert(
-                  'Some creations could not be deleted',
-                  `${data.deleted} of ${ids.length} were removed.`,
-                );
-              }
-            } catch {
-              Alert.alert('Error', 'Could not delete creations. Please try again.');
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ],
-    );
-  }
-
-  // Re-fetch on every tab focus, not just mount: the tab navigator keeps this
-  // screen mounted, so a try-on completed over on the TryOn tab would otherwise
-  // not appear until pull-to-refresh. The first focus doubles as the initial
-  // load (spinner shows while historyLoaded is false); later focuses re-fetch
-  // silently and the grid just updates in place. refreshUser keeps the header
-  // stats (try-on count, credits) in step with the new session.
+  // The creations grid (list, selection, delete, detail modals) now lives in the
+  // shared <CreationsGrid> below — it fetches + merges /tryon/history and /closet
+  // and re-fetches on focus. Here we only refresh the header (credits/stats).
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
-      loadDesignCount();
       refreshUser();
     }, []),
   );
 
-  async function loadHistory() {
-    try {
-      const { data } = await api.get<{ jobs: TryOnJob[] }>('/tryon/history');
-      setHistory(data.jobs);
-    } catch {}
-    setHistoryLoaded(true);
-  }
-
-  async function loadDesignCount() {
-    try {
-      const { data } = await api.get<{ count: number }>('/closet');
-      setDesignCount(data.count ?? 0);
-    } catch {}
-  }
-
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refreshUser(), loadHistory()]);
+    await refreshUser();
+    setReloadToken((t) => t + 1); // force the embedded grid to reload too
     setRefreshing(false);
   }, []);
 
@@ -359,21 +282,21 @@ export default function ProfileScreen() {
         <View style={styles.creatorStats}>
           <CreatorStat
             icon="image"
-            value={history.filter((j) => j.kind !== 'VIDEO').length}
+            value={creationCounts.images}
             label="Images"
             onPress={() => navigation.navigate('TryOn')}
           />
           <View style={styles.creatorDivider} />
           <CreatorStat
             icon="videocam"
-            value={history.filter((j) => j.kind === 'VIDEO').length}
+            value={creationCounts.videos}
             label="Videos"
             onPress={() => navigation.navigate('Video')}
           />
           <View style={styles.creatorDivider} />
           <CreatorStat
-            icon="color-palette"
-            value={designCount}
+            icon="albums"
+            value={creationCounts.total}
             label="Library"
             onPress={() => navigation.navigate('Closet', undefined)}
           />
@@ -406,173 +329,19 @@ export default function ProfileScreen() {
         {/* Creation History — the user's generated assets are the only content
             below the profile header (the old TryOn body-photo uploads are gone). */}
         <View style={styles.section}>
-          <View style={styles.historyHeader}>
-            <Text style={styles.sectionTitle}>My Creations</Text>
-            {historyLoaded && history.length > 0 ? (
-              selectionMode ? (
-                <TouchableOpacity onPress={exitSelectionMode} hitSlop={8}>
-                  <Text style={styles.historyHeaderAction}>Cancel</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={() => setSelectionMode(true)} hitSlop={8}>
-                  <Text style={styles.historyHeaderAction}>Select</Text>
-                </TouchableOpacity>
-              )
-            ) : null}
-          </View>
-          {historyLoaded && history.length > 0 ? (
-            // Storage usage hint. Mirrors the 500-session cap enforced
-            // server-side. Color escalates as the user approaches the limit
-            // so they get a visible warning before the next try-on submission
-            // is rejected with TRYON_LIMIT_REACHED.
-            <Text
-              style={[
-                styles.storageUsage,
-                history.length >= TRYON_STORAGE_LIMIT * 0.95 && styles.storageUsageDanger,
-                history.length >= TRYON_STORAGE_LIMIT * 0.8 &&
-                  history.length < TRYON_STORAGE_LIMIT * 0.95 &&
-                  styles.storageUsageWarn,
-              ]}
-            >
-              {history.length}/{TRYON_STORAGE_LIMIT} creations used. Save some of your creations.
-            </Text>
-          ) : null}
-          {!historyLoaded ? (
-            <ActivityIndicator color={Colors.gray400} style={{ marginTop: Spacing.lg }} />
-          ) : history.length === 0 ? (
-            <Text style={styles.emptyHistory}>No creations yet. Create your first one!</Text>
-          ) : (
-            <FlatList
-              data={history}
-              numColumns={3}
-              scrollEnabled={false}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => {
-                const isVideo = item.kind === 'VIDEO';
-                // Videos have no result image — their poster is the source (bodyPhotoUrl).
-                const url = isVideo
-                  ? item.bodyPhotoUrl
-                  : (item.resultFullBodyUrl ?? item.resultMediumUrl);
-                const hasResults = isVideo
-                  ? !!item.videoUrl
-                  : !!(item.resultFullBodyUrl || item.resultMediumUrl);
-                const isSelected = selectedIds.has(item.id);
-                return (
-                  <TouchableOpacity
-                    style={styles.historyItem}
-                    onPress={() => {
-                      if (selectionMode) {
-                        toggleSelected(item.id);
-                        return;
-                      }
-                      if (isVideo) {
-                        if (item.videoUrl) {
-                          setVideoUri(item.videoUrl);
-                          setVideoPrompt(item.motionPrompt ?? null);
-                        }
-                      } else if (hasResults) {
-                        setSelectedJob(item);
-                      }
-                    }}
-                    onLongPress={() => {
-                      // Long-press anywhere in the history grid enters
-                      // selection mode and selects that item, mirroring the
-                      // platform-native multi-select pattern used by Photos.
-                      if (!selectionMode) enterSelectionWith(item.id);
-                      else toggleSelected(item.id);
-                    }}
-                    activeOpacity={selectionMode || hasResults ? 0.7 : 1}
-                  >
-                    {url ? (
-                      <>
-                        <RetryableImage uri={url} style={styles.historyImage} resizeMode="cover" />
-                        {isVideo && (
-                          <View style={styles.historyPlay} pointerEvents="none">
-                            <Ionicons name="play" size={20} color={Colors.white} />
-                          </View>
-                        )}
-                        {item.isPrivate && (
-                          <View style={styles.privateBadge}>
-                            <Ionicons name="lock-closed" size={10} color={Colors.white} />
-                          </View>
-                        )}
-                      </>
-                    ) : (
-                      <View style={[styles.historyImage, styles.historyPlaceholder]}>
-                        <Text style={styles.historyStatus}>{item.status}</Text>
-                      </View>
-                    )}
-                    {selectionMode ? (
-                      <View
-                        style={[
-                          styles.selectionOverlay,
-                          isSelected && styles.selectionOverlayActive,
-                        ]}
-                        pointerEvents="none"
-                      >
-                        <View
-                          style={[styles.selectionCheck, isSelected && styles.selectionCheckActive]}
-                        >
-                          {isSelected ? (
-                            <Ionicons name="checkmark" size={16} color={Colors.white} />
-                          ) : null}
-                        </View>
-                      </View>
-                    ) : null}
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          )}
+          {/* Unified creations — all generated images + videos (merged from
+              /tryon/history + /closet), with per-item view/detail/delete. The
+              grid, selection, and detail/video/closet modals all live inside
+              CreationsGrid so the Library tab and this screen stay identical. */}
+          <CreationsGrid
+            title="My Creations"
+            scrollEnabled={false}
+            contentPaddingBottom={0}
+            onCountChange={setCreationCounts}
+            reloadToken={reloadToken}
+          />
         </View>
       </ScrollView>
-
-      {/* Floating delete bar — only visible in selection mode. Sits above the
-          tab bar so it remains tappable on every device. */}
-      {selectionMode ? (
-        <View style={[styles.deleteBar, { paddingBottom: insets.bottom + Spacing.sm }]}>
-          <TouchableOpacity
-            style={[
-              styles.deleteButton,
-              (selectedIds.size === 0 || deleting) && styles.deleteButtonDisabled,
-            ]}
-            onPress={deleteSelected}
-            disabled={selectedIds.size === 0 || deleting}
-          >
-            {deleting ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <Text style={styles.deleteButtonText}>
-                {selectedIds.size === 0
-                  ? 'Select items to delete'
-                  : `Delete Selected (${selectedIds.size})`}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      ) : null}
-
-      {/* Try-On Detail Modal */}
-      <VideoPlayerModal
-        visible={videoUri !== null}
-        uri={videoUri}
-        motionPrompt={videoPrompt}
-        onClose={() => {
-          setVideoUri(null);
-          setVideoPrompt(null);
-        }}
-      />
-      <TryOnDetailModal
-        visible={selectedJob !== null}
-        job={selectedJob}
-        onClose={() => setSelectedJob(null)}
-        onPrivacyChanged={(jobId, isPrivate) => {
-          setHistory((prev) => prev.map((j) => (j.id === jobId ? { ...j, isPrivate } : j)));
-        }}
-        onSavedChanged={(jobId, saved) => {
-          setHistory((prev) => prev.map((j) => (j.id === jobId ? { ...j, saved } : j)));
-        }}
-      />
 
       {/* Hamburger dropdown menu */}
       <Modal

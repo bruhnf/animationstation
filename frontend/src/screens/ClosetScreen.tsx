@@ -20,6 +20,7 @@ import { ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import CreditDisplay from '../components/CreditDisplay';
 import AiGeneratedBadge from '../components/AiGeneratedBadge';
+import CreationsGrid from '../components/CreationsGrid';
 import { RootStackParams } from '../navigation';
 
 type ClosetNavProp = NativeStackNavigationProp<RootStackParams, 'Closet'>;
@@ -144,6 +145,14 @@ export default function ClosetScreen() {
         <CreditDisplay onPress={() => navigation.navigate('Purchase')} />
       </View>
 
+      {/* Non-picker: the unified creations grid (all generated images + videos,
+          merged from /tryon/history + /closet). Picker mode keeps the closet-only
+          grid below so the Video screen can pick a saved image as a source. */}
+      {!pickerMode ? (
+        <View style={{ flex: 1, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm }}>
+          <CreationsGrid contentPaddingBottom={insets.bottom + Spacing.xl} />
+        </View>
+      ) : (
       <FlatList
         data={items}
         keyExtractor={(i) => i.id}
@@ -183,6 +192,7 @@ export default function ClosetScreen() {
           )
         }
       />
+      )}
 
       <Modal
         visible={viewerItem !== null}
