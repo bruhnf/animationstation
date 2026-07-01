@@ -282,7 +282,7 @@ export default function ProfileScreen() {
         <Text style={styles.headerTitle}>User Profile</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuButton}>
-            <Ionicons name="ellipsis-vertical" size={22} color={Colors.black} />
+            <Ionicons name="ellipsis-vertical" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -672,7 +672,7 @@ function BodyPhotoSlot({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   headerLeft: {
@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subscriptionActive: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: 'rgba(52,211,153,0.12)',
   },
   subscriptionInactive: {
     backgroundColor: Colors.gray100,
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
   fullName: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   username: {
     fontSize: Typography.fontSizeSM,
@@ -823,7 +823,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   statLabel: { fontSize: Typography.fontSizeXS, color: Colors.gray600, marginTop: 2 },
   bio: {
@@ -861,7 +861,7 @@ const styles = StyleSheet.create({
   closetBadgeText: {
     fontSize: Typography.fontSizeXS,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     letterSpacing: 0.5,
   },
   closetCardTop: {
@@ -899,7 +899,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closetCtaText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -907,7 +907,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   sectionHint: { fontSize: Typography.fontSizeXS, color: Colors.gray400, marginBottom: Spacing.md },
@@ -969,7 +969,7 @@ const styles = StyleSheet.create({
   historyHeaderAction: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
   },
@@ -995,7 +995,7 @@ const styles = StyleSheet.create({
   selectionOverlayActive: {
     backgroundColor: 'rgba(0,0,0,0.35)',
     borderWidth: 2,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
   },
   selectionCheck: {
     position: 'absolute',
@@ -1012,7 +1012,7 @@ const styles = StyleSheet.create({
   },
   selectionCheckActive: {
     backgroundColor: Colors.black,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
   },
   deleteBar: {
     position: 'absolute',
@@ -1021,7 +1021,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.gray200,
   },
@@ -1071,7 +1071,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' },
   menuSheet: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     paddingBottom: 40,
@@ -1083,6 +1083,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: Colors.gray100,
   },
-  menuItemText: { fontSize: Typography.fontSizeMD, color: Colors.black },
+  menuItemText: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary },
   menuItemDanger: { color: Colors.danger },
 });

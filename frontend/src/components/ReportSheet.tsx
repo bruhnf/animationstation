@@ -103,7 +103,7 @@ export default function ReportSheet({ visible, targetType, targetId, onClose }: 
                 }}
                 accessibilityLabel="Close"
               >
-                <Ionicons name="close" size={24} color={Colors.black} />
+                <Ionicons name="close" size={24} color={Colors.textPrimary} />
               </TouchableOpacity>
             </View>
             <Text style={styles.subtitle}>Why are you reporting this?</Text>
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   avoider: { flex: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     padding: Spacing.lg,
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   subtitle: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginBottom: Spacing.sm },
   reasonRow: {
@@ -190,16 +190,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioActive: { borderColor: Colors.black },
+  radioActive: { borderColor: Colors.border },
   radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.black },
-  reasonLabel: { fontSize: Typography.fontSizeSM, color: Colors.black, flex: 1 },
+  reasonLabel: { fontSize: Typography.fontSizeSM, color: Colors.textPrimary, flex: 1 },
   detailsInput: {
     borderWidth: 1,
     borderColor: Colors.gray200,
     borderRadius: Radius.md,
     padding: Spacing.sm,
     fontSize: Typography.fontSizeSM,
-    color: Colors.black,
+    color: Colors.textPrimary,
     minHeight: 80,
     textAlignVertical: 'top',
     backgroundColor: Colors.gray100,

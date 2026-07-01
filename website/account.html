@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Manage your TryOn Mirror account">
-  <title>My Account | TryOn Mirror</title>
+  <meta name="description" content="Manage your AnimationStation account">
+  <title>My Account | AnimationStation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,32 +12,34 @@
   <style>
     .account-wrap { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
     .account-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
-    .account-card { background:#fff; border:1px solid #eee; border-radius:14px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+    .account-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:var(--shadow-sm); }
     .account-card h2 { font-size:1.1rem; margin:0 0 1rem; }
-    .account-row { display:flex; justify-content:space-between; gap:1rem; padding:.5rem 0; border-bottom:1px solid #f4f4f4; }
+    .account-row { display:flex; justify-content:space-between; gap:1rem; padding:.5rem 0; border-bottom:1px solid var(--border); }
     .account-row:last-child { border-bottom:0; }
-    .account-row .label { color:#666; }
+    .account-row .label { color:var(--text-2); }
     .account-row .value { font-weight:600; text-align:right; word-break:break-word; }
-    .muted { color:#888; font-size:.9rem; line-height:1.5; }
-    .danger-zone { border-color:#f3c9c9; }
-    .danger-zone h2 { color:#b00020; }
-    .btn-danger { background:#b00020; color:#fff; }
-    .btn-ghost { background:transparent; border:1px solid #ddd; color:#333; }
+    .muted { color:var(--text-3); font-size:.9rem; line-height:1.5; }
+    .muted a { color:var(--cyan); }
+    .danger-zone { border-color:rgba(255,92,114,.35); }
+    .danger-zone h2 { color:var(--danger); }
+    .btn-danger { background:var(--danger); color:#0b0b0b; border-color:transparent; }
+    .btn-ghost { background:var(--glass); border:1px solid var(--border-strong); color:var(--text); }
+    .btn-ghost:hover { border-color:var(--cyan); }
     .row-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
     .pill { display:inline-block; padding:.15rem .6rem; border-radius:999px; font-size:.8rem; font-weight:600; }
-    .pill-ok { background:#e7f6ec; color:#1a7f37; }
-    .pill-no { background:#fdeaea; color:#b00020; }
+    .pill-ok { background:rgba(52,211,153,.15); color:var(--success); }
+    .pill-no { background:rgba(255,92,114,.15); color:var(--danger); }
     .blocked-list { list-style:none; padding:0; margin:.5rem 0 0; }
-    .blocked-list li { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid #f4f4f4; }
+    .blocked-list li { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); }
     .hidden { display:none; }
   </style>
 </head>
 <body>
   <div class="account-wrap">
     <div class="account-top">
-      <a href="/" class="nav-logo"><span class="logo-evo">TryOn</span><span class="logo-face">&nbsp;Mirror</span></a>
+      <a href="/" class="nav-logo"><span class="logo-evo">Animation</span><span class="logo-face">Station</span></a>
       <div style="display:flex; gap:.5rem;">
-        <a class="btn btn-ghost" href="/tryons.html">My Try-Ons</a>
+        <a class="btn btn-ghost" href="/tryons.html">My Creations</a>
         <button class="btn btn-ghost" onclick="logout()">Log out</button>
       </div>
     </div>
@@ -72,7 +74,7 @@
     <div class="account-card">
       <h2>Subscription</h2>
       <div class="account-row"><span class="label">Current plan</span><span class="value" id="subTier">—</span></div>
-      <p class="muted">Subscriptions are purchased and managed through the App Store on your iPhone. To change or cancel, open <a href="https://apps.apple.com/account/subscriptions" target="_blank" rel="noopener">Apple&nbsp;→&nbsp;Subscriptions</a> or the TryOn&nbsp;Mirror app. (Web purchases aren't offered, per App&nbsp;Store policy.)</p>
+      <p class="muted">Subscriptions and credits are purchased and managed through the App Store on your iPhone. To change or cancel, open <a href="https://apps.apple.com/account/subscriptions" target="_blank" rel="noopener">Apple&nbsp;→&nbsp;Subscriptions</a> or the AnimationStation app. (Web purchases aren't offered, per App&nbsp;Store policy.)</p>
     </div>
 
     <!-- Change password -->
@@ -91,7 +93,7 @@
     <div class="account-card">
       <h2>AI processing consent</h2>
       <div class="account-row"><span class="label">Status</span><span class="value" id="consentStatus">—</span></div>
-      <p class="muted">When granted, your body &amp; clothing photos may be sent to xAI (Grok&nbsp;Imagine) to generate try-ons. Revoking stops new AI processing; you'll be asked again the next time you start a try-on in the app.</p>
+      <p class="muted">When granted, the photos and prompts you provide may be sent to xAI (Grok&nbsp;Imagine) to generate AI images and videos. Revoking stops new AI processing; you'll be asked again the next time you create with AI in the app.</p>
       <button class="btn btn-ghost hidden" id="revokeConsentBtn" onclick="revokeConsent()">Revoke AI consent</button>
     </div>
 
@@ -111,7 +113,7 @@
     <!-- Danger zone -->
     <div class="account-card danger-zone">
       <h2>Delete account</h2>
-      <p class="muted">Permanently deletes your account, photos, try-ons, and all associated data. This cannot be undone.</p>
+      <p class="muted">Permanently deletes your account, photos, creations, and all associated data. This cannot be undone.</p>
       <button class="btn btn-danger" onclick="deleteAccountConfirm()" id="deleteBtn">Delete my account</button>
     </div>
   </div>

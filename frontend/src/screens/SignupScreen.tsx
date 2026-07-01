@@ -249,14 +249,14 @@ export default function SignupScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   inner: { flexGrow: 1, padding: Spacing.xl, paddingTop: Spacing.xxl },
   backButton: { marginBottom: Spacing.lg },
   backText: { fontSize: Typography.fontSizeMD, color: Colors.gray600 },
   title: {
     fontSize: Typography.fontSizeHero,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   subtitle: {
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     backgroundColor: Colors.gray100,
   },
   passwordHint: { fontSize: Typography.fontSizeXS, color: Colors.gray400, marginTop: -Spacing.sm },
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   checkboxChecked: { backgroundColor: Colors.accent, borderColor: Colors.accent },
-  checkmark: { color: Colors.black, fontSize: 13, fontWeight: Typography.fontWeightBold },
+  checkmark: { color: Colors.textPrimary, fontSize: 13, fontWeight: Typography.fontWeightBold },
   checkLabel: { flex: 1, fontSize: Typography.fontSizeSM, color: Colors.gray600, lineHeight: 20 },
   loginRow: { flexDirection: 'row', justifyContent: 'center', marginTop: Spacing.md },
   aboutLink: { alignItems: 'center', marginTop: Spacing.md, paddingVertical: Spacing.xs },

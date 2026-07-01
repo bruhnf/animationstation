@@ -128,7 +128,7 @@ export default function ClosetScreen() {
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         {navigation.canGoBack() ? (
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={26} color={Colors.black} />
+            <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
           </TouchableOpacity>
         ) : (
           <View style={styles.backBtn} />
@@ -146,7 +146,7 @@ export default function ClosetScreen() {
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.emptySpinner} color={Colors.black} />
+            <ActivityIndicator style={styles.emptySpinner} color={Colors.textPrimary} />
           ) : loadError ? (
             <View style={styles.emptyWrap}>
               <Text style={styles.emptyText}>Couldn&apos;t load your library.</Text>
@@ -168,7 +168,7 @@ export default function ClosetScreen() {
                   style={styles.designLink}
                   onPress={() => navigation.navigate('Design')}
                 >
-                  <Ionicons name="color-palette" size={16} color={Colors.black} />
+                  <Ionicons name="color-palette" size={16} color={Colors.textPrimary} />
                   <Text style={styles.designLinkText}>Generate an Image</Text>
                 </TouchableOpacity>
               ) : null}
@@ -227,7 +227,7 @@ export default function ClosetScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   listContent: { paddingHorizontal: Spacing.md, paddingTop: Spacing.sm },
   row: { gap: Spacing.sm },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     aspectRatio: 3 / 4,
   },
   cardImage: { width: '100%', height: '100%' },
-  cardName: { marginTop: 6, fontSize: Typography.fontSizeSM, color: Colors.black },
+  cardName: { marginTop: 6, fontSize: Typography.fontSizeSM, color: Colors.textPrimary },
   emptySpinner: { marginTop: Spacing.xl },
   emptyWrap: {
     alignItems: 'center',
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: Typography.fontSizeMD, color: Colors.gray600, textAlign: 'center' },
   retryLink: {
     marginTop: Spacing.sm,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
   },
   designLink: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   designLinkText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -300,13 +300,13 @@ const styles = StyleSheet.create({
   },
   viewerActions: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, gap: Spacing.sm },
   viewerTryOnBtn: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
   },
   viewerTryOnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
   },

@@ -1,22 +1,8 @@
-// TryOn Mirror Web Authentication
+// AnimationStation Web Authentication
 //
-// API base is derived from where the page is served so the same files work on
-// every environment:
-//  - api-dev.* (either domain)    → same-origin dev API ('/api')
-//  - dev./www-dev.*               → cross-origin dev API (future dev website subdomain)
-//  - anything else                → production API
-//    (legacy evofaceflow.com hostnames kept until that domain is retired)
-const API_BASE = (function () {
-  const h = window.location.hostname;
-  if (h === 'api-dev.tryon-mirror.ai' || h === 'api-dev.evofaceflow.com') return '/api';
-  if (
-    h === 'dev.tryon-mirror.ai' || h === 'www-dev.tryon-mirror.ai' ||
-    h === 'dev.evofaceflow.com' || h === 'www-dev.evofaceflow.com'
-  ) {
-    return 'https://api-dev.tryon-mirror.ai/api';
-  }
-  return 'https://api.tryon-mirror.ai/api';
-})();
+// The site and API are served from the same host
+// (animationstation.bruhnfreeman.com), so the API is always same-origin.
+const API_BASE = '/api';
 
 // Store tokens in localStorage
 function setTokens(accessToken, refreshToken) {

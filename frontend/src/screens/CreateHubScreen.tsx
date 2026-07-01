@@ -102,7 +102,7 @@ export default function CreateHubScreen() {
             </Text>
             <View style={styles.upsellBtn}>
               <Text style={styles.upsellBtnText}>Sign Up Free</Text>
-              <Ionicons name="arrow-forward" size={16} color={Colors.black} />
+              <Ionicons name="arrow-forward" size={16} color={Colors.textPrimary} />
             </View>
           </TouchableOpacity>
         ) : null}
@@ -112,7 +112,7 @@ export default function CreateHubScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   scroll: { flex: 1 },
   content: { paddingHorizontal: Spacing.md, paddingTop: Spacing.sm },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   upsellBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },

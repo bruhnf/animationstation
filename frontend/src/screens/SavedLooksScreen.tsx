@@ -84,14 +84,14 @@ export default function SavedLooksScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={26} color={Colors.black} />
+          <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Saved Creations</Text>
         <View style={styles.backBtn} />
       </View>
 
       {!loaded ? (
-        <ActivityIndicator style={{ marginTop: Spacing.xl }} color={Colors.black} />
+        <ActivityIndicator style={{ marginTop: Spacing.xl }} color={Colors.textPrimary} />
       ) : error ? (
         <View style={styles.center}>
           <Text style={styles.muted}>Couldn&apos;t load your saved creations.</Text>
@@ -125,7 +125,7 @@ export default function SavedLooksScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   center: {
     flex: 1,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 44, marginBottom: Spacing.sm },
   muted: { color: Colors.gray600, fontSize: Typography.fontSizeMD, textAlign: 'center' },
-  retry: { marginTop: Spacing.sm, color: Colors.black, fontWeight: Typography.fontWeightSemiBold },
+  retry: { marginTop: Spacing.sm, color: Colors.textPrimary, fontWeight: Typography.fontWeightSemiBold },
   cell: { flex: 1 / 2, aspectRatio: 3 / 4, padding: 2, position: 'relative' },
   image: { width: '100%', height: '100%', borderRadius: 6 },
   cellActions: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', gap: 6 },

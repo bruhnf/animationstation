@@ -27,7 +27,7 @@ if (SENTRY_DSN) {
 function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <AppNavigator />
     </SafeAreaProvider>
   );

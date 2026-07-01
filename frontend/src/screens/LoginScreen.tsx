@@ -244,12 +244,12 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   inner: { flexGrow: 1, justifyContent: 'center', padding: Spacing.xl },
   title: {
     fontSize: Typography.fontSizeDisplay,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
   },
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     backgroundColor: Colors.gray100,
   },
   forgotLink: { alignSelf: 'flex-end' },

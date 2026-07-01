@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.md,
   },
-  cardPlain: { backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.gray200 },
+  cardPlain: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.gray200 },
   cardHighlight: { backgroundColor: Colors.black, borderWidth: 1.5, borderColor: Colors.gold },
   iconWrap: {
     width: 52,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: Typography.fontSizeXS,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   subtitle: { fontSize: Typography.fontSizeSM, marginTop: 2 },
 });

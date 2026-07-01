@@ -389,7 +389,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
       </View>
     );
   }
@@ -407,7 +407,7 @@ export default function HomeScreen() {
             style={styles.searchIconButton}
             accessibilityLabel="Search users"
           >
-            <Ionicons name="search" size={22} color={Colors.black} />
+            <Ionicons name="search" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         }
       />
@@ -425,7 +425,7 @@ export default function HomeScreen() {
             </Text>
             <View style={styles.guestBannerBtn}>
               <Text style={styles.guestBannerBtnText}>Sign Up</Text>
-              <Ionicons name="arrow-forward" size={14} color={Colors.black} />
+              <Ionicons name="arrow-forward" size={14} color={Colors.textPrimary} />
             </View>
           </View>
           <Text style={styles.guestBannerSub}>
@@ -594,7 +594,7 @@ const FeedCard = React.memo(function FeedCard({
             accessibilityLabel="More actions"
             hitSlop={10}
           >
-            <Ionicons name="ellipsis-horizontal" size={22} color={Colors.black} />
+            <Ionicons name="ellipsis-horizontal" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -703,7 +703,7 @@ const FeedCard = React.memo(function FeedCard({
             accessibilityLabel="Share this creation"
             hitSlop={10}
           >
-            <Ionicons name="share-outline" size={20} color={Colors.black} />
+            <Ionicons name="share-outline" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
           {/* Comments icon — always visible (even with zero comments) so a user
               can be the first to comment. */}
@@ -713,7 +713,7 @@ const FeedCard = React.memo(function FeedCard({
             accessibilityLabel="Open comments"
             hitSlop={10}
           >
-            <Ionicons name="chatbubble-outline" size={20} color={Colors.black} />
+            <Ionicons name="chatbubble-outline" size={20} color={Colors.textPrimary} />
             {commentsCountOverride > 0 ? (
               <Text style={styles.commentsCount}>{commentsCountOverride}</Text>
             ) : null}
@@ -725,7 +725,7 @@ const FeedCard = React.memo(function FeedCard({
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   searchIconButton: {
     padding: Spacing.sm,
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
   guestBannerBtnText: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   guestBannerSub: {
     fontSize: Typography.fontSizeSM,
@@ -800,13 +800,13 @@ const styles = StyleSheet.create({
   errorBannerAction: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   card: {
     marginHorizontal: Spacing.md,
     marginBottom: Spacing.lg,
     borderRadius: Radius.lg,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.gray200,
     overflow: 'hidden',
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
   displayName: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   username: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
   headerActions: {
@@ -854,7 +854,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -921,7 +921,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     fontSize: Typography.fontSizeSM,
-    color: Colors.black,
+    color: Colors.textPrimary,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
   },
@@ -949,7 +949,7 @@ const styles = StyleSheet.create({
   likesCount: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   footerRight: {
     flexDirection: 'row',
@@ -970,7 +970,7 @@ const styles = StyleSheet.create({
   commentsCount: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   footer: { padding: Spacing.lg },
   emptyContainer: { flex: 1 },
@@ -985,7 +985,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.sm,
   },
   emptySubtitle: {

@@ -327,7 +327,7 @@ export default function TryOnCommentsScreen() {
   if (loading || !job) {
     return (
       <View style={[styles.container, styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
       </View>
     );
   }
@@ -345,7 +345,7 @@ export default function TryOnCommentsScreen() {
     <View style={[styles.container, { paddingBottom: keyboardHeight }]}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color={Colors.black} />
+          <Ionicons name="close" size={28} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Comments</Text>
         <View style={styles.headerSpacer} />
@@ -464,7 +464,7 @@ export default function TryOnCommentsScreen() {
             {posting ? (
               <ActivityIndicator color={Colors.white} size="small" />
             ) : (
-              <Ionicons name="arrow-up" size={18} color={Colors.black} />
+              <Ionicons name="arrow-up" size={18} color={Colors.textPrimary} />
             )}
           </TouchableOpacity>
         </View>
@@ -558,7 +558,7 @@ function CommentRow({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   centered: { justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row',
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   headerSpacer: { width: 36 },
   listContent: { paddingBottom: Spacing.md },
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
   ownerName: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   ownerHandle: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
   imageWrap: {
@@ -657,12 +657,12 @@ const styles = StyleSheet.create({
   commentMeta: { fontSize: Typography.fontSizeSM },
   commentAuthor: {
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   commentTime: { color: Colors.gray600 },
   commentText: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: 2,
     lineHeight: 20,
   },
@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
     borderTopWidth: 1,
     borderTopColor: Colors.gray200,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
   },
   replyHint: {
     flexDirection: 'row',
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
     color: Colors.gray600,
   },
   replyHintHandle: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
   },
   inputRow: {
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gray100,
     borderRadius: Radius.full,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   sendButton: {
     width: 36,

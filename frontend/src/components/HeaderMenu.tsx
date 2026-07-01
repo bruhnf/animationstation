@@ -82,7 +82,7 @@ export default function HeaderMenu({
               hitSlop={10}
               accessibilityLabel="Go back"
             >
-              <Ionicons name="chevron-back" size={26} color={Colors.black} />
+              <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
             </TouchableOpacity>
           )}
           {leftComponent}
@@ -98,7 +98,7 @@ export default function HeaderMenu({
           {rightComponent}
           {showMenu && (
             <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuButton}>
-              <Ionicons name="ellipsis-vertical" size={22} color={Colors.black} />
+              <Ionicons name="ellipsis-vertical" size={22} color={Colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   menuButton: {
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   menuSheet: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     paddingBottom: 40,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   menuItemDanger: {
     color: Colors.danger,

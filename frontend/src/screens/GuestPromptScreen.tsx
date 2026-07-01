@@ -49,12 +49,12 @@ export default function GuestPromptScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
   title: {
     fontSize: 22,
     fontWeight: '800',
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: 20,
     textAlign: 'center',
   },

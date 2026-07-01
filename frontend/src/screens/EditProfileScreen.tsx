@@ -186,7 +186,7 @@ export default function EditProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   inner: { padding: Spacing.xl },
   form: { gap: Spacing.lg },
   field: { gap: Spacing.sm },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     backgroundColor: Colors.gray100,
   },
   textArea: { minHeight: 100, textAlignVertical: 'top' },
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.6 },
   saveBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     fontSize: Typography.fontSizeMD,
   },

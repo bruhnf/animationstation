@@ -110,7 +110,7 @@ export default function FriendsScreen() {
               setQuery('');
             }}
           >
-            <Ionicons name={searchMode ? 'close' : 'search'} size={24} color={Colors.black} />
+            <Ionicons name={searchMode ? 'close' : 'search'} size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -145,7 +145,7 @@ export default function FriendsScreen() {
 
       {loading && !searchMode ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.black} />
+          <ActivityIndicator size="large" color={Colors.textPrimary} />
         </View>
       ) : (
         <FlatList
@@ -238,7 +238,7 @@ function UserRow({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   searchBar: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     gap: Spacing.sm,
   },
-  searchInput: { flex: 1, fontSize: Typography.fontSizeMD, color: Colors.black },
+  searchInput: { flex: 1, fontSize: Typography.fontSizeMD, color: Colors.textPrimary },
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.md, position: 'relative' },
   tabText: { fontSize: Typography.fontSizeMD, color: Colors.gray600 },
-  tabTextActive: { fontWeight: Typography.fontWeightSemiBold, color: Colors.black },
+  tabTextActive: { fontWeight: Typography.fontWeightSemiBold, color: Colors.textPrimary },
   tabIndicator: {
     position: 'absolute',
     bottom: 0,
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   userHandle: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginTop: 1 },
   userBio: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginTop: 2 },
@@ -324,13 +324,13 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     backgroundColor: Colors.accent,
   },
-  followingBtn: { backgroundColor: Colors.white, borderWidth: 1.5, borderColor: Colors.gray200 },
+  followingBtn: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.gray200 },
   followBtnText: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
-  followingBtnText: { color: Colors.black },
+  followingBtnText: { color: Colors.textPrimary },
   emptyState: {
     flex: 1,
     alignItems: 'center',

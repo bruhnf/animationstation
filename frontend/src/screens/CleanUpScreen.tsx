@@ -144,7 +144,7 @@ export default function CleanUpScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
-          <Ionicons name="chevron-back" size={26} color={Colors.black} />
+          <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.topTitle}>Transform an Image</Text>
         <CreditDisplay onPress={() => navigation.navigate('Purchase')} />
@@ -234,7 +234,7 @@ export default function CleanUpScreen() {
                 </View>
                 {submitting ? (
                   <View style={styles.workingRow}>
-                    <ActivityIndicator color={Colors.black} />
+                    <ActivityIndicator color={Colors.textPrimary} />
                     <Text style={styles.workingText}>This usually takes 10–30 seconds…</Text>
                   </View>
                 ) : (
@@ -250,7 +250,7 @@ export default function CleanUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   topTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   content: { padding: Spacing.md },
   intro: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   dropTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.sm,
   },
   dropSub: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
   },
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     minHeight: 72,
     textAlignVertical: 'top',
   },
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: Typography.fontSizeHero,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   sub: { fontSize: Typography.fontSizeMD, color: Colors.gray600, marginBottom: Spacing.lg },
   resultImageWrap: {

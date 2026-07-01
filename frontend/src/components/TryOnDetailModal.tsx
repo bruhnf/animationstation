@@ -302,7 +302,7 @@ export default function TryOnDetailModal({
               onPress={handleMakeVideo}
               activeOpacity={0.85}
             >
-              <Ionicons name="videocam" size={20} color={Colors.black} />
+              <Ionicons name="videocam" size={20} color={Colors.textPrimary} />
               <Text style={styles.makeVideoText}>MAKE VIDEO!</Text>
             </TouchableOpacity>
           )}
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   dotActive: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
   },
   privacyContainer: {
     flexDirection: 'row',
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   makeVideoText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightBold,
     letterSpacing: 0.5,

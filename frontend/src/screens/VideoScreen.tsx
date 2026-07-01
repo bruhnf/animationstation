@@ -453,7 +453,7 @@ export default function VideoScreen() {
       >
         {rehydrating ? (
           <View style={styles.resultWrap}>
-            <ActivityIndicator size="large" color={Colors.black} />
+            <ActivityIndicator size="large" color={Colors.textPrimary} />
             <Text style={styles.resultMsg}>Checking your video…</Text>
           </View>
         ) : activeJob ? (
@@ -715,7 +715,7 @@ function ResultView({ job, onReset }: { job: TryOnJob; onReset: () => void }) {
   if (!complete) {
     return (
       <View style={styles.resultWrap}>
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
         <Text style={styles.resultMsg}>Generating your video… this can take a minute or two.</Text>
         <Text style={styles.resultMsg}>May be slower at peak usage times.</Text>
       </View>
@@ -737,13 +737,13 @@ function ResultView({ job, onReset }: { job: TryOnJob; onReset: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   scroll: { flex: 1 },
   inner: { padding: Spacing.md, paddingBottom: Spacing.xxl },
   sectionLabel: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.md,
     marginBottom: Spacing.sm,
   },
@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     minHeight: 64,
     textAlignVertical: 'top',
   },
@@ -798,14 +798,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 6,
   },
-  chipText: { fontSize: Typography.fontSizeSM, color: Colors.black },
+  chipText: { fontSize: Typography.fontSizeSM, color: Colors.textPrimary },
   captionInput: {
     backgroundColor: Colors.gray100,
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   privacyRow: {
     flexDirection: 'row',
@@ -820,7 +820,7 @@ const styles = StyleSheet.create({
   privacyLabel: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   privacyHint: { fontSize: Typography.fontSizeXS, color: Colors.gray600, marginTop: 2 },
   submitBtn: {
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   resultMsg: {
     fontSize: Typography.fontSizeSM,
@@ -853,12 +853,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
   },
-  resultCaption: { fontSize: Typography.fontSizeMD, color: Colors.black, textAlign: 'center' },
+  resultCaption: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary, textAlign: 'center' },
   queuedEmoji: { fontSize: 40 },
   queuedCountdown: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   videoWrap: {
     width: '100%',
@@ -880,7 +880,7 @@ const styles = StyleSheet.create({
   pickerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   pickerClose: {
     fontSize: Typography.fontSizeMD,

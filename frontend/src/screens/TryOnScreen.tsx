@@ -451,7 +451,7 @@ export default function TryOnScreen() {
         {noBodyPhotos && (
           <View style={styles.addPhotosCard}>
             <View style={styles.addPhotosIcon}>
-              <Ionicons name="body-outline" size={28} color={Colors.black} />
+              <Ionicons name="body-outline" size={28} color={Colors.textPrimary} />
             </View>
             <Text style={styles.addPhotosTitle}>Add your photos to start</Text>
             <Text style={styles.addPhotosText}>
@@ -687,7 +687,7 @@ function ResultView({ job, onReset }: { job: TryOnJob; onReset: () => void }) {
   if (isPending) {
     return (
       <View style={styles.resultContainer}>
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
         <Text style={styles.generatingText}>Generating your image…</Text>
         <Text style={styles.generatingSubtext}>This usually takes 15–30 seconds.</Text>
       </View>
@@ -745,7 +745,7 @@ function ResultView({ job, onReset }: { job: TryOnJob; onReset: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   scroll: { flex: 1 },
   inner: { padding: Spacing.xl },
   subtitle: {
@@ -755,7 +755,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   warningBox: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: 'rgba(251,191,36,0.12)',
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
   addPhotosTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   addPhotosText: {
     fontSize: Typography.fontSizeSM,
@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
   },
   partialNoticeBox: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: 'rgba(251,191,36,0.12)',
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.md,
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
   sectionLabelRow: {
@@ -832,11 +832,11 @@ const styles = StyleSheet.create({
   tipsCardTitle: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: 2,
   },
   tipsCardText: { fontSize: Typography.fontSizeSM, color: Colors.gray600, lineHeight: 20 },
-  tipsCardLink: { color: Colors.black, fontWeight: Typography.fontWeightSemiBold },
+  tipsCardLink: { color: Colors.textPrimary, fontWeight: Typography.fontWeightSemiBold },
   tipsCardClose: { fontSize: Typography.fontSizeSM, color: Colors.gray400, padding: 2 },
   planBadge: { fontWeight: Typography.fontWeightRegular, color: Colors.gray400 },
   photoRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.md },
@@ -885,7 +885,7 @@ const styles = StyleSheet.create({
   closetBadgeText: {
     fontSize: Typography.fontSizeXS,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     letterSpacing: 0.5,
   },
   closetCardTop: {
@@ -923,7 +923,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closetCtaText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -981,7 +981,7 @@ const styles = StyleSheet.create({
   captionLabel: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   captionInput: {
@@ -990,7 +990,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   promptInput: {
     backgroundColor: Colors.gray100,
@@ -998,7 +998,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     minHeight: 88,
   },
   captionHint: {
@@ -1019,7 +1019,7 @@ const styles = StyleSheet.create({
   privacyLabel: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   privacyHint: {
     fontSize: Typography.fontSizeXS,
@@ -1040,7 +1040,7 @@ const styles = StyleSheet.create({
   },
   disabled: { opacity: 0.5 },
   submitBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -1048,7 +1048,7 @@ const styles = StyleSheet.create({
   generatingText: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.md,
   },
   generatingSubtext: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
@@ -1056,12 +1056,12 @@ const styles = StyleSheet.create({
   queuedTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   queuedCountdown: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontVariant: ['tabular-nums'],
   },
   queuedSubtext: {
@@ -1074,7 +1074,7 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     alignSelf: 'flex-start',
   },
   resultImageWrap: { width: '100%', alignItems: 'center' },
@@ -1103,7 +1103,7 @@ const styles = StyleSheet.create({
   },
   resetBtn: {
     borderWidth: 1.5,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
     borderRadius: Radius.full,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xl,
@@ -1111,7 +1111,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   resetBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     fontSize: Typography.fontSizeMD,
   },

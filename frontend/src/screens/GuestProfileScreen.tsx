@@ -256,7 +256,7 @@ function BodyPhotoSlot({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.md,
     textAlign: 'center',
   },
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
   tipsLink: {
     fontSize: Typography.fontSizeSM,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     textAlign: 'center',
     marginTop: Spacing.md,
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   historyHeading: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.sm,
   },
   historyItem: { flex: 1 / 3, aspectRatio: 1, padding: 1, position: 'relative' },
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },

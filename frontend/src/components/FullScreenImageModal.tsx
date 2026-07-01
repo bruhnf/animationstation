@@ -221,6 +221,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   dotActive: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
   },
 });

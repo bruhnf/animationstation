@@ -104,14 +104,14 @@ export default function CompareScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={26} color={Colors.black} />
+          <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Compare Creations</Text>
         <View style={styles.backBtn} />
       </View>
 
       {!loaded ? (
-        <ActivityIndicator style={{ marginTop: Spacing.xl }} color={Colors.black} />
+        <ActivityIndicator style={{ marginTop: Spacing.xl }} color={Colors.textPrimary} />
       ) : loadError ? (
         <View style={styles.emptyWrap}>
           <Text style={styles.emptyText}>Couldn&apos;t load your creations.</Text>
@@ -182,7 +182,7 @@ export default function CompareScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   hint: {
     textAlign: 'center',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: Typography.fontSizeMD, color: Colors.gray600, textAlign: 'center' },
   retryLink: {
     marginTop: Spacing.sm,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
   },
   compareBar: {
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.sm,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.gray200,
   },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   compareBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },

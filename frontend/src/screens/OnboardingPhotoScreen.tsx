@@ -199,12 +199,12 @@ export default function OnboardingPhotoScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   inner: { padding: Spacing.xl, paddingTop: Spacing.xxl },
   title: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.sm,
   },
   subtitle: {
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   tipsRow: { marginBottom: Spacing.lg, marginTop: -Spacing.sm },
   tipsLink: {
     fontSize: Typography.fontSizeSM,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
   },
   slotCard: {
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   slotLabel: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   slotDescription: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginTop: 2 },
   slotHint: {
@@ -274,9 +274,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.lg,
   },
-  outlineButton: { backgroundColor: Colors.white, borderWidth: 1.5, borderColor: Colors.gray200 },
+  outlineButton: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.gray200 },
   primaryButtonText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     fontSize: Typography.fontSizeMD,
   },

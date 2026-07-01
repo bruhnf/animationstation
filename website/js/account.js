@@ -1,4 +1,4 @@
-// TryOn Mirror — Account-management page logic.
+// AnimationStation — Account-management page logic.
 // Reuses helpers from auth.js (API_BASE, authFetch [auto-refreshes on 401],
 // getProfile, getAccessToken, getUser, setUser, clearTokens, logout).
 (function () {
@@ -88,7 +88,7 @@
 
   // ---- Revoke AI consent (DELETE /profile/me/ai-consent) ----
   window.revokeConsent = async function () {
-    if (!confirm('Revoke AI processing consent? You will be asked again next time you start a try-on.')) return;
+    if (!confirm('Revoke AI processing consent? You will be asked again next time you create with AI.')) return;
     try {
       const res = await authFetch(`${API_BASE}/profile/me/ai-consent`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Could not revoke consent');
@@ -108,7 +108,7 @@
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'tryon-mirror-my-data.json';
+      a.href = url; a.download = 'animationstation-my-data.json';
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
       showSuccess('Your data download has started.');

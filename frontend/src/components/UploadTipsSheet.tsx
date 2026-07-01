@@ -69,7 +69,7 @@ export default function UploadTipsSheet({ visible, kind, onClose }: Props) {
               {kind === 'clothing' ? '📸 Reference Image Tips' : '📸 Photo Tips'}
             </Text>
             <TouchableOpacity onPress={onClose} accessibilityLabel="Close">
-              <Ionicons name="close" size={24} color={Colors.black} />
+              <Ionicons name="close" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
           </View>
           <Text style={styles.subtitle}>
@@ -98,7 +98,7 @@ export default function UploadTipsSheet({ visible, kind, onClose }: Props) {
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     padding: Spacing.lg,
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   subtitle: {
     fontSize: Typography.fontSizeSM,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs + 2,
   },
   tipIcon: { fontSize: 18, width: 26, textAlign: 'center' },
-  tipText: { flex: 1, fontSize: Typography.fontSizeSM, color: Colors.black, lineHeight: 20 },
+  tipText: { flex: 1, fontSize: Typography.fontSizeSM, color: Colors.textPrimary, lineHeight: 20 },
   doneButton: {
     backgroundColor: Colors.black,
     paddingVertical: Spacing.md,

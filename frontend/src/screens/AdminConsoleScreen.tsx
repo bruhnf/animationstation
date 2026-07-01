@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   authContainer: {
     flex: 1,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: '700',
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
   },
@@ -327,11 +327,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   input: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.gray200,
@@ -357,14 +357,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingTop: 60,
     paddingBottom: Spacing.md,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray200,
   },
   headerTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: '700',
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   logoutText: {
     fontSize: Typography.fontSizeMD,
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: Spacing.md,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     marginBottom: Spacing.sm,
   },
   statBox: {
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: Typography.fontSizeXL,
     fontWeight: '700',
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   statLabel: {
     fontSize: Typography.fontSizeSM,
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   userCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: Typography.fontSizeMD,
     fontWeight: '600',
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   email: {
     fontSize: Typography.fontSizeSM,

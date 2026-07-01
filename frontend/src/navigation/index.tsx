@@ -1,19 +1,25 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
-import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigatorScreenParams,
+  DarkTheme as NavDarkTheme,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useUserStore } from '../store/useUserStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useConfigStore } from '../store/useConfigStore';
-import { Colors } from '../constants/theme';
+import { Colors, Gradients } from '../constants/theme';
 
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import OnboardingPhotoScreen from '../screens/OnboardingPhotoScreen';
 import AboutScreen from '../screens/AboutScreen';
 import HomeScreen from '../screens/HomeScreen';
+import HomeHubScreen from '../screens/HomeHubScreen';
 import TryOnScreen from '../screens/TryOnScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import FriendsScreen from '../screens/FriendsScreen';
@@ -50,13 +56,15 @@ export type AuthStackParams = {
 };
 
 export type MainTabParams = {
+  // Home hub (neon landing: hero + creation modes). The social feed moved to
+  // the Community tab; saved creations to the Library tab.
   Home: undefined;
-  Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean } | undefined;
+  Community: undefined;
   // Center FAB → the Create hub, the single landing spot for every creation
-  // feature (Try-On, Design, Video, Clean-Up, Closet). Replaces the old
+  // feature (Image, Design, Video, Clean-Up, Library). Replaces the old
   // separate Design/Video/TryOn tabs.
   Create: undefined;
-  Inbox: undefined;
+  Library: { picker?: boolean } | undefined;
   Profile: undefined;
 };
 
@@ -80,6 +88,8 @@ export type RootStackParams = {
   AdminConsole: undefined;
   Purchase: undefined;
   Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean };
+  // Notifications inbox — reachable from the Home hub header (moved off the tab bar).
+  Inbox: undefined;
   PublicProfile: { username: string };
   BlockedUsers: undefined;
   ChangePassword: undefined;
@@ -102,6 +112,21 @@ const Stack = createNativeStackNavigator<RootStackParams>();
 const AuthStack = createNativeStackNavigator<AuthStackParams>();
 const Tab = createBottomTabNavigator<MainTabParams>();
 
+// Dark navigation theme so inter-screen gaps / card transitions render on the
+// app's deep-navy canvas instead of React Navigation's default white.
+const navTheme = {
+  ...NavDarkTheme,
+  colors: {
+    ...NavDarkTheme.colors,
+    background: Colors.background,
+    card: Colors.backgroundElevated,
+    text: Colors.textPrimary,
+    border: Colors.border,
+    primary: Colors.accentCyan,
+    notification: Colors.accentMagenta,
+  },
+};
+
 function AuthNavigator() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
@@ -113,30 +138,32 @@ function AuthNavigator() {
   );
 }
 
-// Center "Create" FAB — the prominent gateway to the Create hub. Black disc with
-// a gold camera, echoing the gold-on-black theme.
+// Center "Create" FAB — the prominent gateway to the Create hub. Neon
+// cyan→purple gradient disc with a cyan glow, matching the app's accent system.
 function CreateTabIcon({ focused }: { focused: boolean }) {
   return (
-    <View
+    <LinearGradient
+      colors={Gradients.primary}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: Colors.black,
         borderWidth: focused ? 2 : 0,
-        borderColor: Colors.gold,
+        borderColor: Colors.white,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 6,
+        shadowColor: Colors.accentCyan,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.6,
+        shadowRadius: 12,
+        elevation: 8,
       }}
     >
-      <Ionicons name="camera" size={30} color={Colors.gold} />
-    </View>
+      <Ionicons name="add" size={34} color={Colors.white} />
+    </LinearGradient>
   );
 }
 
@@ -148,7 +175,7 @@ function InboxTabForGuest() {
 }
 
 function MainTabs() {
-  const { unreadCount, fetchUnreadCount } = useNotificationStore();
+  const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
   const isGuest = useUserStore((s) => s.user?.isGuest === true);
 
   useEffect(() => {
@@ -165,32 +192,32 @@ function MainTabs() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: Colors.black,
-        tabBarInactiveTintColor: Colors.gray400,
+        tabBarActiveTintColor: Colors.accentCyan,
+        tabBarInactiveTintColor: Colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopColor: Colors.gray200,
-          height: 70,
-          paddingBottom: 10,
+          backgroundColor: Colors.backgroundElevated,
+          borderTopColor: Colors.border,
+          borderTopWidth: 1,
+          height: 72,
+          paddingBottom: 12,
+          paddingTop: 6,
         },
-        tabBarLabelStyle: { fontSize: 10 },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
       }}
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeHubScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tab.Screen
-        name="Friends"
-        component={FriendsScreen}
+        name="Community"
+        component={HomeScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+            <Ionicons name="people" size={size} color={color} />
           ),
         }}
       />
@@ -203,15 +230,12 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Inbox"
-        component={isGuest ? InboxTabForGuest : InboxScreen}
+        name="Library"
+        component={ClosetScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mail-outline" size={size} color={color} />
+            <Ionicons name="images" size={size} color={color} />
           ),
-          tabBarBadge:
-            !isGuest && unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : undefined,
-          tabBarBadgeStyle: { backgroundColor: Colors.black, color: Colors.white, fontSize: 10 },
         }}
       />
       <Tab.Screen
@@ -219,7 +243,7 @@ function MainTabs() {
         component={isGuest ? GuestProfileScreen : ProfileScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <Ionicons name="person" size={size} color={color} />
           ),
         }}
       />
@@ -245,10 +269,10 @@ export default function AppNavigator() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.surface,
         }}
       >
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
       </View>
     );
   }
@@ -260,7 +284,7 @@ export default function AppNavigator() {
   // — they get a guest session in initialize().
   if (!user && sessionEnded) {
     return (
-      <NavigationContainer ref={navigationRef}>
+      <NavigationContainer ref={navigationRef} theme={navTheme}>
         <AuthNavigator />
       </NavigationContainer>
     );
@@ -276,7 +300,7 @@ export default function AppNavigator() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.surface,
           padding: 32,
         }}
       >
@@ -290,13 +314,13 @@ export default function AppNavigator() {
         <TouchableOpacity
           onPress={() => initialize()}
           style={{
-            backgroundColor: Colors.black,
+            backgroundColor: Colors.accent,
             borderRadius: 24,
             paddingVertical: 12,
             paddingHorizontal: 28,
           }}
         >
-          <Text style={{ color: Colors.white, fontWeight: '700' }}>Retry</Text>
+          <Text style={{ color: Colors.textInverse, fontWeight: '700' }}>Retry</Text>
         </TouchableOpacity>
       </View>
     );
@@ -305,7 +329,7 @@ export default function AppNavigator() {
   const isGuest = user.isGuest === true;
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* Main tabs render for BOTH guest and real users — a guest always has a
             session, so there's no sign-in wall. The screens below differ by
@@ -321,6 +345,19 @@ export default function AppNavigator() {
         <Stack.Screen
           name="TryOnComments"
           component={TryOnCommentsScreen}
+          options={{ presentation: 'card', headerShown: false }}
+        />
+        {/* Moved off the tab bar (mockup tabs are Home/Community/Create/Library/
+            Profile). Still reachable: Friends from Community/Profile links,
+            Inbox from the Home hub header. */}
+        <Stack.Screen
+          name="Friends"
+          component={FriendsScreen}
+          options={{ presentation: 'card', headerShown: false }}
+        />
+        <Stack.Screen
+          name="Inbox"
+          component={isGuest ? InboxTabForGuest : InboxScreen}
           options={{ presentation: 'card', headerShown: false }}
         />
         <Stack.Screen
