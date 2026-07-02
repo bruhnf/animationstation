@@ -73,7 +73,7 @@ export const uploadSingle = withUploadErrors(
   }).single('photo'),
 );
 
-// For try-on: only 1 photo allowed
+// For creation: only 1 photo allowed
 export const uploadMultiple = withUploadErrors(
   multer({
     storage,
@@ -83,7 +83,7 @@ export const uploadMultiple = withUploadErrors(
 );
 
 // AI Video: a primary source `photo` plus an OPTIONAL second `photo2` (the
-// transition target). Both are camera-roll uploads; the try-on / body-photo
+// transition target). Both are camera-roll uploads; the creation / body-photo
 // source types come as text fields instead. req.files is keyed by field name.
 export const uploadVideoSources = withUploadErrors(
   multer({

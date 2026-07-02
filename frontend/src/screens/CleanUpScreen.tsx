@@ -172,7 +172,7 @@ export default function CleanUpScreen() {
                 if (!result) return;
                 // Park the transformed image; the Video screen consumes it on focus and loads it
                 // as the source image. Must write useVideoSourceStore + navigate to 'Video' — the
-                // old closet-store + 'TryOn' hand-off dropped the image and dead-ended.
+                // old closet-store + 'Transform' hand-off dropped the image and dead-ended.
                 setPendingSource({ imageUrl: result.imageUrl });
                 navigation.navigate('Video');
               }}

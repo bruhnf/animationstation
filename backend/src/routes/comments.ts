@@ -14,7 +14,7 @@ router.use(requireAuth);
 const createSchema = z.object({
   body: z.string().trim().min(1, 'Comment cannot be empty').max(500, 'Comment is too long'),
   // When set, this is a reply to a top-level comment with the given id. The
-  // server validates the parent exists, belongs to the same TryOn, and is
+  // server validates the parent exists, belongs to the same creation, and is
   // itself a top-level comment (single-level threading; no reply-to-replies).
   parentId: z.string().uuid().optional(),
 });
@@ -46,11 +46,11 @@ async function getLikedSet(userId: string, commentIds: string[]): Promise<Set<st
   return new Set(liked.map((l) => l.commentId));
 }
 
-// List comments for a TryOn. Returns only top-level comments (parentId IS
+// List comments for a creation. Returns only top-level comments (parentId IS
 // NULL) at the top level; each top-level entry includes its replies inline,
 // ordered oldest-first. Each entry (parent or reply) carries a likesCount
 // and a `liked` boolean for the requesting user.
-router.get('/tryon/:jobId/comments', async (req: Request, res: Response) => {
+router.get('/creations/:jobId/comments', async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
@@ -60,16 +60,16 @@ router.get('/tryon/:jobId/comments', async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt((req.query.page as string) ?? '1', 10));
   const limit = Math.min(50, parseInt((req.query.limit as string) ?? '30', 10));
 
-  const job = await prisma.tryOnJob.findUnique({
+  const job = await prisma.creation.findUnique({
     where: { id: jobId },
     select: { id: true, isPrivate: true, userId: true },
   });
   if (!job) {
-    res.status(404).json({ error: 'Try-on not found' });
+    res.status(404).json({ error: 'Creation not found' });
     return;
   }
   if (job.isPrivate && job.userId !== req.user.userId) {
-    res.status(404).json({ error: 'Try-on not found' });
+    res.status(404).json({ error: 'Creation not found' });
     return;
   }
 
@@ -82,7 +82,7 @@ router.get('/tryon/:jobId/comments', async (req: Request, res: Response) => {
   // is on either side of a block with the post's owner, they can't read the
   // thread even with a direct jobId (matches the like/reply/feed rules).
   if (job.userId !== req.user.userId && invisibleUserIds.includes(job.userId)) {
-    res.status(404).json({ error: 'Try-on not found' });
+    res.status(404).json({ error: 'Creation not found' });
     return;
   }
   const topLevelWhere = {
@@ -147,10 +147,10 @@ router.get('/tryon/:jobId/comments', async (req: Request, res: Response) => {
   res.json({ comments: decorated, page, total, hasMore: page * limit < total });
 });
 
-// Create a comment or reply on a TryOn. When `parentId` is set, the new row
+// Create a comment or reply on a creation. When `parentId` is set, the new row
 // is a reply attached to that parent (single-level threading). Self-comments
 // are allowed and don't trigger a notification.
-router.post('/tryon/:jobId/comments', blockGuests, async (req: Request, res: Response) => {
+router.post('/creations/:jobId/comments', blockGuests, async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
@@ -165,16 +165,16 @@ router.post('/tryon/:jobId/comments', blockGuests, async (req: Request, res: Res
   const { jobId } = req.params;
   const { body, parentId } = parsed.data;
 
-  const job = await prisma.tryOnJob.findUnique({
+  const job = await prisma.creation.findUnique({
     where: { id: jobId },
     select: { id: true, userId: true, isPrivate: true },
   });
   if (!job) {
-    res.status(404).json({ error: 'Try-on not found' });
+    res.status(404).json({ error: 'Creation not found' });
     return;
   }
   if (job.isPrivate && job.userId !== req.user.userId) {
-    res.status(403).json({ error: 'This try-on is private' });
+    res.status(403).json({ error: 'This creation is private' });
     return;
   }
 
@@ -183,7 +183,7 @@ router.post('/tryon/:jobId/comments', blockGuests, async (req: Request, res: Res
   // "can't see it" behavior used elsewhere for blocked relationships.
   const invisibleUserIds = await getInvisibleUserIds(req.user.userId);
   if (invisibleUserIds.includes(job.userId)) {
-    res.status(404).json({ error: 'Try-on not found' });
+    res.status(404).json({ error: 'Creation not found' });
     return;
   }
 
@@ -200,7 +200,7 @@ router.post('/tryon/:jobId/comments', blockGuests, async (req: Request, res: Res
       return;
     }
     if (parent.jobId !== jobId) {
-      res.status(400).json({ error: 'Parent comment belongs to a different try-on' });
+      res.status(400).json({ error: 'Parent comment belongs to a different creation' });
       return;
     }
     if (parent.parentId) {
@@ -229,13 +229,13 @@ router.post('/tryon/:jobId/comments', blockGuests, async (req: Request, res: Res
         user: { select: COMMENT_AUTHOR_SELECT },
       },
     }),
-    prisma.tryOnJob.update({
+    prisma.creation.update({
       where: { id: jobId },
       data: { commentsCount: { increment: 1 } },
     }),
   ];
   if (!parentId && !isSelfComment) {
-    // Top-level comment on someone else's TryOn → notify the post owner.
+    // Top-level comment on someone else's creation → notify the post owner.
     ops.push(
       prisma.notification.create({
         data: {
@@ -292,7 +292,7 @@ router.post('/tryon/:jobId/comments', blockGuests, async (req: Request, res: Res
 });
 
 // Delete a comment. Allowed if the caller is the comment author OR the owner
-// of the TryOn the comment is on. Cascades delete to replies (FK ON DELETE
+// of the Creation the comment is on. Cascades delete to replies (FK ON DELETE
 // CASCADE), so the count is decremented by 1 + the number of replies.
 router.delete('/comments/:commentId', blockGuests, async (req: Request, res: Response) => {
   if (!req.user) {
@@ -329,7 +329,7 @@ router.delete('/comments/:commentId', blockGuests, async (req: Request, res: Res
 
   await prisma.$transaction([
     prisma.comment.delete({ where: { id: commentId } }),
-    prisma.tryOnJob.update({
+    prisma.creation.update({
       where: { id: comment.jobId },
       data: { commentsCount: { decrement: totalRemoved } },
     }),
@@ -369,8 +369,8 @@ router.post('/comments/:commentId/likes', blockGuests, async (req: Request, res:
     res.status(404).json({ error: 'Comment not found' });
     return;
   }
-  // Mirror the GET visibility rule: liking a comment on a private TryOn is
-  // only allowed if you own the TryOn.
+  // Mirror the GET visibility rule: liking a comment on a private creation is
+  // only allowed if you own the creation.
   if (comment.job.isPrivate && comment.job.userId !== req.user.userId) {
     res.status(404).json({ error: 'Comment not found' });
     return;
@@ -404,7 +404,7 @@ router.post('/comments/:commentId/likes', blockGuests, async (req: Request, res:
 
   // Notify the comment author on a fresh like (skip self-likes and
   // re-likes-after-unlike-then-like-again). Aggregation could be added later;
-  // for now we match the existing TryOn LIKE notification pattern.
+  // for now we match the existing creation LIKE notification pattern.
   if (!alreadyLiked && comment.userId !== req.user.userId) {
     await prisma.notification.create({
       data: {

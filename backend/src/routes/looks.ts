@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, blockGuests } from '../middleware/auth';
 import prisma from '../lib/prisma';
-import { presignTryOnJob, presignAvatarOnly } from '../services/imageUrlService';
+import { presignCreation, presignAvatarOnly } from '../services/imageUrlService';
 import { isUniqueConstraintError } from '../utils/prismaErrors';
 import { getInvisibleUserIds } from '../utils/blocks';
 import { stripNonOwnerJobInputs } from '../utils/jobVisibility';
 
-// "Saved Looks" — a user's bookmarked try-on results. Real accounts only.
+// "Saved Looks" — a user's bookmarked creation results. Real accounts only.
 const router = Router();
 router.use(requireAuth);
 router.use(blockGuests);
@@ -48,7 +48,7 @@ router.get('/', async (req: Request, res: Response) => {
       const { user, ...job } = s.job;
       const isOwn = job.userId === userId;
       const [presignedJob, presignedUser] = await Promise.all([
-        presignTryOnJob(job),
+        presignCreation(job),
         presignAvatarOnly(user),
       ]);
       // Never expose another user's INPUT photos (body photo + clothing) — only
@@ -72,12 +72,12 @@ router.post('/:jobId', async (req: Request, res: Response) => {
   const userId = req.user.userId;
   const { jobId } = req.params;
 
-  const job = await prisma.tryOnJob.findUnique({
+  const job = await prisma.creation.findUnique({
     where: { id: jobId },
     select: { id: true, userId: true, isPrivate: true, status: true },
   });
   if (!job || job.status !== 'COMPLETE') {
-    res.status(404).json({ error: 'NOT_FOUND', message: 'That try-on is not available.' });
+    res.status(404).json({ error: 'NOT_FOUND', message: 'That creation is not available.' });
     return;
   }
   if (job.userId !== userId) {

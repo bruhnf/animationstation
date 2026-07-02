@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import prisma from '../lib/prisma';
 import { getInvisibleUserIds } from '../utils/blocks';
-import { presignTryOnJob, presignAvatarOnly } from '../services/imageUrlService';
+import { presignCreation, presignAvatarOnly } from '../services/imageUrlService';
 
 const router = Router();
 
@@ -30,7 +30,7 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
   // separate count() query. The old count() ran on EVERY feed request and gets
   // slower as the table grows; dropping it removes a DB round-trip from the hot
   // path (see the connection-pool note in lib/prisma.ts).
-  const jobsPlusOne = await prisma.tryOnJob.findMany({
+  const jobsPlusOne = await prisma.creation.findMany({
     where: baseWhere,
     orderBy: { createdAt: 'desc' },
     skip: (page - 1) * limit,
@@ -59,12 +59,12 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
     jobs.map(async (j) => {
       const { likes, savedLooks, user, ...rest } = j;
       const [presignedJob, presignedUser] = await Promise.all([
-        presignTryOnJob(rest),
+        presignCreation(rest),
         presignAvatarOnly(user),
       ]);
       // A public feed post intentionally surfaces its INPUT thumbnails (the body
       // photo + clothing item that produced the result) alongside the result —
-      // that's the card design; the user chose to publish this try-on. Only
+      // that's the card design; the user chose to publish this creation. Only
       // PRIVATE jobs (never in the feed) keep their inputs hidden.
       return {
         ...presignedJob,

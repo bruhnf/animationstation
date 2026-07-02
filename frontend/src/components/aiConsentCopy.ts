@@ -1,9 +1,9 @@
 // Disclosure copy for the AI-processing consent modal, separated from the
 // component so it can be unit-tested. Apple 5.1.1(i)/5.1.2(i) requires the
 // consent text to accurately describe what is sent for the CURRENT flow:
-//  - 'tryon' sends your photo(s) + a prompt and returns a generated image
+//  - 'transform' sends your photo(s) + a prompt and returns a generated image
 //  - 'video' sends the source image(s) + a motion prompt and returns a video
-export type AiConsentMode = 'tryon' | 'video';
+export type AiConsentMode = 'transform' | 'video';
 
 export interface AiConsentCopy {
   /** Lead-in before "xAI, Inc., operator of the Grok Imagine API:". */

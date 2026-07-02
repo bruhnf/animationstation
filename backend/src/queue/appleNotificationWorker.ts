@@ -7,7 +7,7 @@ import {
   JWSTransactionDecodedPayload,
   JWSRenewalInfoDecodedPayload,
 } from '@apple/app-store-server-library';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 import { AppleNotificationJobData } from './appleNotificationQueue';
 import {
   verifyAndDecodeNotification,
@@ -204,7 +204,7 @@ async function grantCreditsIfNew(
 // deduct; a duplicate/concurrent REFUND (the worker runs concurrency 4) or a
 // refund for a purchase we never recorded matches zero rows and skips. The
 // deduction itself runs under a `SELECT … FOR UPDATE` lock on the user row
-// (same lock the try-on charge takes) so a concurrent spend can't drive the
+// (same lock the creation charge takes) so a concurrent spend can't drive the
 // balance negative.
 async function clawBackCreditsForRefund(
   userId: string,

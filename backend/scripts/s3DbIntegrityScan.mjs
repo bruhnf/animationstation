@@ -2,11 +2,11 @@
  * DB ↔ S3 integrity scan: cross-references every image reference stored in the
  * database against the actual contents of the S3 bucket, in both directions:
  *
- *   1. Dead DB references — a User/TryOnJob row points at an S3 key that does
+ *   1. Dead DB references — a User/Creation row points at an S3 key that does
  *      not exist (would render as a permanently broken image in the app).
  *   2. Orphaned S3 objects — an object in the bucket that no DB row references
  *      (wasted storage; left behind by deletes/replacements that missed S3).
- *   3. Per-job completeness — whether each COMPLETE try-on still has all four
+ *   3. Per-job completeness — whether each COMPLETE creation still has all four
  *      core images (clothing, body photo input, full-body result, medium
  *      result), with perspectivesUsed taken into account.
  *
@@ -118,10 +118,10 @@ const completeJobs = jobs.filter((j) => j.status === 'COMPLETE');
 const incomplete = [];
 for (const j of completeJobs) {
   const missing = [];
-  if (!j.hasClothing1) missing.push('clothingPhoto1Url');
-  if (!j.hasBody) missing.push('bodyPhotoUrl');
-  if (j.perspectives.includes('full_body') && !j.hasResultFull) missing.push('resultFullBodyUrl');
-  if (j.perspectives.includes('medium') && !j.hasResultMedium) missing.push('resultMediumUrl');
+  if (!j.hasClothing1) missing.push('refImage1Url');
+  if (!j.hasBody) missing.push('sourceImageUrl');
+  if (j.perspectives.includes('full_body') && !j.hasResultFull) missing.push('resultImageUrl');
+  if (j.perspectives.includes('medium') && !j.hasResultMedium) missing.push('resultImage2Url');
   const singlePerspective = j.perspectives.length === 1;
   if (missing.length > 0 || singlePerspective) {
     incomplete.push({ ...j, missing, singlePerspective });

@@ -1,24 +1,24 @@
-import type { TryOnKind } from '@prisma/client';
+import type { CreationKind } from '@prisma/client';
 
 type JobInputFields = {
-  kind?: TryOnKind | null;
-  bodyPhotoUrl?: string | null;
-  clothingPhoto1Url?: string | null;
-  clothingPhoto2Url?: string | null;
+  kind?: CreationKind | null;
+  sourceImageUrl?: string | null;
+  refImage1Url?: string | null;
+  refImage2Url?: string | null;
 };
 
 /**
- * Strip a try-on job's INPUT photos when the viewer is NOT the owner.
+ * Strip a creation job's INPUT photos when the viewer is NOT the owner.
  *
  * Every public surface (feed, public profile, job-status for a shared post,
  * saved looks) must only ever expose RESULTS, never the inputs a user fed in:
- *  - IMAGE try-on: the inputs are the user's PRIVATE body photo (`bodyPhotoUrl`)
+ *  - IMAGE creation: the inputs are the user's PRIVATE body photo (`sourceImageUrl`)
  *    and the clothing item they photographed. Body photos are deliberately kept
  *    private (omitted from public profiles), so leaking them through a job grid
  *    is a privacy breach.
- *  - VIDEO: the source image (`bodyPhotoUrl`) IS the intended public poster /
+ *  - VIDEO: the source image (`sourceImageUrl`) IS the intended public poster /
  *    thumbnail, so it stays. The optional 2nd "transition" image
- *    (`clothingPhoto1Url`) and `clothingPhoto2Url` are private inputs and are
+ *    (`refImage1Url`) and `refImage2Url` are private inputs and are
  *    stripped.
  *
  * Owners always get everything back. Pure function (no I/O) so it's unit-tested
@@ -27,7 +27,7 @@ type JobInputFields = {
 export function stripNonOwnerJobInputs<T extends JobInputFields>(job: T, isOwner: boolean): T {
   if (isOwner) return job;
   if (job.kind === 'VIDEO') {
-    return { ...job, clothingPhoto1Url: null, clothingPhoto2Url: null };
+    return { ...job, refImage1Url: null, refImage2Url: null };
   }
-  return { ...job, bodyPhotoUrl: null, clothingPhoto1Url: null, clothingPhoto2Url: null };
+  return { ...job, sourceImageUrl: null, refImage1Url: null, refImage2Url: null };
 }

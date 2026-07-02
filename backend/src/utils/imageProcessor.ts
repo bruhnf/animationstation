@@ -20,7 +20,7 @@ export interface ProcessedImage {
  * Resize image so the longest side is 1024px while maintaining aspect ratio.
  * Converts to JPEG for consistent output.
  */
-export async function resizeImageForTryOn(inputBuffer: Buffer): Promise<ProcessedImage> {
+export async function resizeImageForGeneration(inputBuffer: Buffer): Promise<ProcessedImage> {
   try {
     // Get original image metadata
     const metadata = await sharp(inputBuffer).metadata();

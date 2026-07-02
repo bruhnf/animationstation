@@ -1,4 +1,4 @@
-// Pure decision logic for content-moderation handling in the try-on worker.
+// Pure decision logic for content-moderation handling in the creation worker.
 // Lives here (dependency-free) so it can be unit-tested without importing the
 // worker, which connects to Redis at module load.
 
@@ -24,7 +24,7 @@ export type ModerationVerdict = 'clean' | 'partial' | 'all_blocked' | 'all_faile
  *                  can't claim a banned-content attempt when an error, not the
  *                  filter, caused a miss)
  *
- * The worker only calls this with ≥1 outcome (the controller rejects try-ons
+ * The worker only calls this with ≥1 outcome (the controller rejects creations
  * without a body photo). An empty list classifies as 'all_failed' — the
  * conservative reading of "nothing was generated" that never records a strike.
  */
@@ -41,8 +41,8 @@ export function classifyOutcomes(outcomes: ReadonlyArray<PerspectiveOutcome>): M
 // credit is refunded. Wording stays accurate when no credit was spent (weekly
 // allowance) — "any credit spent" covers both cases.
 export const PARTIAL_TRANSIENT_USER_NOTE =
-  'One of your try-on views hit a temporary problem and could not be generated, ' +
-  'so we refunded any credit spent on this try-on. The view that succeeded is ' +
+  'One of your creation views hit a temporary problem and could not be generated, ' +
+  'so we refunded any credit spent on this creation. The view that succeeded is ' +
   'included in your results.';
 
 // User-facing note stored on a COMPLETE job when one perspective was blocked
@@ -50,7 +50,7 @@ export const PARTIAL_TRANSIENT_USER_NOTE =
 // delivered, and the surviving perspective passing is evidence the block was
 // a filter false positive rather than a banned-content attempt.
 export const PARTIAL_MODERATION_USER_NOTE =
-  "One of your try-on views was blocked by our AI provider's content policy. " +
+  "One of your creation views was blocked by our AI provider's content policy. " +
   'The view that generated normally is included in your results.';
 
 /**

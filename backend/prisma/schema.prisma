@@ -14,9 +14,9 @@ enum JobStatus {
   FAILED
 }
 
-// Discriminates a clothing try-on (IMAGE) from an AI-animated clip (VIDEO).
-// Both live in the TryOnJob table so all downstream surfaces are shared.
-enum TryOnKind {
+// Discriminates a clothing creation (IMAGE) from an AI-animated clip (VIDEO).
+// Both live in the Creation table so all downstream surfaces are shared.
+enum CreationKind {
   IMAGE
   VIDEO
 }
@@ -37,14 +37,14 @@ enum UserTier {
 enum NotificationType {
   FOLLOW
   LIKE
-  TRYON_COMPLETE
+  CREATION_COMPLETE
   COMMENT
   COMMENT_REPLY
   COMMENT_LIKE
 }
 
 enum ReportTargetType {
-  TRYON_JOB
+  CREATION
   USER
   COMMENT
 }
@@ -71,7 +71,7 @@ model User {
   // "Bruhn" when "bruhn" exists, and every equality lookup matches either.
   username                 String    @unique @db.Citext
   // Nullable for guest accounts (isGuest=true), which are minted on first app
-  // open with no email/password so a user can browse and run a free try-on
+  // open with no email/password so a user can browse and run a free creation
   // before signing up. Postgres allows multiple NULLs under a unique index, so
   // @unique still enforces uniqueness for real (non-null) emails. A guest is
   // upgraded to a real account via POST /auth/claim, which sets these fields.
@@ -88,7 +88,7 @@ model User {
   passwordHash             String?
   // True for anonymous guest accounts. Guests carry real JWT tokens (so every
   // requireAuth read endpoint works for them) but are rejected from social
-  // write endpoints by the blockGuests middleware, and their try-on results are
+  // write endpoints by the blockGuests middleware, and their creation results are
   // forced private until they convert.
   isGuest                  Boolean   @default(false)
   // iOS identifierForVendor of the device that created this guest. Lets
@@ -104,11 +104,11 @@ model User {
   passwordResetTokenExpiry DateTime?
   tier                     UserTier  @default(FREE)
   credits                  Int       @default(0)
-  // Lifetime count of try-on sessions generated
-  tryOnCount               Int       @default(0)
-  // Lifetime count of try-on generations blocked by the AI provider's content
+  // Lifetime count of creation sessions generated
+  creationCount               Int       @default(0)
+  // Lifetime count of creation generations blocked by the AI provider's content
   // moderation (revealing/sexual/banned-content attempts). Incremented by the
-  // try-on worker on a terminal CONTENT_MODERATED failure; surfaced in the admin
+  // creation worker on a terminal CONTENT_MODERATED failure; surfaced in the admin
   // dashboard and used to alert admins on repeat offenders (see moderationService).
   moderationBlockCount     Int       @default(0)
   // Timestamp of the user's most recent content-moderation block.
@@ -119,10 +119,10 @@ model User {
   // Timestamp of the user's most recent explicit consent to send body +
   // clothing photos to xAI's Grok Imagine API. Null = no consent on file or
   // revoked. Required by App Store Review Guidelines 5.1.1(i) / 5.1.2(i):
-  // the try-on submit endpoint refuses with AI_CONSENT_REQUIRED when null,
+  // the creation submit endpoint refuses with AI_CONSENT_REQUIRED when null,
   // and the client surfaces an explicit opt-in dialog before re-submitting.
   aiProcessingConsentAt    DateTime?
-  // When set, the soft try-on throttle ignores jobs created before this time, so
+  // When set, the soft creation throttle ignores jobs created before this time, so
   // the user starts again with a clean burst. Stamped on every successful credit
   // purchase / subscription so a user who buys credits is never left stuck in the
   // pacing queue. See services/throttleService.ts (resetUserThrottle).
@@ -130,13 +130,13 @@ model User {
   firstName                String?
   lastName                 String?
   bio                      String?
-  // The *Url columns below store an S3 key (e.g. "body-photos/<userId>/<file>.jpg"),
+  // The *Url columns below store an S3 key (e.g. "source-images/<userId>/<file>.jpg"),
   // not a public URL. The bucket is private; presigned GET URLs are minted at
   // response time by services/imageUrlService.ts. Legacy rows may still hold
   // full https://...amazonaws.com/... URLs — the presign helpers tolerate both.
   // avatarUrl = close-up photo — used for profile display ONLY, never sent to Grok
   avatarUrl                String?
-  // fullBodyUrl and mediumBodyUrl are the inputs for the Grok try-on API
+  // fullBodyUrl and mediumBodyUrl are the inputs for the Grok creation API
   fullBodyUrl              String?
   mediumBodyUrl            String?
   followingCount           Int       @default(0)
@@ -151,7 +151,7 @@ model User {
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
-  tryOnJobs          TryOnJob[]
+  creations          Creation[]
   locations          UserLocation[]
   following          Follow[]            @relation("Follower")
   followers          Follow[]            @relation("Following")
@@ -176,7 +176,7 @@ model User {
   @@map("users")
 }
 
-// A user's bookmarked try-on result ("Saved Looks"). One row per (user, job).
+// A user's bookmarked creation result ("Saved Looks"). One row per (user, job).
 // Lets a user keep results they love in one place to re-view, re-share, or
 // re-run. Unique constraint makes a repeat save idempotent.
 model SavedLook {
@@ -186,7 +186,7 @@ model SavedLook {
   createdAt DateTime @default(now())
 
   user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job  TryOnJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job  Creation @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
   @@index([userId, createdAt])
@@ -218,8 +218,8 @@ model Referral {
 // A virtual "custom clothing" item in the user's closet — an outfit image
 // generated by Grok Imagine from the user's text description (Outfit Designer).
 // The image lives in S3 under closet/<userId>/. When a closet item is used in
-// a try-on, its image is COPIED into clothing-photos/ for that job, so closet
-// deletion can never dangle a TryOnJob reference (the dead-image-ref lesson).
+// a creation, its image is COPIED into ref-images/ for that job, so closet
+// deletion can never dangle a Creation reference (the dead-image-ref lesson).
 model ClosetItem {
   id          String   @id @default(uuid())
   userId      String
@@ -245,7 +245,7 @@ model Report {
   id           String           @id @default(uuid())
   reporterId   String
   targetType   ReportTargetType
-  // ID of the reported entity (TryOnJob.id when targetType=TRYON_JOB, User.id when targetType=USER).
+  // ID of the reported entity (Creation.id when targetType=CREATION, User.id when targetType=USER).
   targetId     String
   reason       ReportReason
   // Optional free-text from the reporter for additional context.
@@ -289,7 +289,7 @@ model ApplePurchase {
   transactionId         String    @unique
   // Original transaction id — stable across renewals of the same subscription.
   originalTransactionId String
-  // App Store product identifier (e.g. com.evofaceflow.tryon.basic.monthly).
+  // App Store product identifier (e.g. ai.animationstation.app.basic.monthly).
   productId             String
   // Subscription tier this purchase grants on our side.
   tier                  UserTier
@@ -344,30 +344,30 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model TryOnJob {
+model Creation {
   id                String    @id @default(uuid())
   userId            String
   status            JobStatus @default(PENDING)
   isPrivate         Boolean   @default(false)
-  // IMAGE = a clothing try-on (the original feature). VIDEO = an AI-animated
+  // IMAGE = a clothing creation (the original feature). VIDEO = an AI-animated
   // clip generated from a source image + a motion prompt (see VideoScreen).
   // Videos reuse this table so every existing surface (feed, profile, looks,
   // comments, likes, share, moderation, S3 cleanup) works unchanged.
-  kind              TryOnKind @default(IMAGE)
+  kind              CreationKind @default(IMAGE)
   // The *Url columns below store an S3 key, not a public URL — the bucket is
   // private and presigned GET URLs are minted at response time by
   // services/imageUrlService.ts. Legacy rows may still hold full
   // https://...amazonaws.com/... URLs; the presign helpers tolerate both.
   // Nullable: VIDEO jobs have no clothing item (their input is a single source
-  // image stored in bodyPhotoUrl). IMAGE (try-on) jobs always set this.
-  clothingPhoto1Url String?
-  clothingPhoto2Url String?
-  resultFullBodyUrl String?
-  resultMediumUrl   String?
+  // image stored in sourceImageUrl). IMAGE (creation) jobs always set this.
+  refImage1Url String?
+  refImage2Url String?
+  resultImageUrl String?
+  resultImage2Url   String?
   // IMAGE: primary body photo used as input (full body preferred, medium fallback).
   // VIDEO: the source image being animated — also serves as the poster/thumbnail.
-  bodyPhotoUrl      String?
-  // VIDEO only: S3 key of the generated .mp4 result. Null for image try-ons.
+  sourceImageUrl      String?
+  // VIDEO only: S3 key of the generated .mp4 result. Null for image creations.
   videoUrl          String?
   // VIDEO only: the user's motion/animation prompt (e.g. "wave and smile").
   motionPrompt      String?   @db.VarChar(300)
@@ -380,7 +380,7 @@ model TryOnJob {
   likesCount        Int       @default(0)
   // denormalized comment count for feed performance
   commentsCount     Int       @default(0)
-  // user's credit balance at the moment the try-on was submitted (before any deduction)
+  // user's credit balance at the moment the creation was submitted (before any deduction)
   creditsAtTime     Int?
   // When the worker is scheduled to actually start this job. Null = start
   // immediately. Non-null when the soft throttle deferred the submission so
@@ -388,8 +388,8 @@ model TryOnJob {
   // the authoritative timer; this column is for client display only.
   scheduledStartAt  DateTime?
   // Optional user-authored title/caption shown under the result image on the
-  // community feed and on the web "My Try-Ons" page. Trimmed + length-capped
-  // (TRYON_TITLE_MAX_LENGTH) in the controller; null/empty = no caption.
+  // community feed and on the web "My Creations" page. Trimmed + length-capped
+  // (CREATION_TITLE_MAX_LENGTH) in the controller; null/empty = no caption.
   title             String?   @db.VarChar(140)
   errorMessage      String?
   createdAt         DateTime  @default(now())
@@ -401,11 +401,11 @@ model TryOnJob {
   notifications Notification[]
   savedLooks    SavedLook[]
 
-  @@map("tryon_jobs")
+  @@map("creations")
 }
 
-// User-authored comment on a TryOnJob. Comments are public when the parent
-// TryOnJob is public; private TryOnJobs are not commentable from the feed.
+// User-authored comment on a Creation. Comments are public when the parent
+// Creation is public; private Creations are not commentable from the feed.
 // Authors can delete their own comment; the post owner can delete any
 // comment on their own post. Other users can Report instead.
 //
@@ -421,7 +421,7 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  job           TryOnJob       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job           Creation       @relation(fields: [jobId], references: [id], onDelete: Cascade)
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   parent        Comment?       @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies       Comment[]      @relation("CommentReplies")
@@ -511,7 +511,7 @@ model Like {
   createdAt DateTime @default(now())
 
   user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job  TryOnJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job  Creation @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
   @@index([jobId])
@@ -525,7 +525,7 @@ model Notification {
   type      NotificationType
   // user who triggered the notification (e.g., the follower or liker)
   actorId   String?
-  // optional related try-on job (e.g., for LIKE or TRYON_COMPLETE)
+  // optional related creation job (e.g., for LIKE or CREATION_COMPLETE)
   jobId     String?
   // optional related comment — set for COMMENT_REPLY (the parent comment that
   // was replied to) and COMMENT_LIKE (the comment that was liked). Lets the
@@ -536,7 +536,7 @@ model Notification {
 
   user    User      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
   actor   User?     @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
-  job     TryOnJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  job     Creation? @relation(fields: [jobId], references: [id], onDelete: SetNull)
   comment Comment?  @relation(fields: [commentId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])

@@ -250,11 +250,11 @@ export async function verifyEmail(req: Request, res: Response): Promise<void> {
     }
   })();
 
-  // Redirect to a small success page rather than the bare `tryon://` deep
+  // Redirect to a small success page rather than the bare `animationstation://` deep
   // link. The deep link alone breaks on desktop browsers (no scheme handler =
   // blank "can't open URL" screen) and even on mobile shows an ugly system
   // prompt before opening the app. The /verified page renders a clear success
-  // state and an "Open the TryOn app" button that triggers the deep link.
+  // state and an "Open the AnimationStation app" button that triggers the deep link.
   res.redirect('/verified');
 }
 
@@ -356,7 +356,7 @@ export async function login(req: Request, res: Response): Promise<void> {
       email: user.email,
       tier: user.tier,
       credits: user.credits,
-      tryOnCount: user.tryOnCount,
+      creationCount: user.creationCount,
       verified: user.verified,
       bio: user.bio,
       avatarUrl: presignedPhotos.avatarUrl,
@@ -373,7 +373,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 
 // Mint an anonymous guest account on first app open. The guest carries real JWT
 // tokens (so feed/profile/comment reads work) but is rejected from social writes
-// by blockGuests, and their try-on results are forced private until they convert
+// by blockGuests, and their creation results are forced private until they convert
 // via claimGuest. App Store 5.1.1(v): lets users experience the app without a
 // forced sign-in wall.
 // Mint fresh access+refresh tokens for a guest User row and return the standard
@@ -409,7 +409,7 @@ async function issueGuestSession(res: Response, user: User): Promise<void> {
       email: null,
       tier: user.tier,
       credits: user.credits,
-      tryOnCount: user.tryOnCount,
+      creationCount: user.creationCount,
       verified: user.verified,
       isGuest: true,
       bio: user.bio,
@@ -432,7 +432,7 @@ export async function createGuest(req: Request, res: Response): Promise<void> {
       : null;
   // Welcome credits = the new-visitor "try before signup" hook. Suppressed with
   // { welcomeCredits:false } (e.g. a real user logging out drops to a browsable
-  // guest session but must NOT be handed a fresh free-try-on grant). The flag
+  // guest session but must NOT be handed a fresh free-creation grant). The flag
   // can only WITHHOLD the fixed grant, never increase it, so it's not a farm lever.
   const welcomeCredits = req.body?.welcomeCredits !== false;
 
@@ -520,7 +520,7 @@ export async function createGuest(req: Request, res: Response): Promise<void> {
 
 // Convert (claim) the current guest account into a real account. Authenticated
 // with the guest's token (requireAuth, NOT blockGuests — this is the one write a
-// guest must reach). Upgrades the SAME user row, so the guest's try-ons, credits
+// guest must reach). Upgrades the SAME user row, so the guest's creations, credits
 // and AI consent carry over. Mirrors signup: no tokens returned; the user must
 // verify their email and then log in (which mints an isGuest=false token).
 export async function claimGuest(req: Request, res: Response): Promise<void> {

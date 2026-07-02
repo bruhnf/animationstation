@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 import prisma from '../lib/prisma';
 import { sendQueueHealthAlert } from '../services/emailService';
 import { env } from '../config/env';
@@ -16,7 +16,7 @@ const log = createChildLogger('QueueHealthMonitor');
 //  - FAILURES: the retained failed count exceeds a threshold (jobs erroring —
 //    Grok errors, S3, etc.).
 // Debounced via an AppSetting so a sustained problem doesn't spam the inbox.
-const MONITORED_QUEUES = ['tryon', 'apple-notifications'];
+const MONITORED_QUEUES = ['transform', 'apple-notifications'];
 const BACKLOG_THRESHOLD = Number(process.env.QUEUE_BACKLOG_THRESHOLD ?? 50);
 const FAILED_THRESHOLD = Number(process.env.QUEUE_FAILED_THRESHOLD ?? 20);
 const ALERT_COOLDOWN_MINUTES = Number(process.env.QUEUE_ALERT_COOLDOWN_MINUTES ?? 30);

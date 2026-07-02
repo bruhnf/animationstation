@@ -23,8 +23,8 @@ import CreditDisplay from '../components/CreditDisplay';
 import UploadTipsSheet from '../components/UploadTipsSheet';
 import RetryableImage from '../components/RetryableImage';
 import FullScreenImageModal, { OriginalImageBadge } from '../components/FullScreenImageModal';
-import { buildTryOnCarousel, CarouselSlot, indexOfSlot } from '../utils/tryonCarousel';
-import type { TryOnJob } from '../types';
+import { buildCreationCarousel, CarouselSlot, indexOfSlot } from '../utils/creationCarousel';
+import type { Creation } from '../types';
 import type { RootStackParams } from '../navigation';
 
 type Nav = NativeStackNavigationProp<RootStackParams>;
@@ -40,7 +40,7 @@ export default function GuestProfileScreen() {
   const { signupCreditGrant, signupCreditsOffer } = useConfigStore();
   const [uploading, setUploading] = useState<'fullBody' | 'medium' | null>(null);
   const [tipsVisible, setTipsVisible] = useState(false);
-  const [history, setHistory] = useState<TryOnJob[]>([]);
+  const [history, setHistory] = useState<Creation[]>([]);
   const [fullScreenImages, setFullScreenImages] = useState<string[]>([]);
   const [fullScreenInitialIndex, setFullScreenInitialIndex] = useState(0);
   const [fullScreenAi, setFullScreenAi] = useState<boolean[]>([]);
@@ -49,11 +49,11 @@ export default function GuestProfileScreen() {
 
   // Reload the guest's own creation history whenever the tab regains focus, so a
   // creation completed on the Create tab shows up here without an app restart.
-  // /tryon/history is requireAuth-only (not blockGuests) and returns the
+  // /creation/history is requireAuth-only (not blockGuests) and returns the
   // owner's COMPLETE jobs — including the forced-private guest ones.
   const loadHistory = useCallback(async () => {
     try {
-      const { data } = await api.get<{ jobs: TryOnJob[] }>('/tryon/history');
+      const { data } = await api.get<{ jobs: Creation[] }>('/creations/history');
       setHistory(data.jobs);
     } catch {
       // Leave any previously-loaded history in place on a transient failure.
@@ -70,8 +70,8 @@ export default function GuestProfileScreen() {
   // Open the read-only full-screen carousel for a history item (result and
   // source slides). Guests get the same viewer as the Home feed but no
   // privacy toggle — their creations stay private until they convert.
-  const openCarousel = useCallback((item: TryOnJob, slot: CarouselSlot) => {
-    const slides = buildTryOnCarousel(item);
+  const openCarousel = useCallback((item: Creation, slot: CarouselSlot) => {
+    const slides = buildCreationCarousel(item);
     if (slides.length === 0) return;
     setFullScreenImages(slides.map((s) => s.url));
     setFullScreenAi(slides.map((s) => s.aiGenerated));
@@ -165,13 +165,13 @@ export default function GuestProfileScreen() {
               scrollEnabled={false}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => {
-                const url = item.resultFullBodyUrl ?? item.resultMediumUrl;
+                const url = item.resultImageUrl ?? item.resultImage2Url;
                 return (
                   <TouchableOpacity
                     style={styles.historyItem}
                     activeOpacity={url ? 0.8 : 1}
                     onPress={() => {
-                      if (url) openCarousel(item, item.resultFullBodyUrl ? 'full' : 'medium');
+                      if (url) openCarousel(item, item.resultImageUrl ? 'full' : 'medium');
                     }}
                   >
                     {url ? (

@@ -1,5 +1,5 @@
 /**
- * Unit tests for the soft try-on throttle ladder + config validation. Pure
+ * Unit tests for the soft creation throttle ladder + config validation. Pure
  * math / validation → no DB. Codifies the documented behavior in CLAUDE.md
  * (Soft per-user throttle). Run with: npm test
  */

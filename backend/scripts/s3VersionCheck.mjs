@@ -4,7 +4,7 @@
  * restorable (bucket versioning keeps noncurrent versions 30 days).
  *
  *   cd backend
- *   node scripts/s3VersionCheck.mjs "body-photos/<userId>/"
+ *   node scripts/s3VersionCheck.mjs "source-images/<userId>/"
  *
  * Uses AWS credentials from backend/.env.
  */

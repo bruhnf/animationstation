@@ -13,11 +13,12 @@ import { logger, logApp, logSecurity } from './services/logger';
 import { httpLogger, errorLogger } from './middleware/httpLogger';
 import prisma from './lib/prisma';
 import { metricsMiddleware, metricsHandler } from './lib/metrics';
-import { connection as redisConnection } from './queue/tryonQueue';
+import { connection as redisConnection } from './queue/transformQueue';
 
 import authRoutes from './routes/auth';
 import uploadRoutes from './routes/upload';
-import tryonRoutes from './routes/tryon';
+import creationsRoutes from './routes/creations';
+import transformRoutes from './routes/transform';
 import profileRoutes from './routes/profile';
 import friendsRoutes from './routes/friends';
 import feedRoutes from './routes/feed';
@@ -66,8 +67,8 @@ app.get('/admin', (_req, res) => {
 });
 
 // Post-verification success page. Loaded via redirect from /api/auth/verify/:token
-// after the DB update succeeds. Has an "Open the TryOn app" button that triggers
-// the tryon:// deep link — works on both mobile (opens the app) and desktop
+// after the DB update succeeds. Has an "Open the AnimationStation app" button that triggers
+// the animationstation:// deep link — works on both mobile (opens the app) and desktop
 // (shows a clear success state instead of a broken "page can't be displayed").
 app.get('/verified', (_req, res) => {
   res.setHeader(
@@ -203,22 +204,29 @@ const smsOptInLimiter = rateLimit({
 });
 app.use('/api/sms', smsOptInLimiter);
 
-// Try-on rate limiter (POST only - job submissions)
+// Transform rate limiter (POST only - generation submissions)
 import { Request, Response, NextFunction } from 'express';
-const tryonPostLimiter = rateLimit({
+const generationPostLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 5, // 5 try-on submissions per minute
+  max: 5, // 5 transform submissions per minute
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Try-on limit reached, please wait.' },
+  message: { error: 'Generation limit reached, please wait.' },
   handler: (req, res) => {
-    logSecurity('rate_limit', { ip: req.ip, path: req.path, limiter: 'tryon' });
-    res.status(429).json({ error: 'Try-on limit reached, please wait.' });
+    logSecurity('rate_limit', { ip: req.ip, path: req.path, limiter: 'transform' });
+    res.status(429).json({ error: 'Generation limit reached, please wait.' });
   },
 });
-app.use('/api/tryon', (req: Request, res: Response, next: NextFunction) => {
+app.use('/api/transform', (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'POST') {
-    return tryonPostLimiter(req, res, next);
+    return generationPostLimiter(req, res, next);
+  }
+  next();
+});
+// Bulk-delete and other creation writes share the same modest POST cap.
+app.use('/api/creations', (req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST') {
+    return generationPostLimiter(req, res, next);
   }
   next();
 });
@@ -250,7 +258,8 @@ app.use('/api/video', (req: Request, res: Response, next: NextFunction) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/tryon', tryonRoutes);
+app.use('/api/transform', transformRoutes);
+app.use('/api/creations', creationsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/feed', feedRoutes);
@@ -268,12 +277,12 @@ app.use('/api/closet', closetRoutes);
 app.use('/api/video', videoRoutes);
 app.use('/api/webhooks', appleWebhookRoutes);
 app.use('/api', moderationRoutes);
-// Mounted at /api so paths can be `/tryon/:jobId/comments` (extending the
-// existing /api/tryon namespace without modifying tryonRoutes) and
+// Mounted at /api so paths can be `/creations/:jobId/comments` (extending the
+// existing /api/creations namespace without modifying creationsRoutes) and
 // `/comments/:commentId` for delete.
 app.use('/api', commentsRoutes);
 
-// Public shareable try-on pages: GET /t/<jobId> -> server-rendered HTML with
+// Public shareable creation pages: GET /t/<jobId> -> server-rendered HTML with
 // OpenGraph/Twitter meta (rich link previews). Mounted at the root, not under
 // /api, so the share URL is short. See routes/share.ts.
 app.use('/t', sharePageRouter);
@@ -366,7 +375,7 @@ app.use((err: Error, req: express.Request, res: express.Response, _next: express
 app.listen(env.port, () => {
   logApp('startup', {
     component: 'express',
-    message: `TryOn backend running on port ${env.port}`,
+    message: `AnimationStation backend running on port ${env.port}`,
     port: env.port,
     environment: env.nodeEnv,
     logLevel: process.env.LOG_LEVEL || (env.isDev ? 'debug' : 'info'),
@@ -396,7 +405,7 @@ app.listen(env.port, () => {
 // modules. Each module creates its Worker as a side effect of being imported.
 async function startWorkers(): Promise<void> {
   await Promise.all([
-    import('./queue/tryonWorker'),
+    import('./queue/transformWorker'),
     import('./queue/videoWorker'),
     import('./queue/appleNotificationWorker'),
   ]);

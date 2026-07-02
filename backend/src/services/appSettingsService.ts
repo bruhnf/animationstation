@@ -172,7 +172,7 @@ export async function setReferralMaxPerWindow(value: number): Promise<number> {
 }
 
 // Credits charged to generate one AI video (image-to-video). Video generation
-// costs more than a still image, so it defaults higher than a try-on's 1
+// costs more than a still image, so it defaults higher than a creation's 1
 // credit. Admin-configurable at runtime; must be >= 1 (a 0-cost video would be
 // a free firehose on a paid AI call).
 export const VIDEO_CREDIT_COST_KEY = 'videoCreditCost';

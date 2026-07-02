@@ -1,7 +1,7 @@
 import { UserTier } from '@prisma/client';
 
 export interface TierConfig {
-  // Included try-on sessions per rolling 7-day window; FREE has 0 (credits-only)
+  // Included creation sessions per rolling 7-day window; FREE has 0 (credits-only)
   weeklyLimit: number;
   // Per-credit price in dollars for buying additional credits
   creditPrice: number;

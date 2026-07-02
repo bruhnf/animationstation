@@ -73,7 +73,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
 
 export async function sendPasswordResetEmail(to: string, token: string): Promise<void> {
   // Must be a real https link to the WEBSITE reset page. The old
-  // `tryon://reset-password` deep link was a dead end twice over: mail clients
+  // `animationstation://reset-password` deep link was a dead end twice over: mail clients
   // refuse to hyperlink custom schemes (the "button" rendered as inert dark
   // text), and neither the app nor the website had a screen to handle it.
   // The web page works in every mail client on every device, and posts to the
@@ -108,7 +108,7 @@ export async function sendS3OrphanAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] S3 orphan scan: ${orphanedObjects} stale object${orphanedObjects === 1 ? '' : 's'} found`,
+    subject: `[AnimationStation] S3 orphan scan: ${orphanedObjects} stale object${orphanedObjects === 1 ? '' : 's'} found`,
     html: `
       <h2>S3 Orphan Scan — Action Needed</h2>
       <p>The weekly S3 orphan scan found <strong>${orphanedObjects} object${orphanedObjects === 1 ? '' : 's'}</strong>
@@ -152,15 +152,15 @@ export async function sendGuestAbuseAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] Unusual guest sign-up volume: ${data.totalGuests} in ${data.windowHours}h`,
+    subject: `[AnimationStation] Unusual guest sign-up volume: ${data.totalGuests} in ${data.windowHours}h`,
     html: `
       <h2>Guest Sign-up Spike — Possible Credit Farming</h2>
       <p>In the last <strong>${data.windowHours} hours</strong>, <strong>${data.totalGuests}</strong>
-      anonymous guest accounts were created (each is granted free try-on credits).</p>
+      anonymous guest accounts were created (each is granted free creation credits).</p>
       <p>Thresholds: global ≥ ${data.globalThreshold} / window, or ≥ ${data.perIpThreshold} from any single IP.</p>
       ${data.topIps.length ? `<h3>Top source IPs</h3><ul>${ipRows}</ul>` : ''}
       <p>If this looks organic (a launch, press mention, etc.) no action is needed. If one source is
-      farming free try-ons, consider tightening the <code>/auth/guest</code> rate limit or enabling
+      farming free creations, consider tightening the <code>/auth/guest</code> rate limit or enabling
       iOS DeviceCheck.</p>
       <p>
         <a href="${data.adminUrl}" style="background:#000;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block;">
@@ -196,7 +196,7 @@ export async function sendReferralAbuseAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] Unusual referral volume: ${data.totalRewarded} rewarded in ${data.windowDays}d`,
+    subject: `[AnimationStation] Unusual referral volume: ${data.totalRewarded} rewarded in ${data.windowDays}d`,
     html: `
       <h2>Referral Spike — Possible Credit Farming</h2>
       <p>In the last <strong>${data.windowDays} days</strong>, <strong>${data.totalRewarded}</strong>
@@ -244,7 +244,7 @@ export async function sendQueueHealthAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] Queue health alert: ${data.reasons.join('; ')}`,
+    subject: `[AnimationStation] Queue health alert: ${data.reasons.join('; ')}`,
     html: `
       <h2>BullMQ Queue Health Alert</h2>
       <p>${data.reasons.map((r) => `<strong>${r}</strong>`).join('<br>')}</p>
@@ -277,11 +277,11 @@ export async function sendModerationStrikeAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] Repeat content-moderation blocks: ${data.username} (${data.count})`,
+    subject: `[AnimationStation] Repeat content-moderation blocks: ${data.username} (${data.count})`,
     html: `
       <h2>Repeat Content-Moderation Blocks — Review Needed</h2>
       <p>User <strong>${data.username}</strong>${data.email ? ` (${data.email})` : ''} has now had
-      <strong>${data.count}</strong> try-on generation${data.count === 1 ? '' : 's'} blocked by the AI
+      <strong>${data.count}</strong> creation generation${data.count === 1 ? '' : 's'} blocked by the AI
       provider's content policy — typically attempts to generate revealing, sexual, or otherwise
       banned imagery.</p>
       <p>User ID: <code>${data.userId}</code></p>
@@ -321,7 +321,7 @@ export async function sendNewUserAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] New user: ${data.username}`,
+    subject: `[AnimationStation] New user: ${data.username}`,
     html: `
       <h2>🎉 New Verified User</h2>
       <ul>
@@ -341,11 +341,11 @@ export async function sendNewUserAlert(
   });
 }
 
-// Admin alert for EVERY try-on generation failure (terminal error, full
+// Admin alert for EVERY creation generation failure (terminal error, full
 // moderation block, or a partial moderation block on a job that still
 // completed). Email-only for now — SMS alerting is pending toll-free
 // registration approval (see TODOS §2).
-export async function sendTryOnFailureAlert(
+export async function sendGenerationFailureAlert(
   to: string,
   data: {
     jobId: string;
@@ -368,9 +368,9 @@ export async function sendTryOnFailureAlert(
   await sendMail({
     from: env.email.fromAddress,
     to,
-    subject: `[TryOn] Generation failed: ${kindLabel}`,
+    subject: `[AnimationStation] Generation failed: ${kindLabel}`,
     html: `
-      <h2>Try-On Generation Failure</h2>
+      <h2>Creation Generation Failure</h2>
       <p><strong>${kindLabel}</strong></p>
       <ul>
         <li>Job ID: <code>${escapeHtml(data.jobId)}</code></li>
@@ -387,7 +387,7 @@ export async function sendTryOnFailureAlert(
           Open Admin Dashboard
         </a>
       </p>
-      <p style="color:#888;font-size:12px;">You're receiving this because a try-on generation failed. One email per terminal failure / partial block.</p>
+      <p style="color:#888;font-size:12px;">You're receiving this because a creation generation failed. One email per terminal failure / partial block.</p>
     `,
   });
 }

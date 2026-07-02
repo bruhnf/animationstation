@@ -13,26 +13,26 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
-import { TryOnJob, ClosetItem } from '../types';
+import { Creation, ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import RetryableImage from './RetryableImage';
-import TryOnDetailModal from './TryOnDetailModal';
+import CreationDetailModal from './CreationDetailModal';
 import VideoPlayerModal from './VideoPlayerModal';
 import AiGeneratedBadge from './AiGeneratedBadge';
 import { useVideoSourceStore } from '../store/useVideoSourceStore';
 
 // A unified "creations" grid — the single view of everything a user has
 // generated, merged from BOTH backend collections:
-//   • /tryon/history  → transform images (kind IMAGE) + AI videos (kind VIDEO)
+//   • /creation/history  → transform images (kind IMAGE) + AI videos (kind VIDEO)
 //   • /closet         → text-to-image "Design" results (ClosetItem)
-// It sorts newest-first and dispatches per-item actions by source: tryon images
-// open the full detail modal (privacy / like / save / comments), tryon videos
+// It sorts newest-first and dispatches per-item actions by source: creation images
+// open the full detail modal (privacy / like / save / comments), creation videos
 // open the player, and closet images open a lightweight viewer. Delete routes to
 // the correct endpoint per source. Used by both the Library tab and the Profile
 // screen so the two always show the same complete set.
 
-export type Creation =
-  | { key: string; source: 'tryon'; createdAt: string; job: TryOnJob }
+export type GridEntry =
+  | { key: string; source: 'transform'; createdAt: string; job: Creation }
   | { key: string; source: 'closet'; createdAt: string; item: ClosetItem };
 
 export interface CreationCounts {
@@ -41,11 +41,11 @@ export interface CreationCounts {
   total: number;
 }
 
-function thumbFor(c: Creation): { url?: string; isVideo: boolean; isPrivate: boolean } {
+function thumbFor(c: GridEntry): { url?: string; isVideo: boolean; isPrivate: boolean } {
   if (c.source === 'closet') return { url: c.item.imageUrl, isVideo: false, isPrivate: false };
   const job = c.job;
   const isVideo = job.kind === 'VIDEO';
-  const url = isVideo ? job.bodyPhotoUrl : (job.resultFullBodyUrl ?? job.resultMediumUrl);
+  const url = isVideo ? job.sourceImageUrl : (job.resultImageUrl ?? job.resultImage2Url);
   return { url, isVideo, isPrivate: !!job.isPrivate };
 }
 
@@ -67,26 +67,31 @@ export default function CreationsGrid({
   const navigation = useNavigation<any>();
   const setPendingSource = useVideoSourceStore((s) => s.setPendingSource);
 
-  const [creations, setCreations] = useState<Creation[]>([]);
+  const [creations, setCreations] = useState<GridEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
-  const [detailJob, setDetailJob] = useState<TryOnJob | null>(null);
+  const [detailJob, setDetailJob] = useState<Creation | null>(null);
   const [closetViewer, setClosetViewer] = useState<ClosetItem | null>(null);
   const mounted = useRef(true);
 
   const load = useCallback(async () => {
     const [jobsRes, closetRes] = await Promise.allSettled([
-      api.get<{ jobs: TryOnJob[] }>('/tryon/history'),
+      api.get<{ jobs: Creation[] }>('/creations/history'),
       api.get<{ items: ClosetItem[] }>('/closet'),
     ]);
-    const merged: Creation[] = [];
+    const merged: GridEntry[] = [];
     if (jobsRes.status === 'fulfilled') {
       for (const job of jobsRes.value.data.jobs ?? []) {
-        merged.push({ key: `tryon:${job.id}`, source: 'tryon', createdAt: job.createdAt, job });
+        merged.push({
+          key: `transform:${job.id}`,
+          source: 'transform',
+          createdAt: job.createdAt,
+          job,
+        });
       }
     }
     if (closetRes.status === 'fulfilled') {
@@ -166,12 +171,14 @@ export default function CreationsGrid({
           style: 'destructive',
           onPress: async () => {
             setDeleting(true);
-            const tryonIds = keys.filter((k) => k.startsWith('tryon:')).map((k) => k.slice(6));
+            const transformIds = keys
+              .filter((k) => k.startsWith('transform:'))
+              .map((k) => k.slice('transform:'.length));
             const closetIds = keys.filter((k) => k.startsWith('closet:')).map((k) => k.slice(7));
             try {
               await Promise.all([
-                tryonIds.length
-                  ? api.post('/tryon/bulk-delete', { jobIds: tryonIds })
+                transformIds.length
+                  ? api.post('/creations/bulk-delete', { jobIds: transformIds })
                   : Promise.resolve(),
                 ...closetIds.map((id) => api.delete(`/closet/${id}`)),
               ]);
@@ -190,7 +197,7 @@ export default function CreationsGrid({
     );
   }
 
-  function openCreation(c: Creation) {
+  function openCreation(c: GridEntry) {
     if (c.source === 'closet') {
       setClosetViewer(c.item);
       return;
@@ -203,10 +210,10 @@ export default function CreationsGrid({
       }
       return;
     }
-    if (job.resultFullBodyUrl || job.resultMediumUrl) setDetailJob(job);
+    if (job.resultImageUrl || job.resultImage2Url) setDetailJob(job);
   }
 
-  const renderItem = ({ item: c }: { item: Creation }) => {
+  const renderItem = ({ item: c }: { item: GridEntry }) => {
     const { url, isVideo, isPrivate } = thumbFor(c);
     const isSelected = selected.has(c.key);
     return (
@@ -232,7 +239,9 @@ export default function CreationsGrid({
           </>
         ) : (
           <View style={[styles.image, styles.placeholder]}>
-            <Text style={styles.placeholderText}>{c.source === 'tryon' ? c.job.status : ''}</Text>
+            <Text style={styles.placeholderText}>
+              {c.source === 'transform' ? c.job.status : ''}
+            </Text>
           </View>
         )}
         {selectionMode ? (
@@ -307,14 +316,14 @@ export default function CreationsGrid({
           setVideoPrompt(null);
         }}
       />
-      <TryOnDetailModal
+      <CreationDetailModal
         visible={detailJob !== null}
         job={detailJob}
         onClose={() => setDetailJob(null)}
         onPrivacyChanged={(jobId, isPrivate) => {
           setCreations((prev) =>
             prev.map((c) =>
-              c.source === 'tryon' && c.job.id === jobId
+              c.source === 'transform' && c.job.id === jobId
                 ? { ...c, job: { ...c.job, isPrivate } }
                 : c,
             ),
@@ -323,7 +332,9 @@ export default function CreationsGrid({
         onSavedChanged={(jobId, saved) => {
           setCreations((prev) =>
             prev.map((c) =>
-              c.source === 'tryon' && c.job.id === jobId ? { ...c, job: { ...c.job, saved } } : c,
+              c.source === 'transform' && c.job.id === jobId
+                ? { ...c, job: { ...c.job, saved } }
+                : c,
             ),
           );
         }}

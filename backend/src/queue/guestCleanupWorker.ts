@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 import prisma from '../lib/prisma';
 import { deleteUserAndAssets } from '../services/accountDeletionService';
 import { createChildLogger } from '../services/logger';

@@ -1,5 +1,5 @@
 /**
- * Soft per-user throttle for try-on submissions.
+ * Soft per-user throttle for creation submissions.
  *
  * Sits on top of the hard per-IP rate limit (5 POST/min) and the weekly /
  * credit gates. Where those refuse the request, this layer instead accepts
@@ -14,7 +14,7 @@
  * from the dashboard (⚙️ Settings) with no redeploy — see getThrottleConfig /
  * setThrottleConfig and routes/admin.ts `PATCH /settings/throttle`. A missing
  * or malformed row transparently falls back to DEFAULT_THROTTLE_CONFIG so a
- * bad value can never brick try-on submission.
+ * bad value can never brick creation submission.
  */
 import type { UserTier } from '@prisma/client';
 import prisma from '../lib/prisma';
@@ -125,7 +125,7 @@ export function validateThrottleConfig(input: unknown): ThrottleConfig {
 /**
  * Read the live throttle config from AppSettings, falling back to
  * DEFAULT_THROTTLE_CONFIG when no row exists or the stored value is invalid.
- * Never throws — a corrupt row must not break try-on submission.
+ * Never throws — a corrupt row must not break creation submission.
  */
 export async function getThrottleConfig(): Promise<ThrottleConfig> {
   const row = await prisma.appSetting.findUnique({ where: { key: THROTTLE_CONFIG_KEY } });
@@ -220,7 +220,7 @@ export async function computeQueueDelayMs(
       ? user.throttleResetAt
       : windowStart;
 
-  const recent = await prisma.tryOnJob.count({
+  const recent = await prisma.creation.count({
     where: { userId, createdAt: { gte: effectiveSince }, status: { not: 'FAILED' } },
   });
   const ordinal = recent + 1;

@@ -4,7 +4,7 @@
  * The creations grid (history + closet fetching) now lives in the embedded
  * <CreationsGrid>, which is stubbed here so these tests exercise only what
  * ProfileScreen itself owns: on every tab focus it calls refreshUser() to keep
- * the header stats (credits, try-on count) current. The tab navigator keeps the
+ * the header stats (credits, creation count) current. The tab navigator keeps the
  * screen mounted, so this must fire on EVERY focus, not just first mount.
  */
 import React from 'react';
@@ -60,7 +60,7 @@ jest.mock('../../utils/imageUtils', () => ({
 // owns the history/closet fetching + its own focus refresh; stubbing it isolates
 // ProfileScreen's own contract (refreshUser on focus).
 jest.mock('../../components/CreationsGrid', () => 'CreationsGrid');
-jest.mock('../../components/TryOnDetailModal', () => 'TryOnDetailModal');
+jest.mock('../../components/CreationDetailModal', () => 'CreationDetailModal');
 jest.mock('../../components/RetryableImage', () => 'RetryableImage');
 jest.mock('../../components/UploadTipsSheet', () => 'UploadTipsSheet');
 
@@ -76,7 +76,7 @@ const profileUser = {
   isGuest: false,
   tier: 'FREE',
   credits: 10,
-  tryOnCount: 3,
+  creationCount: 3,
   followersCount: 1,
   followingCount: 2,
   likesCount: 0,
@@ -143,9 +143,9 @@ describe('ProfileScreen focus refresh', () => {
   });
 
   it('updates the stored user from the focus refresh (stats stay current)', async () => {
-    const refreshedUser = { ...profileUser, tryOnCount: 4, credits: 9 };
+    const refreshedUser = { ...profileUser, creationCount: 4, credits: 9 };
     (api.get as jest.Mock).mockImplementation((url: string) => {
-      if (url === '/tryon/history') return Promise.resolve({ data: { jobs: [] } });
+      if (url === '/creations/history') return Promise.resolve({ data: { jobs: [] } });
       if (url === '/profile/me') return Promise.resolve({ data: refreshedUser });
       return Promise.reject(new Error(`unexpected GET ${url}`));
     });
@@ -154,7 +154,7 @@ describe('ProfileScreen focus refresh', () => {
     await focusScreen();
 
     const stored = useUserStore.getState().user;
-    expect(stored?.tryOnCount).toBe(4);
+    expect(stored?.creationCount).toBe(4);
     expect(stored?.credits).toBe(9);
   });
 

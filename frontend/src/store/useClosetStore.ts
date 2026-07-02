@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { ClosetItem } from '../types';
 
-// Hand-off channel between ClosetScreen and TryOnScreen. When the user picks a
-// closet item to try on, the item is parked here and the closet screen pops;
-// TryOnScreen consumes (and clears) it on focus. A store avoids passing
+// Hand-off channel between ClosetScreen and TransformScreen. When the user picks a
+// closet item to transform, the item is parked here and the closet screen pops;
+// TransformScreen consumes (and clears) it on focus. A store avoids passing
 // non-serializable callbacks through navigation params (React Navigation
 // warns) and survives the tab/stack split between the two screens.
 interface ClosetSelectionStore {

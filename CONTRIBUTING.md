@@ -1,6 +1,6 @@
 # Contributing — Git Workflow
 
-This file is the quick-reference for making changes to the TryOn codebase. It assumes you're a solo developer with a GitHub remote for hosting and review, using a **two-line branch model**: `develop` (dev) and `main` (production).
+This file is the quick-reference for making changes to the AnimationStation codebase. It assumes you're a solo developer with a GitHub remote for hosting and review, using a **two-line branch model**: `develop` (dev) and `main` (production).
 
 > **Related docs:**
 > - [DEPLOYMENT.md](DEPLOYMENT.md) — how to ship merged code to the Lightsail servers (deploys are manual, not auto-triggered by merges).
@@ -71,7 +71,7 @@ A branch is just a movable label pointing at a commit. Working on a branch (rath
 3. **Atomic merges.** A whole feature lands as one logical unit. History stays readable.
 4. **Isolation from `main`'s state.** If `main` is in App Store review and you don't want any new commits affecting production, branches keep your work staged.
 
-> **TryOn-specific:** Deploys to Lightsail are **manual** (`ssh + git pull + docker compose up`). Merging to `develop` or `main` does NOT auto-deploy. Feature work branches off **`develop`** and merges back into `develop` (the dev line); `main` only changes when you promote a verified `develop`. Neither line reaches a server until you SSH and pull.
+> **AnimationStation-specific:** Deploys to Lightsail are **manual** (`ssh + git pull + docker compose up`). Merging to `develop` or `main` does NOT auto-deploy. Feature work branches off **`develop`** and merges back into `develop` (the dev line); `main` only changes when you promote a verified `develop`. Neither line reaches a server until you SSH and pull.
 
 > **Base-branch note:** the diff/merge commands below are written against `main` for generality. When you're working a feature off `develop`, substitute `develop` for `main` in the `git diff develop...HEAD` / `git log develop..HEAD` comparisons. The promotion step (`develop → main`) is the one place you really do compare against `main`.
 

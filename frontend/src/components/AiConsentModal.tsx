@@ -32,14 +32,14 @@ interface Props {
   // accurately describes what is sent — Apple 5.1.1(i)/5.1.2(i) requires the
   // consent text to match the actual data sent for THIS feature. 'video'
   // produces a video, not a still image.
-  mode?: 'tryon' | 'video';
+  mode?: 'transform' | 'video';
 }
 
 // Explicit opt-in dialog required by App Store Review Guidelines 5.1.1(i) /
 // 5.1.2(i). Names the third-party AI processor (xAI / Grok Imagine), lists
 // exactly what data is sent, and persists the user's affirmative consent on
 // the server so the generation submit endpoint can refuse pre-consent requests.
-export default function AiConsentModal({ visible, onAgree, onCancel, mode = 'tryon' }: Props) {
+export default function AiConsentModal({ visible, onAgree, onCancel, mode = 'transform' }: Props) {
   const insets = useSafeAreaInsets();
   const updateUser = useUserStore((s) => s.updateUser);
   const [submitting, setSubmitting] = useState(false);

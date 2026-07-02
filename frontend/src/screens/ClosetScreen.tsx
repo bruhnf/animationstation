@@ -73,18 +73,18 @@ export default function ClosetScreen() {
     }, [loadCloset]),
   );
 
-  function handleTryOn(item: ClosetItem) {
+  function handleTransform(item: ClosetItem) {
     setPendingSelection(item);
     if (pickerMode) {
       navigation.goBack();
     } else {
-      navigation.navigate('TryOn');
+      navigation.navigate('Transform');
     }
   }
 
   function handleItemPress(item: ClosetItem) {
     if (pickerMode) {
-      handleTryOn(item);
+      handleTransform(item);
       return;
     }
     setViewerItem(item);
@@ -146,7 +146,7 @@ export default function ClosetScreen() {
       </View>
 
       {/* Non-picker: the unified creations grid (all generated images + videos,
-          merged from /tryon/history + /closet). Picker mode keeps the closet-only
+          merged from /creation/history + /closet). Picker mode keeps the closet-only
           grid below so the Video screen can pick a saved image as a source. */}
       {!pickerMode ? (
         <View style={{ flex: 1, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm }}>
@@ -220,14 +220,14 @@ export default function ClosetScreen() {
             </Text>
             <View style={[styles.viewerActions, { paddingBottom: insets.bottom + Spacing.md }]}>
               <TouchableOpacity
-                style={styles.viewerTryOnBtn}
+                style={styles.viewerActionBtn}
                 onPress={() => {
                   const item = viewerItem;
                   setViewerItem(null);
-                  handleTryOn(item);
+                  handleTransform(item);
                 }}
               >
-                <Text style={styles.viewerTryOnText}>Make a Video</Text>
+                <Text style={styles.viewerActionText}>Make a Video</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.viewerDeleteBtn}
@@ -319,13 +319,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   viewerActions: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, gap: Spacing.sm },
-  viewerTryOnBtn: {
+  viewerActionBtn: {
     backgroundColor: Colors.surface,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
   },
-  viewerTryOnText: {
+  viewerActionText: {
     color: Colors.textPrimary,
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,

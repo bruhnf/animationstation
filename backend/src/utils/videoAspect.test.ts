@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { nearestVideoAspectRatio } from './videoAspect';
 
 test('exact matches map to themselves', () => {
-  assert.equal(nearestVideoAspectRatio(864, 1152), '3:4'); // try-on result canvas
+  assert.equal(nearestVideoAspectRatio(864, 1152), '3:4'); // creation result canvas
   assert.equal(nearestVideoAspectRatio(1920, 1080), '16:9');
   assert.equal(nearestVideoAspectRatio(1080, 1920), '9:16'); // phone portrait
   assert.equal(nearestVideoAspectRatio(1000, 1000), '1:1');

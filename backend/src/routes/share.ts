@@ -2,15 +2,15 @@ import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { env } from '../config/env';
 import { getS3ObjectBytes, keyFromUrl } from '../services/s3Service';
-import { presignTryOnJob, presignAvatarOnly } from '../services/imageUrlService';
+import { presignCreation, presignAvatarOnly } from '../services/imageUrlService';
 import { escapeHtml } from '../utils/htmlEscape';
 import { createChildLogger } from '../services/logger';
 
 const log = createChildLogger('ShareRoutes');
 
-// Public, unauthenticated share surface for a single try-on result.
+// Public, unauthenticated share surface for a single creation result.
 //
-// A try-on is shareable ONLY when it is COMPLETE and NOT private — exactly the
+// A creation is shareable ONLY when it is COMPLETE and NOT private — exactly the
 // same visibility rule as the public feed, so this exposes nothing that wasn't
 // already public. Private or missing jobs return 404 (indistinguishable, so we
 // don't leak which ids exist). jobIds are unguessable UUIDs.
@@ -27,10 +27,10 @@ interface PublicJob {
   id: string;
   kind: 'IMAGE' | 'VIDEO';
   title: string | null;
-  resultFullBodyUrl: string | null;
-  resultMediumUrl: string | null;
-  bodyPhotoUrl: string | null;
-  clothingPhoto1Url: string | null;
+  resultImageUrl: string | null;
+  resultImage2Url: string | null;
+  sourceImageUrl: string | null;
+  refImage1Url: string | null;
   videoUrl: string | null;
   isPrivate: boolean;
   status: string;
@@ -39,23 +39,23 @@ interface PublicJob {
   user: { username: string; firstName: string | null; avatarUrl: string | null };
 }
 
-// Poster image key for a job: a try-on's result, or a video's source image.
+// Poster image key for a job: a creation's result, or a video's source image.
 function posterKey(job: PublicJob): string | null {
-  return job.resultFullBodyUrl ?? job.resultMediumUrl ?? job.bodyPhotoUrl ?? null;
+  return job.resultImageUrl ?? job.resultImage2Url ?? job.sourceImageUrl ?? null;
 }
 
 async function loadShareableJob(jobId: string): Promise<PublicJob | null> {
   if (!UUID_RE.test(jobId)) return null;
-  const job = await prisma.tryOnJob.findFirst({
+  const job = await prisma.creation.findFirst({
     where: { id: jobId, status: 'COMPLETE', isPrivate: false },
     select: {
       id: true,
       kind: true,
       title: true,
-      resultFullBodyUrl: true,
-      resultMediumUrl: true,
-      bodyPhotoUrl: true,
-      clothingPhoto1Url: true,
+      resultImageUrl: true,
+      resultImage2Url: true,
+      sourceImageUrl: true,
+      refImage1Url: true,
       videoUrl: true,
       isPrivate: true,
       status: true,
@@ -91,7 +91,7 @@ apiRouter.get('/:jobId', async (req: Request, res: Response) => {
   }
 
   const [presigned, presignedUser] = await Promise.all([
-    presignTryOnJob(job),
+    presignCreation(job),
     presignAvatarOnly(job.user),
   ]);
   res.setHeader('Cache-Control', 'public, max-age=120');
@@ -104,8 +104,8 @@ apiRouter.get('/:jobId', async (req: Request, res: Response) => {
       displayName: displayName(job.user),
       avatarUrl: presignedUser.avatarUrl,
     },
-    resultFullBodyUrl: presigned.resultFullBodyUrl,
-    resultMediumUrl: presigned.resultMediumUrl,
+    resultImageUrl: presigned.resultImageUrl,
+    resultImage2Url: presigned.resultImage2Url,
     // Stable, non-expiring URLs the client can render or hand to a native share sheet.
     shareUrl: `${env.appUrl}/t/${job.id}`,
     imageUrl: `${env.appUrl}/api/share/${job.id}/image`,
@@ -122,8 +122,8 @@ apiRouter.get('/:jobId/image', async (req: Request, res: Response) => {
   // Prefer the full-body result; allow ?view=medium; fall back to whichever
   // exists; for a VIDEO use its poster (the source image).
   const preferMedium = req.query.view === 'medium';
-  const primary = preferMedium ? job.resultMediumUrl : job.resultFullBodyUrl;
-  const fallback = preferMedium ? job.resultFullBodyUrl : job.resultMediumUrl;
+  const primary = preferMedium ? job.resultImage2Url : job.resultImageUrl;
+  const fallback = preferMedium ? job.resultImageUrl : job.resultImage2Url;
   const key = primary ?? fallback ?? posterKey(job);
   if (!key) {
     res.status(404).json({ error: 'NO_IMAGE' });

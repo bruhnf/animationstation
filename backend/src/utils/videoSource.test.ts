@@ -29,7 +29,7 @@ test('REGRESSION: a .single upload leaves req.files undefined → NO primary det
   assert.equal(r.primary, null);
 });
 
-test('try-on + body-photo sources come from the body', () => {
+test('creation + body-photo sources come from the body', () => {
   assert.deepEqual(selectVideoSources({ sourceJobId: 'job-1' }, undefined).primary, {
     sourceJobId: 'job-1',
   });

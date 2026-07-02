@@ -59,8 +59,8 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction): 
  * Rejects guest (anonymous) sessions with 403 GUEST_SIGNUP_REQUIRED. Mount AFTER
  * requireAuth so req.user is populated. Used to gate social write actions
  * (like/comment/follow/report/block/notifications) that should prompt a guest to
- * sign up. Reads (feed, profiles, comments) and the guest's own try-on path
- * (upload, ai-consent, tryon submit) are intentionally NOT gated. Tokens minted
+ * sign up. Reads (feed, profiles, comments) and the guest's own creation path
+ * (upload, ai-consent, transform submit) are intentionally NOT gated. Tokens minted
  * before isGuest existed have it undefined → treated as real users.
  */
 export function blockGuests(req: Request, res: Response, next: NextFunction): void {

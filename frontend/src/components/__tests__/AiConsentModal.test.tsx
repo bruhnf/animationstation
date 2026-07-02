@@ -19,7 +19,7 @@ describe('getAiConsentCopy', () => {
   });
 
   it('image mode: describes the photo(s) + text prompt, returns a generated image', () => {
-    const c = getAiConsentCopy('tryon');
+    const c = getAiConsentCopy('transform');
     const all = [c.actionPhrase, ...c.bullets, c.outputPhrase].join(' ');
     expect(all).toContain('photo');
     expect(all).toContain('text prompt');
@@ -30,6 +30,6 @@ describe('getAiConsentCopy', () => {
 
   it('neither mode leaks the other mode’s wording', () => {
     expect(getAiConsentCopy('video').outputPhrase).not.toContain('generated image');
-    expect(getAiConsentCopy('tryon').outputPhrase).not.toContain('video');
+    expect(getAiConsentCopy('transform').outputPhrase).not.toContain('video');
   });
 });

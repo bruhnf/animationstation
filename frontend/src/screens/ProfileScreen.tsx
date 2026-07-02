@@ -18,10 +18,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
-import { TryOnJob } from '../types';
+import { Creation } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams } from '../navigation';
-import TryOnDetailModal from '../components/TryOnDetailModal';
+import CreationDetailModal from '../components/CreationDetailModal';
 import VideoPlayerModal from '../components/VideoPlayerModal';
 import RetryableImage from '../components/RetryableImage';
 import CreditDisplay from '../components/CreditDisplay';
@@ -43,10 +43,10 @@ const MENU_ITEMS = [
   { key: 'logout', label: 'Log Out', danger: true },
 ];
 
-// Mirrors backend TRYON_STORAGE_LIMIT in tryonController.ts. Kept in sync by
+// Mirrors backend CREATION_STORAGE_LIMIT in creationsController.ts. Kept in sync by
 // hand — if the cap changes server-side, update both. Used for the "X/500
 // sessions used" hint and threshold-based warning colors.
-const TRYON_STORAGE_LIMIT = 500;
+const CREATION_STORAGE_LIMIT = 500;
 
 // One tile in the Creator Stats panel: a gold icon, big white count, gold label.
 function CreatorStat({
@@ -87,7 +87,7 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // The creations grid (list, selection, delete, detail modals) now lives in the
-  // shared <CreationsGrid> below — it fetches + merges /tryon/history and /closet
+  // shared <CreationsGrid> below — it fetches + merges /creation/history and /closet
   // and re-fetches on focus. Here we only refresh the header (credits/stats).
   useFocusEffect(
     useCallback(() => {
@@ -259,7 +259,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Creator Stats — flashy gold-on-black panel (Try-Ons / Videos /
+        {/* Creator Stats — flashy gold-on-black panel (Creations / Videos /
             Designs). Deliberately a big bordered panel, not a small pill, so it
             never reads as the credit pill. Each tile taps through to make more. */}
         <View style={styles.creatorStats}>
@@ -267,7 +267,7 @@ export default function ProfileScreen() {
             icon="image"
             value={creationCounts.images}
             label="Images"
-            onPress={() => navigation.navigate('TryOn')}
+            onPress={() => navigation.navigate('Transform')}
           />
           <View style={styles.creatorDivider} />
           <CreatorStat
@@ -320,10 +320,10 @@ export default function ProfileScreen() {
         {user.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
 
         {/* Creation History — the user's generated assets are the only content
-            below the profile header (the old TryOn body-photo uploads are gone). */}
+            below the profile header (the old Transform body-photo uploads are gone). */}
         <View style={styles.section}>
           {/* Unified creations — all generated images + videos (merged from
-              /tryon/history + /closet), with per-item view/detail/delete. The
+              /creation/history + /closet), with per-item view/detail/delete. The
               grid, selection, and detail/video/closet modals all live inside
               CreationsGrid so the Library tab and this screen stay identical. */}
           <CreationsGrid
@@ -526,8 +526,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     lineHeight: 22,
   },
-  // "Design Your Own Outfit" banner — mirrors styles.closetCard on TryOnScreen.
-  // Adds horizontal margin (the TryOn version sits inside a padded container;
+  // "Design Your Own Outfit" banner — mirrors styles.closetCard on TransformScreen.
+  // Adds horizontal margin (the Transform version sits inside a padded container;
   // here it spans the unpadded profile body).
   closetCard: {
     backgroundColor: Colors.black,

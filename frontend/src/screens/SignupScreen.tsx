@@ -63,7 +63,7 @@ export default function SignupScreen({ navigation }: Props) {
     setLoading(true);
     try {
       // If the current session is an anonymous guest, "claim" (upgrade) that
-      // existing account so the guest's try-ons and credits carry over. The
+      // existing account so the guest's creations and credits carry over. The
       // payload is identical to signup; only the endpoint differs. After
       // verifying their email and logging in, the user gets the admin-configured
       // welcome bonus (default 10, 0 when the offer is discontinued) on top of

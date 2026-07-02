@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 import prisma from '../lib/prisma';
 import { sendGuestAbuseAlert, sendReferralAbuseAlert } from '../services/emailService';
 import { env } from '../config/env';

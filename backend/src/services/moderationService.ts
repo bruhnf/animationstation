@@ -1,7 +1,7 @@
 /**
  * Content-moderation strike tracking.
  *
- * When the try-on worker hits a terminal CONTENT_MODERATED failure (xAI/Grok
+ * When the creation worker hits a terminal CONTENT_MODERATED failure (xAI/Grok
  * refused to generate the image — i.e. a revealing/sexual/banned-content
  * attempt), it calls `recordModerationStrike(userId, jobId)`. That increments the
  * user's lifetime `moderationBlockCount`, stamps `lastModerationBlockAt`, and —
@@ -11,7 +11,7 @@
  * Fully best-effort: the worker invokes this fire-and-forget, and every failure
  * here is caught and logged so strike bookkeeping can never affect job handling.
  *
- * Per-event detail (which jobs, when) already lives in TryOnJob rows (status
+ * Per-event detail (which jobs, when) already lives in Creation rows (status
  * FAILED + the moderation errorMessage), so this only adds the cheap aggregate
  * needed for admin display + threshold alerting — no separate audit table.
  */

@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 
 export interface AppleNotificationJobData {
   // Raw signedPayload from Apple. The worker re-verifies before processing.
