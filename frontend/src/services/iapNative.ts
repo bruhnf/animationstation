@@ -18,8 +18,7 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
 // Expo Go reports executionEnvironment === 'storeClient'. Dev builds and
 // standalone/TestFlight builds report 'standalone' (or 'bare'), where the
 // native ExpoIap module is present.
-export const IAP_AVAILABLE =
-  Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
+export const IAP_AVAILABLE = Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
 
 let cached: Record<string, unknown> | null = null;
 

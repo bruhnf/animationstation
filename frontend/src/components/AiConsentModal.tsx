@@ -78,7 +78,12 @@ export default function AiConsentModal({ visible, onAgree, onCancel, mode = 'try
             <View style={styles.bulletList}>
               {copy.bullets.map((b) => (
                 <View style={styles.bulletRow} key={b}>
-                  <Ionicons name="ellipse" size={6} color={Colors.textPrimary} style={styles.bullet} />
+                  <Ionicons
+                    name="ellipse"
+                    size={6}
+                    color={Colors.textPrimary}
+                    style={styles.bullet}
+                  />
                   <Text style={styles.bulletText}>{b}</Text>
                 </View>
               ))}

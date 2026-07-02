@@ -91,7 +91,12 @@ export default function CreationsGrid({
     }
     if (closetRes.status === 'fulfilled') {
       for (const item of closetRes.value.data.items ?? []) {
-        merged.push({ key: `closet:${item.id}`, source: 'closet', createdAt: item.createdAt, item });
+        merged.push({
+          key: `closet:${item.id}`,
+          source: 'closet',
+          createdAt: item.createdAt,
+          item,
+        });
       }
     }
     // Newest first across both collections.
@@ -227,9 +232,7 @@ export default function CreationsGrid({
           </>
         ) : (
           <View style={[styles.image, styles.placeholder]}>
-            <Text style={styles.placeholderText}>
-              {c.source === 'tryon' ? c.job.status : ''}
-            </Text>
+            <Text style={styles.placeholderText}>{c.source === 'tryon' ? c.job.status : ''}</Text>
           </View>
         )}
         {selectionMode ? (
@@ -278,10 +281,7 @@ export default function CreationsGrid({
         <View style={styles.empty}>
           <Text style={styles.emptyEmoji}>🎨</Text>
           <Text style={styles.emptyText}>No creations yet.</Text>
-          <TouchableOpacity
-            style={styles.emptyCta}
-            onPress={() => navigation.navigate('Create')}
-          >
+          <TouchableOpacity style={styles.emptyCta} onPress={() => navigation.navigate('Create')}>
             <Ionicons name="sparkles" size={16} color={Colors.textInverse} />
             <Text style={styles.emptyCtaText}>Start Creating</Text>
           </TouchableOpacity>
@@ -323,9 +323,7 @@ export default function CreationsGrid({
         onSavedChanged={(jobId, saved) => {
           setCreations((prev) =>
             prev.map((c) =>
-              c.source === 'tryon' && c.job.id === jobId
-                ? { ...c, job: { ...c.job, saved } }
-                : c,
+              c.source === 'tryon' && c.job.id === jobId ? { ...c, job: { ...c.job, saved } } : c,
             ),
           );
         }}
@@ -380,7 +378,9 @@ export default function CreationsGrid({
                         try {
                           await api.delete(`/closet/${item.id}`);
                           if (mounted.current) {
-                            setCreations((prev) => prev.filter((c) => c.key !== `closet:${item.id}`));
+                            setCreations((prev) =>
+                              prev.filter((c) => c.key !== `closet:${item.id}`),
+                            );
                             setClosetViewer(null);
                           }
                         } catch {
@@ -499,7 +499,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: Spacing.xl,
   },
-  viewerActions: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, paddingBottom: 32, gap: Spacing.sm },
+  viewerActions: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: 32,
+    gap: Spacing.sm,
+  },
   viewerPrimary: {
     backgroundColor: Colors.surface,
     borderRadius: 24,

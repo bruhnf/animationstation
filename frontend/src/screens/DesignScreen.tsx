@@ -83,10 +83,7 @@ export default function DesignScreen() {
           { text: 'Get Credits', onPress: () => navigation.navigate('Purchase') },
         ]);
       } else if (resp?.error === 'CONTENT_MODERATED' || resp?.error === 'INVALID_DESCRIPTION') {
-        Alert.alert(
-          'Cannot Create This Image',
-          resp.message ?? 'Please enter a prompt.',
-        );
+        Alert.alert('Cannot Create This Image', resp.message ?? 'Please enter a prompt.');
       } else if (resp?.error === 'CLOSET_FULL') {
         Alert.alert(
           'Library Full',
