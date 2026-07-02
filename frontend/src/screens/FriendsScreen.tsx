@@ -16,13 +16,15 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { PublicUser } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
-import { RootStackParams } from '../navigation';
+import { RootStackParams, MainTabParams } from '../navigation';
 import { requireRealUser } from '../utils/guestGate';
 import RetryableImage from '../components/RetryableImage';
 import CreditDisplay from '../components/CreditDisplay';
 
 type Tab = 'following' | 'followers';
-type FriendsRouteProp = RouteProp<RootStackParams, 'Friends'>;
+// Friends is a bottom tab; nav stays typed as the root stack so it can push
+// PublicProfile / Purchase, but the ROUTE (its params) lives on the tab params.
+type FriendsRouteProp = RouteProp<MainTabParams, 'Friends'>;
 
 export default function FriendsScreen() {
   const insets = useSafeAreaInsets();
@@ -41,6 +43,14 @@ export default function FriendsScreen() {
   useEffect(() => {
     loadFriends();
   }, []);
+
+  // As a persistent tab this screen stays mounted, so react to param changes
+  // from links (Profile's Following/Followers stats, the feed's search icon)
+  // rather than only reading them on first mount.
+  useEffect(() => {
+    if (route.params?.initialTab) setTab(route.params.initialTab);
+    if (route.params?.openSearch) setSearchMode(true);
+  }, [route.params?.initialTab, route.params?.openSearch]);
 
   async function loadFriends() {
     setLoading(true);
@@ -110,7 +120,7 @@ export default function FriendsScreen() {
               setQuery('');
             }}
           >
-            <Ionicons name={searchMode ? 'close' : 'search'} size={24} color={Colors.black} />
+            <Ionicons name={searchMode ? 'close' : 'search'} size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -145,7 +155,7 @@ export default function FriendsScreen() {
 
       {loading && !searchMode ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.black} />
+          <ActivityIndicator size="large" color={Colors.textPrimary} />
         </View>
       ) : (
         <FlatList
@@ -238,7 +248,7 @@ function UserRow({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -249,7 +259,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   searchBar: {
@@ -261,7 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     gap: Spacing.sm,
   },
-  searchInput: { flex: 1, fontSize: Typography.fontSizeMD, color: Colors.black },
+  searchInput: { flex: 1, fontSize: Typography.fontSizeMD, color: Colors.textPrimary },
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
@@ -269,7 +279,7 @@ const styles = StyleSheet.create({
   },
   tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.md, position: 'relative' },
   tabText: { fontSize: Typography.fontSizeMD, color: Colors.gray600 },
-  tabTextActive: { fontWeight: Typography.fontWeightSemiBold, color: Colors.black },
+  tabTextActive: { fontWeight: Typography.fontWeightSemiBold, color: Colors.textPrimary },
   tabIndicator: {
     position: 'absolute',
     bottom: 0,
@@ -314,7 +324,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   userHandle: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginTop: 1 },
   userBio: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginTop: 2 },
@@ -324,13 +334,13 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     backgroundColor: Colors.accent,
   },
-  followingBtn: { backgroundColor: Colors.white, borderWidth: 1.5, borderColor: Colors.gray200 },
+  followingBtn: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.gray200 },
   followBtnText: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
-  followingBtnText: { color: Colors.black },
+  followingBtnText: { color: Colors.textPrimary },
   emptyState: {
     flex: 1,
     alignItems: 'center',

@@ -126,7 +126,7 @@ export default function AboutScreen({ navigation }: Props) {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.md }]}
     >
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="chevron-back" size={28} color={Colors.black} />
+        <Ionicons name="chevron-back" size={28} color={Colors.textPrimary} />
       </TouchableOpacity>
 
       <Text style={styles.title}>AnimationStation</Text>
@@ -199,7 +199,7 @@ export default function AboutScreen({ navigation }: Props) {
           shown below is for Free-tier members; Basic and Premium subscribers see lower prices.
         </Text>
         {loading ? (
-          <ActivityIndicator color={Colors.black} style={{ marginTop: Spacing.md }} />
+          <ActivityIndicator color={Colors.textPrimary} style={{ marginTop: Spacing.md }} />
         ) : pricingError ? (
           <Text style={styles.mutedText}>Pricing unavailable — see in app after signup.</Text>
         ) : creditPacks.length === 0 ? (
@@ -276,13 +276,13 @@ function BulletItem({ children }: { children: React.ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   content: { padding: Spacing.xl, paddingBottom: 0 },
   backButton: { alignSelf: 'flex-start', padding: Spacing.xs, marginBottom: Spacing.sm },
   title: {
     fontSize: 36,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
   },
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.sm,
   },
   bodyText: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   tierName: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   badge: {
     backgroundColor: Colors.black,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   pricePeriod: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
   featureRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.xs, marginTop: 4 },
@@ -366,12 +366,12 @@ const styles = StyleSheet.create({
   },
   creditPackName: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightMedium,
   },
   creditPackPrice: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
   },
   whyAccountSection: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightMedium,
     fontSize: Typography.fontSizeMD,
   },

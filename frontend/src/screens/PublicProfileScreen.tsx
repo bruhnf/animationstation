@@ -214,7 +214,7 @@ export default function PublicProfileScreen() {
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
       </View>
     );
   }
@@ -227,7 +227,7 @@ export default function PublicProfileScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={Colors.black} />
+          <Ionicons name="chevron-back" size={28} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
           @{profile.username}
@@ -240,7 +240,7 @@ export default function PublicProfileScreen() {
             style={styles.backButton}
             accessibilityLabel="More actions"
           >
-            <Ionicons name="ellipsis-horizontal" size={24} color={Colors.black} />
+            <Ionicons name="ellipsis-horizontal" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         )}
       </View>
@@ -375,7 +375,7 @@ export default function PublicProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   centered: { justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row',
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   profileSection: {
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   fullName: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   username: {
     fontSize: Typography.fontSizeMD,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   statLabel: { fontSize: Typography.fontSizeXS, color: Colors.gray600, marginTop: 2 },
   followBtn: {
@@ -458,16 +458,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   followingBtn: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderWidth: 1.5,
     borderColor: Colors.gray200,
   },
   followBtnText: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
-  followingBtnText: { color: Colors.black },
+  followingBtnText: { color: Colors.textPrimary },
   blockedNotice: {
     padding: Spacing.xl,
     marginTop: Spacing.md,
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   blockedTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   blockedSubtitle: {
     fontSize: Typography.fontSizeSM,
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.sm,
   },
   emptyText: {

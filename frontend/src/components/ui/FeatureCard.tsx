@@ -1,12 +1,14 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Typography, Spacing, Radius, Shadow } from '../../constants/theme';
+import { Colors, Gradients, Typography, Spacing, Radius, Shadow } from '../../constants/theme';
 
 /**
  * A tappable feature tile for the Create hub. `highlight` gives it the premium
- * gold-on-black treatment (used for the marquee features — Generate + Video).
- * `tag` shows a small gold pill.
+ * neon treatment: a cyan-bordered glassy card with a cyan→purple gradient icon
+ * chip and a soft glow (used for the marquee features). `tag` shows a small cyan
+ * pill. Non-highlight tiles use the same dark surface with a subtler border.
  */
 export default function FeatureCard({
   icon,
@@ -25,32 +27,47 @@ export default function FeatureCard({
   tag?: string;
   style?: StyleProp<ViewStyle>;
 }) {
-  const titleColor = highlight ? Colors.white : Colors.black;
-  const subColor = highlight ? Colors.gray200 : Colors.gray600;
-  const iconColor = highlight ? Colors.black : Colors.goldText;
-  const chevronColor = highlight ? Colors.gold : Colors.gray400;
-
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      style={[styles.card, highlight ? styles.cardHighlight : styles.cardPlain, Shadow.card, style]}
+      style={[
+        styles.card,
+        highlight ? styles.cardHighlight : styles.cardPlain,
+        highlight ? Shadow.cta : Shadow.card,
+        style,
+      ]}
     >
-      <View style={[styles.iconWrap, highlight ? styles.iconWrapHighlight : styles.iconWrapPlain]}>
-        <Ionicons name={icon} size={26} color={iconColor} />
-      </View>
+      {highlight ? (
+        <LinearGradient
+          colors={Gradients.primary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconWrap}
+        >
+          <Ionicons name={icon} size={26} color={Colors.white} />
+        </LinearGradient>
+      ) : (
+        <View style={[styles.iconWrap, styles.iconWrapPlain]}>
+          <Ionicons name={icon} size={26} color={Colors.accentCyan} />
+        </View>
+      )}
       <View style={styles.textWrap}>
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
+          <Text style={styles.title}>{title}</Text>
           {tag ? (
             <View style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
           ) : null}
         </View>
-        <Text style={[styles.subtitle, { color: subColor }]}>{subtitle}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={chevronColor} />
+      <Ionicons
+        name="chevron-forward"
+        size={20}
+        color={highlight ? Colors.accentCyan : Colors.textTertiary}
+      />
     </TouchableOpacity>
   );
 }
@@ -63,8 +80,12 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.md,
   },
-  cardPlain: { backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.gray200 },
-  cardHighlight: { backgroundColor: Colors.black, borderWidth: 1.5, borderColor: Colors.gold },
+  cardPlain: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border },
+  cardHighlight: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1.5,
+    borderColor: Colors.accentCyan,
+  },
   iconWrap: {
     width: 52,
     height: 52,
@@ -72,13 +93,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconWrapPlain: { backgroundColor: Colors.goldSoft },
-  iconWrapHighlight: { backgroundColor: Colors.gold },
+  iconWrapPlain: {
+    backgroundColor: Colors.surfaceGlass,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
   textWrap: { flex: 1 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  title: { fontSize: Typography.fontSizeLG, fontWeight: Typography.fontWeightBold },
+  title: {
+    fontSize: Typography.fontSizeLG,
+    fontWeight: Typography.fontWeightBold,
+    color: Colors.textPrimary,
+  },
   tag: {
-    backgroundColor: Colors.gold,
+    backgroundColor: Colors.accentCyan,
     borderRadius: Radius.full,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
@@ -86,7 +114,7 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: Typography.fontSizeXS,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textInverse,
   },
-  subtitle: { fontSize: Typography.fontSizeSM, marginTop: 2 },
+  subtitle: { fontSize: Typography.fontSizeSM, marginTop: 2, color: Colors.textSecondary },
 });

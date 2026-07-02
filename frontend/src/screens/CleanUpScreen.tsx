@@ -17,7 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
-import { useClosetStore } from '../store/useClosetStore';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { processImageForUpload } from '../utils/imageUtils';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams } from '../navigation';
@@ -40,8 +40,8 @@ export default function CleanUpScreen() {
   const insets = useSafeAreaInsets();
   const refreshUser = useUserStore((s) => s.refreshUser);
   const credits = useUserStore((s) => s.user?.credits ?? 0);
-  // Hand-off channel to the Video screen (it consumes this on focus) — same path the Library uses.
-  const setPendingSelection = useClosetStore((s) => s.setPendingSelection);
+  // Hand-off channel to the Video screen (it consumes this on focus).
+  const setPendingSource = useVideoSourceStore((s) => s.setPendingSource);
 
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -144,7 +144,7 @@ export default function CleanUpScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
-          <Ionicons name="chevron-back" size={26} color={Colors.black} />
+          <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.topTitle}>Transform an Image</Text>
         <CreditDisplay onPress={() => navigation.navigate('Purchase')} />
@@ -170,10 +170,11 @@ export default function CleanUpScreen() {
               fullWidth
               onPress={() => {
                 if (!result) return;
-                // Park the transformed item; the Video screen consumes it on focus and loads it
-                // as the source image (without this, the screen opened with an empty slot).
-                setPendingSelection(result);
-                navigation.navigate('TryOn');
+                // Park the transformed image; the Video screen consumes it on focus and loads it
+                // as the source image. Must write useVideoSourceStore + navigate to 'Video' — the
+                // old closet-store + 'TryOn' hand-off dropped the image and dead-ended.
+                setPendingSource({ imageUrl: result.imageUrl });
+                navigation.navigate('Video');
               }}
             />
             <View style={{ height: Spacing.sm }} />
@@ -234,7 +235,7 @@ export default function CleanUpScreen() {
                 </View>
                 {submitting ? (
                   <View style={styles.workingRow}>
-                    <ActivityIndicator color={Colors.black} />
+                    <ActivityIndicator color={Colors.textPrimary} />
                     <Text style={styles.workingText}>This usually takes 10–30 seconds…</Text>
                   </View>
                 ) : (
@@ -250,7 +251,7 @@ export default function CleanUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   topTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   content: { padding: Spacing.md },
   intro: {
@@ -284,7 +285,7 @@ const styles = StyleSheet.create({
   dropTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.sm,
   },
   dropSub: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
   },
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     minHeight: 72,
     textAlignVertical: 'top',
   },
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: Typography.fontSizeHero,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   sub: { fontSize: Typography.fontSizeMD, color: Colors.gray600, marginBottom: Spacing.lg },
   resultImageWrap: {

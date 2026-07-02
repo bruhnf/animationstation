@@ -136,7 +136,7 @@ export default function InboxScreen() {
       ) : null}
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.black} />
+          <ActivityIndicator size="large" color={Colors.textPrimary} />
         </View>
       ) : (
         <FlatList
@@ -212,7 +212,7 @@ function NotificationRow({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   markAllButton: { padding: Spacing.sm },
   markAllText: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   errorBannerAction: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   row: {
     flexDirection: 'row',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     color: Colors.gray600,
   },
   body: { flex: 1 },
-  message: { fontSize: Typography.fontSizeMD, color: Colors.black, lineHeight: 20 },
+  message: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary, lineHeight: 20 },
   actorName: { fontWeight: Typography.fontWeightSemiBold },
   timestamp: { fontSize: Typography.fontSizeXS, color: Colors.gray600, marginTop: 2 },
   jobThumb: {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   emptySubtitle: {
     fontSize: Typography.fontSizeMD,

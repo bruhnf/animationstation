@@ -106,8 +106,6 @@ export async function submitTryOn(req: Request, res: Response): Promise<void> {
     select: {
       tier: true,
       credits: true,
-      fullBodyUrl: true,
-      mediumBodyUrl: true,
       aiProcessingConsentAt: true,
     },
   });
@@ -125,7 +123,7 @@ export async function submitTryOn(req: Request, res: Response): Promise<void> {
     res.status(403).json({
       error: 'AI_CONSENT_REQUIRED',
       message:
-        'Before generating a try-on, please review and accept the disclosure that your body and clothing photos will be sent to xAI (Grok Imagine API) for processing.',
+        'Before generating an image, please review and accept the disclosure that the image(s) you provide will be sent to xAI (Grok Imagine API) for processing.',
     });
     return;
   }
@@ -186,24 +184,6 @@ export async function submitTryOn(req: Request, res: Response): Promise<void> {
           : 'No credits remaining. Purchase credits to use try-on.',
       weeklyUsed: weekCount,
       weeklyLimit,
-    });
-    return;
-  }
-
-  // Resolve which body-photo perspectives this user has on file (full body is
-  // the preferred input/display, medium is the fallback). This check runs
-  // BEFORE any credit deduction — a user with no body photo must never be
-  // charged for a try-on that cannot run.
-  const bodyPhotos: Array<{ perspective: 'full_body' | 'medium'; url: string }> = [];
-  if (user.fullBodyUrl) bodyPhotos.push({ perspective: 'full_body', url: user.fullBodyUrl });
-  if (user.mediumBodyUrl) bodyPhotos.push({ perspective: 'medium', url: user.mediumBodyUrl });
-  const bodyPhotoUrl = user.fullBodyUrl ?? user.mediumBodyUrl ?? null;
-
-  if (bodyPhotos.length === 0) {
-    res.status(422).json({
-      error: 'NO_BODY_PHOTOS',
-      message:
-        'To use try-on, please upload a full body or medium (waist-up) photo in your profile.',
     });
     return;
   }
@@ -332,7 +312,9 @@ export async function submitTryOn(req: Request, res: Response): Promise<void> {
           title,
           clothingPhoto1Url: clothingKeys[0],
           clothingPhoto2Url: clothingKeys[1] ?? null,
-          bodyPhotoUrl,
+          // Free-form transform has no body photo; the reference image lives in
+          // clothingPhoto1Url and the generated result in resultFullBodyUrl.
+          bodyPhotoUrl: null,
           promptText,
           perspectivesUsed: [],
           creditsAtTime: user.credits,
@@ -386,7 +368,7 @@ export async function submitTryOn(req: Request, res: Response): Promise<void> {
   // spent), then surface a 503 so the client can retry.
   try {
     await enqueueTryOn(
-      { jobId, userId, clothingUrls: clothingKeys, bodyPhotos, promptText },
+      { jobId, userId, clothingUrls: clothingKeys, promptText },
       throttle.delayMs,
     );
   } catch (enqueueErr) {

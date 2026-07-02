@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as IAP from 'expo-iap';
+import IAP, { IAP_AVAILABLE } from '../services/iapNative';
 import * as WebBrowser from 'expo-web-browser';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL, SUPPORT_EMAIL } from '../constants/legal';
@@ -232,6 +232,9 @@ export default function PurchaseScreen() {
   // re-delivered transaction, skipping both finishTransaction and setBusy(null)
   // — so the stale transaction never drained and the wheel spun forever.
   useEffect(() => {
+    // Expo Go has no StoreKit — skip registering native listeners so the
+    // screen renders (purchases require a dev build / TestFlight).
+    if (!IAP_AVAILABLE) return;
     const updateSub = IAP.purchaseUpdatedListener(async (purchase: unknown) => {
       const purchaseSku = (purchase as { productId?: string })?.productId;
       const isUserInitiated = !!purchaseSku && purchaseSku === expectingPurchaseSku.current;
@@ -426,10 +429,10 @@ export default function PurchaseScreen() {
   // free-account CTA. Buying credits requires a free account, no card to join.
   if (isGuest) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: Colors.white }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: Colors.surface }]}>
         <View style={styles.guestCloseRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12}>
-            <Ionicons name="close" size={28} color={Colors.black} />
+            <Ionicons name="close" size={28} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
         <SignupCTA context="credits" />
@@ -441,7 +444,7 @@ export default function PurchaseScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color={Colors.black} />
+          <Ionicons name="close" size={28} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Get More Generations</Text>
         <View style={styles.headerRight} />
@@ -479,7 +482,7 @@ export default function PurchaseScreen() {
 
         {productsLoading ? (
           <View style={styles.loadingBox}>
-            <ActivityIndicator color={Colors.black} />
+            <ActivityIndicator color={Colors.textPrimary} />
             <Text style={styles.loadingText}>Loading prices from the App Store…</Text>
           </View>
         ) : productsError ? (
@@ -595,7 +598,7 @@ export default function PurchaseScreen() {
               disabled={restoring}
             >
               {restoring ? (
-                <ActivityIndicator color={Colors.black} />
+                <ActivityIndicator color={Colors.textPrimary} />
               ) : (
                 <Text style={styles.restoreButtonText}>Restore Purchases</Text>
               )}
@@ -628,7 +631,7 @@ export default function PurchaseScreen() {
                   disabled={restoring}
                 >
                   {restoring ? (
-                    <ActivityIndicator color={Colors.black} />
+                    <ActivityIndicator color={Colors.textPrimary} />
                   ) : (
                     <Text style={styles.restoreButtonText}>Restore Purchases</Text>
                   )}
@@ -661,7 +664,7 @@ export default function PurchaseScreen() {
                     </View>
                   </View>
                   {isBusy ? (
-                    <ActivityIndicator style={styles.creditLoader} color={Colors.black} />
+                    <ActivityIndicator style={styles.creditLoader} color={Colors.textPrimary} />
                   ) : null}
                 </TouchableOpacity>
               );
@@ -681,7 +684,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray200,
   },
@@ -694,14 +697,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   headerRight: { width: 36 },
   content: { padding: Spacing.md, paddingBottom: Spacing.xxl },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     padding: Spacing.md,
     borderRadius: Radius.md,
     marginBottom: Spacing.md,
@@ -711,11 +714,11 @@ const styles = StyleSheet.create({
   statusValue: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
     padding: 4,
     marginBottom: Spacing.lg,
@@ -731,7 +734,7 @@ const styles = StyleSheet.create({
   loadingBox: { alignItems: 'center', padding: Spacing.xl, gap: Spacing.sm },
   loadingText: { color: Colors.gray600, fontSize: Typography.fontSizeSM },
   errorBox: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     padding: Spacing.md,
     borderRadius: Radius.md,
     borderLeftWidth: 3,
@@ -740,7 +743,7 @@ const styles = StyleSheet.create({
   errorText: { color: Colors.danger, fontSize: Typography.fontSizeSM },
   emptyBox: {
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     padding: Spacing.lg,
     borderRadius: Radius.md,
     gap: Spacing.sm,
@@ -753,7 +756,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   sectionSubtitle: {
@@ -762,7 +765,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   tierCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
@@ -770,7 +773,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.gray200,
     position: 'relative',
   },
-  tierCardCurrent: { borderColor: Colors.black, borderWidth: 2 },
+  tierCardCurrent: { borderColor: Colors.border, borderWidth: 2 },
   tierBadge: {
     position: 'absolute',
     top: -10,
@@ -791,7 +794,7 @@ const styles = StyleSheet.create({
   tierName: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   tierPriceRow: {
     flexDirection: 'row',
@@ -802,7 +805,7 @@ const styles = StyleSheet.create({
   tierPriceAmount: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   tierPricePer: {
     fontSize: Typography.fontSizeSM,
@@ -832,7 +835,7 @@ const styles = StyleSheet.create({
   tierButtonText: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   tierButtonTextCurrent: { color: Colors.gray600 },
   subscribeDisclosure: {
@@ -842,11 +845,11 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   disclosureLink: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     textDecorationLine: 'underline',
   },
   creditCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -858,7 +861,7 @@ const styles = StyleSheet.create({
   creditCount: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginLeft: Spacing.xs,
   },
   creditLabel: { fontSize: Typography.fontSizeMD, color: Colors.gray600, marginLeft: Spacing.xs },
@@ -868,7 +871,7 @@ const styles = StyleSheet.create({
   creditPrice: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   creditPerUnit: {
     fontSize: Typography.fontSizeXS,
@@ -884,13 +887,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
     borderRadius: Radius.full,
     borderWidth: 1.5,
-    borderColor: Colors.black,
-    backgroundColor: Colors.white,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
   },
   restoreButtonText: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   manageButton: {
     alignItems: 'center',
@@ -901,7 +904,7 @@ const styles = StyleSheet.create({
   manageButtonText: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textDecorationLine: 'underline',
   },
 });

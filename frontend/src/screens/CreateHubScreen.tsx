@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '../store/useUserStore';
-import { useConfigStore } from '../store/useConfigStore';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams } from '../navigation';
 import FeatureCard from '../components/ui/FeatureCard';
@@ -23,7 +22,6 @@ export default function CreateHubScreen() {
   const user = useUserStore((s) => s.user);
   const isGuest = user?.isGuest === true;
   const credits = user?.credits ?? 0;
-  const videoCost = useConfigStore((s) => s.videoCreditCost);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,8 +51,8 @@ export default function CreateHubScreen() {
         <Text style={styles.sectionLabel}>Most loved</Text>
         <FeatureCard
           icon="sparkles"
-          title="Generate from a Prompt"
-          subtitle="Describe anything and let AI create an image for you."
+          title="Text-to-Image"
+          subtitle="Generate an image from a prompt. Describe anything and let AI create an image for you."
           highlight
           tag="Popular"
           onPress={() => navigation.navigate('Design')}
@@ -62,8 +60,8 @@ export default function CreateHubScreen() {
         <View style={{ height: Spacing.md }} />
         <FeatureCard
           icon="videocam"
-          title="Make a Video"
-          subtitle={`Animate an image into a short AI clip · ${videoCost} credits`}
+          title="Image-to-Video"
+          subtitle="Make a Video. Animate an image into a short AI clip. Use a second image as a reference."
           highlight
           onPress={() => navigation.navigate('Video')}
         />
@@ -73,21 +71,16 @@ export default function CreateHubScreen() {
           icon="color-wand"
           title="Transform an Image"
           subtitle="Upload a reference image and a prompt to reimagine it."
+          highlight
           onPress={() => navigation.navigate('TryOn')}
         />
         <View style={{ height: Spacing.md }} />
         <FeatureCard
           icon="image"
           title="Clean Up a Photo"
-          subtitle="Turn a messy screenshot into a clean, polished image."
+          subtitle="Remove the background. Turn a messy photo into a clean polished image."
+          highlight
           onPress={() => navigation.navigate('CleanUp')}
-        />
-        <View style={{ height: Spacing.md }} />
-        <FeatureCard
-          icon="images"
-          title="My Library"
-          subtitle="Your saved creations, ready to revisit anytime."
-          onPress={() => navigation.navigate('Closet', undefined)}
         />
 
         {isGuest ? (
@@ -102,7 +95,7 @@ export default function CreateHubScreen() {
             </Text>
             <View style={styles.upsellBtn}>
               <Text style={styles.upsellBtnText}>Sign Up Free</Text>
-              <Ionicons name="arrow-forward" size={16} color={Colors.black} />
+              <Ionicons name="arrow-forward" size={16} color={Colors.textPrimary} />
             </View>
           </TouchableOpacity>
         ) : null}
@@ -112,7 +105,7 @@ export default function CreateHubScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -130,7 +123,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   scroll: { flex: 1 },
   content: { paddingHorizontal: Spacing.md, paddingTop: Spacing.sm },
@@ -159,17 +152,19 @@ const styles = StyleSheet.create({
   },
   upsell: {
     marginTop: Spacing.xl,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
     borderRadius: Radius.lg,
     padding: Spacing.lg,
   },
   upsellTitle: {
-    color: Colors.white,
+    color: Colors.textPrimary,
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightHeavy,
   },
   upsellText: {
-    color: Colors.gray200,
+    color: Colors.textSecondary,
     fontSize: Typography.fontSizeSM,
     marginTop: Spacing.xs,
     marginBottom: Spacing.md,
@@ -185,7 +180,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   upsellBtnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },

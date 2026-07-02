@@ -18,7 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
-import { useClosetStore } from '../store/useClosetStore';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import CreditDisplay from '../components/CreditDisplay';
@@ -39,7 +39,7 @@ export default function DesignScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<DesignNavProp>();
   const refreshUser = useUserStore((s) => s.refreshUser);
-  const setPendingSelection = useClosetStore((s) => s.setPendingSelection);
+  const setPendingSource = useVideoSourceStore((s) => s.setPendingSource);
 
   const [description, setDescription] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -154,10 +154,13 @@ export default function DesignScreen() {
   // Keep + hand off to the Video screen with this creation pre-selected.
   function handleTryOn() {
     if (!result) return;
-    setPendingSelection(result);
+    // Seed the Video screen's source box with this image. VideoScreen consumes
+    // `useVideoSourceStore` on focus — writing the closet store + navigating to
+    // the (body-photo-gated) TryOn screen dropped the image and dead-ended.
+    setPendingSource({ imageUrl: result.imageUrl });
     setResult(null);
     setDescription('');
-    navigation.navigate('TryOn');
+    navigation.navigate('Video');
   }
 
   return (
@@ -168,7 +171,7 @@ export default function DesignScreen() {
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         {navigation.canGoBack() ? (
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={26} color={Colors.black} />
+            <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
           </TouchableOpacity>
         ) : (
           <View style={styles.backBtn} />
@@ -275,7 +278,7 @@ export default function DesignScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -287,7 +290,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   content: { padding: Spacing.md },
   designer: {},
@@ -300,7 +303,7 @@ const styles = StyleSheet.create({
   },
   designerHint: { flex: 1, fontSize: Typography.fontSizeSM, color: Colors.gray600 },
   surpriseBtn: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: Colors.gray200,
@@ -310,7 +313,7 @@ const styles = StyleSheet.create({
   surpriseText: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   input: {
     backgroundColor: Colors.gray100,
@@ -321,11 +324,11 @@ const styles = StyleSheet.create({
     minHeight: 90,
     textAlignVertical: 'top',
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs, marginTop: Spacing.sm },
   chip: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: Colors.gray200,
@@ -351,7 +354,7 @@ const styles = StyleSheet.create({
   reviewHeading: {
     fontSize: Typography.fontSizeHero,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
   reviewImageWrap: {
@@ -365,7 +368,7 @@ const styles = StyleSheet.create({
   reviewImage: { width: '100%', height: '100%' },
   reviewName: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     textAlign: 'center',
     marginVertical: Spacing.md,

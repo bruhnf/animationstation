@@ -65,7 +65,7 @@ export default function AiConsentModal({ visible, onAgree, onCancel, mode = 'try
           <View style={styles.header}>
             <Text style={styles.title}>Allow AI Processing?</Text>
             <TouchableOpacity onPress={onCancel} accessibilityLabel="Close">
-              <Ionicons name="close" size={24} color={Colors.black} />
+              <Ionicons name="close" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
@@ -78,7 +78,7 @@ export default function AiConsentModal({ visible, onAgree, onCancel, mode = 'try
             <View style={styles.bulletList}>
               {copy.bullets.map((b) => (
                 <View style={styles.bulletRow} key={b}>
-                  <Ionicons name="ellipse" size={6} color={Colors.black} style={styles.bullet} />
+                  <Ionicons name="ellipse" size={6} color={Colors.textPrimary} style={styles.bullet} />
                   <Text style={styles.bulletText}>{b}</Text>
                 </View>
               ))}
@@ -142,7 +142,7 @@ export default function AiConsentModal({ visible, onAgree, onCancel, mode = 'try
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     padding: Spacing.lg,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   body: { marginBottom: Spacing.md },
   paragraph: {
@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: Spacing.md,
   },
-  bold: { fontWeight: Typography.fontWeightBold, color: Colors.black },
-  link: { color: Colors.black, textDecorationLine: 'underline' },
+  bold: { fontWeight: Typography.fontWeightBold, color: Colors.textPrimary },
+  link: { color: Colors.textPrimary, textDecorationLine: 'underline' },
   bulletList: { marginBottom: Spacing.md, marginLeft: Spacing.xs },
   bulletRow: {
     flexDirection: 'row',
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelButton: { backgroundColor: Colors.white, borderWidth: 1.5, borderColor: Colors.gray200 },
+  cancelButton: { backgroundColor: Colors.surface, borderWidth: 1.5, borderColor: Colors.gray200 },
   cancelButtonText: {
     color: Colors.gray800,
     fontWeight: Typography.fontWeightSemiBold,

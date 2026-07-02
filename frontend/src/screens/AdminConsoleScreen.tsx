@@ -42,11 +42,16 @@ interface Stats {
   totalCreditsOutstanding: number;
 }
 
+interface AdminSettings {
+  welcomeSplashEnabled: boolean;
+}
+
 export default function AdminConsoleScreen({ navigation }: Props) {
   const [apiKey, setApiKey] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -62,12 +67,14 @@ export default function AdminConsoleScreen({ navigation }: Props) {
     }
     setLoading(true);
     try {
-      const [usersRes, statsRes] = await Promise.all([
+      const [usersRes, statsRes, settingsRes] = await Promise.all([
         adminApi.get<AdminUser[]>('/admin/users'),
         adminApi.get<Stats>('/admin/stats'),
+        adminApi.get<AdminSettings>('/admin/settings'),
       ]);
       setUsers(usersRes.data);
       setStats(statsRes.data);
+      setSettings(settingsRes.data);
       setAuthenticated(true);
     } catch {
       Alert.alert('Authentication Failed', 'Invalid admin API key');
@@ -79,12 +86,14 @@ export default function AdminConsoleScreen({ navigation }: Props) {
   const refresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const [usersRes, statsRes] = await Promise.all([
+      const [usersRes, statsRes, settingsRes] = await Promise.all([
         adminApi.get<AdminUser[]>('/admin/users'),
         adminApi.get<Stats>('/admin/stats'),
+        adminApi.get<AdminSettings>('/admin/settings'),
       ]);
       setUsers(usersRes.data);
       setStats(statsRes.data);
+      setSettings(settingsRes.data);
     } catch {
       Alert.alert('Error', 'Failed to refresh data');
     } finally {
@@ -111,6 +120,23 @@ export default function AdminConsoleScreen({ navigation }: Props) {
       setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, tier: data.tier } : u)));
     } catch {
       Alert.alert('Error', 'Failed to update tier');
+    }
+  }
+
+  async function toggleWelcomeSplash(enabled: boolean) {
+    // Optimistic flip so the Switch feels instant; revert on failure.
+    setSettings((prev) => (prev ? { ...prev, welcomeSplashEnabled: enabled } : prev));
+    try {
+      const { data } = await adminApi.patch<{ welcomeSplashEnabled: boolean }>(
+        '/admin/settings/welcome-splash',
+        { enabled },
+      );
+      setSettings((prev) =>
+        prev ? { ...prev, welcomeSplashEnabled: data.welcomeSplashEnabled } : prev,
+      );
+    } catch {
+      setSettings((prev) => (prev ? { ...prev, welcomeSplashEnabled: !enabled } : prev));
+      Alert.alert('Error', 'Failed to update welcome splash setting');
     }
   }
 
@@ -279,6 +305,23 @@ export default function AdminConsoleScreen({ navigation }: Props) {
         </View>
       )}
 
+      {settings && (
+        <View style={styles.settingsCard}>
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Welcome splash screen</Text>
+            <Switch
+              value={settings.welcomeSplashEnabled}
+              onValueChange={toggleWelcomeSplash}
+              trackColor={{ false: Colors.gray400, true: Colors.accentCyan }}
+              thumbColor={Colors.white}
+            />
+          </View>
+          <Text style={styles.settingCaption}>
+            Show the welcome screen to users at login (they can opt out).
+          </Text>
+        </View>
+      )}
+
       <Text style={styles.sectionTitle}>Users ({users.length})</Text>
 
       <FlatList
@@ -306,7 +349,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   authContainer: {
     flex: 1,
@@ -316,7 +359,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeXXL,
     fontWeight: '700',
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: Spacing.xs,
   },
@@ -327,11 +370,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   input: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.gray200,
@@ -357,14 +400,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingTop: 60,
     paddingBottom: Spacing.md,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray200,
   },
   headerTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: '700',
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   logoutText: {
     fontSize: Typography.fontSizeMD,
@@ -374,7 +417,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     padding: Spacing.md,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     marginBottom: Spacing.sm,
   },
   statBox: {
@@ -383,7 +426,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: Typography.fontSizeXL,
     fontWeight: '700',
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   statLabel: {
     fontSize: Typography.fontSizeSM,
@@ -396,12 +439,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
+  settingsCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.gray200,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  settingLabel: {
+    fontSize: Typography.fontSizeMD,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  settingCaption: {
+    fontSize: Typography.fontSizeSM,
+    color: Colors.textSecondary,
+    marginTop: Spacing.xs,
+  },
   list: {
     padding: Spacing.md,
     paddingTop: 0,
   },
   userCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
@@ -421,7 +488,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: Typography.fontSizeMD,
     fontWeight: '600',
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   email: {
     fontSize: Typography.fontSizeSM,

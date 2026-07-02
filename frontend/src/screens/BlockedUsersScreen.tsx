@@ -84,7 +84,7 @@ export default function BlockedUsersScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={Colors.black} />
+          <Ionicons name="chevron-back" size={28} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Blocked Users</Text>
         <View style={styles.backButton} />
@@ -92,7 +92,7 @@ export default function BlockedUsersScreen() {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color={Colors.black} />
+          <ActivityIndicator color={Colors.textPrimary} />
         </View>
       ) : blocks.length === 0 ? (
         <View style={styles.centered}>
@@ -130,7 +130,7 @@ export default function BlockedUsersScreen() {
                   disabled={isBusy}
                 >
                   {isBusy ? (
-                    <ActivityIndicator color={Colors.black} />
+                    <ActivityIndicator color={Colors.textPrimary} />
                   ) : (
                     <Text style={styles.unblockButtonText}>Unblock</Text>
                   )}
@@ -145,7 +145,7 @@ export default function BlockedUsersScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   centered: {
     flex: 1,
     alignItems: 'center',
@@ -166,13 +166,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   emptyTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginTop: Spacing.sm,
   },
   emptySubtitle: {
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   fullName: {
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   username: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
   unblockButton: {
@@ -216,12 +216,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
     borderWidth: 1.5,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
     minWidth: 80,
     alignItems: 'center',
   },
   unblockButtonText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
     fontSize: Typography.fontSizeSM,
   },

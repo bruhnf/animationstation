@@ -1,5 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { getSignupCreditGrant, getVideoCreditCost } from '../services/appSettingsService';
+import {
+  getSignupCreditGrant,
+  getVideoCreditCost,
+  getWelcomeSplashEnabled,
+} from '../services/appSettingsService';
 
 // Public, unauthenticated client config. The app fetches this on launch (and on
 // the signup/guest-prompt surfaces) so server-controlled promotional copy can
@@ -12,9 +16,10 @@ import { getSignupCreditGrant, getVideoCreditCost } from '../services/appSetting
 const router = Router();
 
 router.get('/', async (_req: Request, res: Response) => {
-  const [signupCreditGrant, videoCreditCost] = await Promise.all([
+  const [signupCreditGrant, videoCreditCost, welcomeSplashEnabled] = await Promise.all([
     getSignupCreditGrant(),
     getVideoCreditCost(),
+    getWelcomeSplashEnabled(),
   ]);
   // No caching: the app fetches this once per launch, and an admin change must
   // be visible on the very next launch. A `max-age` here is honored by iOS's
@@ -28,6 +33,9 @@ router.get('/', async (_req: Request, res: Response) => {
     // Live per-video credit cost so the app can show it on the Create Video
     // button without a rebuild (admin-tunable via /api/admin/settings/video-cost).
     videoCreditCost,
+    // Gates the client-side welcome splash screen (admin-tunable via
+    // /api/admin/settings/welcome-splash). Defaults to false when unset.
+    welcomeSplashEnabled,
   });
 });
 

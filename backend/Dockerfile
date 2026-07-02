@@ -82,11 +82,13 @@ RUN mkdir -p /app/splash
 RUN chown -R nodejs:nodejs /app
 
 # Pre-create the logs directory owned by the app user. When the named logs
-# volume mounts at /var/log/tryon, Docker initializes the empty volume from
-# this directory — inheriting non-root ownership. Without this the volume is
-# created root-owned and Winston (running as nodejs, uid 1001) throws EACCES
-# on every boot, silently killing file logging. LOG_DIR points here.
-RUN mkdir -p /var/log/tryon && chown -R nodejs:nodejs /var/log/tryon
+# volume mounts here, Docker initializes the empty volume from this directory —
+# inheriting non-root ownership. Without this the volume is created root-owned
+# and Winston (running as nodejs, uid 1001) throws EACCES on every boot,
+# silently killing file logging. Must match LOG_DIR in docker-compose
+# (/var/log/animationstation); a mismatch recreates the EACCES bug because the
+# mount point wouldn't exist in the image and Docker makes it root-owned.
+RUN mkdir -p /var/log/animationstation && chown -R nodejs:nodejs /var/log/animationstation
 
 USER nodejs
 

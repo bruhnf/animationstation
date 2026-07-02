@@ -15,6 +15,9 @@ interface ConfigStore {
   // Live credits charged per AI video (admin-tunable). Defaults to the backend
   // default so the first render before the fetch is honest.
   videoCreditCost: number;
+  // Admin toggle: when true, the welcome splash screen is shown at login (users
+  // can still opt out locally). Default false.
+  welcomeSplashEnabled: boolean;
   loaded: boolean;
   fetchConfig: () => Promise<void>;
 }
@@ -26,6 +29,7 @@ export const useConfigStore = create<ConfigStore>((set) => ({
   signupCreditGrant: DEFAULT_SIGNUP_CREDIT_GRANT,
   signupCreditsOffer: true,
   videoCreditCost: DEFAULT_VIDEO_CREDIT_COST,
+  welcomeSplashEnabled: false,
   loaded: false,
 
   fetchConfig: async () => {
@@ -46,6 +50,7 @@ export const useConfigStore = create<ConfigStore>((set) => ({
         signupCreditGrant: grant,
         signupCreditsOffer: grant > 0,
         videoCreditCost: videoCost,
+        welcomeSplashEnabled: data?.welcomeSplashEnabled === true,
         loaded: true,
       });
     } catch {

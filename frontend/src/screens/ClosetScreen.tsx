@@ -11,7 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
@@ -20,6 +20,7 @@ import { ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import CreditDisplay from '../components/CreditDisplay';
 import AiGeneratedBadge from '../components/AiGeneratedBadge';
+import CreationsGrid from '../components/CreationsGrid';
 import { RootStackParams } from '../navigation';
 
 type ClosetNavProp = NativeStackNavigationProp<RootStackParams, 'Closet'>;
@@ -61,9 +62,16 @@ export default function ClosetScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    void loadCloset();
-  }, [loadCloset]);
+  // Refetch every time the screen gains focus (not just on mount). The Library
+  // TAB stays mounted for the whole session, so a mount-only load showed a stale
+  // list: a creation made after first mount never appeared until the tab was
+  // re-created. Focusing the tab now re-pulls the latest library. (First load
+  // shows the spinner; later focuses refresh silently in place.)
+  useFocusEffect(
+    useCallback(() => {
+      void loadCloset();
+    }, [loadCloset]),
+  );
 
   function handleTryOn(item: ClosetItem) {
     setPendingSelection(item);
@@ -128,7 +136,7 @@ export default function ClosetScreen() {
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         {navigation.canGoBack() ? (
           <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={26} color={Colors.black} />
+            <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
           </TouchableOpacity>
         ) : (
           <View style={styles.backBtn} />
@@ -137,6 +145,14 @@ export default function ClosetScreen() {
         <CreditDisplay onPress={() => navigation.navigate('Purchase')} />
       </View>
 
+      {/* Non-picker: the unified creations grid (all generated images + videos,
+          merged from /tryon/history + /closet). Picker mode keeps the closet-only
+          grid below so the Video screen can pick a saved image as a source. */}
+      {!pickerMode ? (
+        <View style={{ flex: 1, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm }}>
+          <CreationsGrid contentPaddingBottom={insets.bottom + Spacing.xl} />
+        </View>
+      ) : (
       <FlatList
         data={items}
         keyExtractor={(i) => i.id}
@@ -146,7 +162,7 @@ export default function ClosetScreen() {
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={styles.emptySpinner} color={Colors.black} />
+            <ActivityIndicator style={styles.emptySpinner} color={Colors.textPrimary} />
           ) : loadError ? (
             <View style={styles.emptyWrap}>
               <Text style={styles.emptyText}>Couldn&apos;t load your library.</Text>
@@ -168,7 +184,7 @@ export default function ClosetScreen() {
                   style={styles.designLink}
                   onPress={() => navigation.navigate('Design')}
                 >
-                  <Ionicons name="color-palette" size={16} color={Colors.black} />
+                  <Ionicons name="color-palette" size={16} color={Colors.textPrimary} />
                   <Text style={styles.designLinkText}>Generate an Image</Text>
                 </TouchableOpacity>
               ) : null}
@@ -176,6 +192,7 @@ export default function ClosetScreen() {
           )
         }
       />
+      )}
 
       <Modal
         visible={viewerItem !== null}
@@ -227,7 +244,7 @@ export default function ClosetScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -239,7 +256,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   listContent: { paddingHorizontal: Spacing.md, paddingTop: Spacing.sm },
   row: { gap: Spacing.sm },
@@ -251,7 +268,7 @@ const styles = StyleSheet.create({
     aspectRatio: 3 / 4,
   },
   cardImage: { width: '100%', height: '100%' },
-  cardName: { marginTop: 6, fontSize: Typography.fontSizeSM, color: Colors.black },
+  cardName: { marginTop: 6, fontSize: Typography.fontSizeSM, color: Colors.textPrimary },
   emptySpinner: { marginTop: Spacing.xl },
   emptyWrap: {
     alignItems: 'center',
@@ -263,7 +280,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: Typography.fontSizeMD, color: Colors.gray600, textAlign: 'center' },
   retryLink: {
     marginTop: Spacing.sm,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightSemiBold,
   },
   designLink: {
@@ -277,7 +294,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   designLinkText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -300,13 +317,13 @@ const styles = StyleSheet.create({
   },
   viewerActions: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, gap: Spacing.sm },
   viewerTryOnBtn: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderRadius: 24,
     paddingVertical: 14,
     alignItems: 'center',
   },
   viewerTryOnText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightSemiBold,
   },

@@ -10,6 +10,9 @@ import {
   ActionSheetIOS,
   Alert,
   Platform,
+  LayoutAnimation,
+  UIManager,
+  ViewToken,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -21,39 +24,38 @@ import { useUserStore } from '../store/useUserStore';
 import { useConfigStore } from '../store/useConfigStore';
 import { shareTryOn } from '../utils/share';
 import { saveLook, unsaveLook } from '../utils/looks';
-import { TryOnJob } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams, MainTabParams } from '../navigation';
-import FullScreenImageModal, { OriginalImageBadge } from '../components/FullScreenImageModal';
 import CreditDisplay from '../components/CreditDisplay';
 import HeaderMenu from '../components/HeaderMenu';
-import AiGeneratedBadge from '../components/AiGeneratedBadge';
-import VideoPlayerModal from '../components/VideoPlayerModal';
-import RetryableImage from '../components/RetryableImage';
 import ReportSheet, { ReportTargetType } from '../components/ReportSheet';
-import { buildTryOnCarousel, CarouselSlot, indexOfSlot } from '../utils/tryonCarousel';
+import FeedPost, { FeedJob } from '../components/FeedPost';
 import { useCommentDeltas } from '../store/useCommentDeltas';
 import { requireRealUser } from '../utils/guestGate';
 
 type Nav = NativeStackNavigationProp<RootStackParams>;
 
-interface FeedJob extends TryOnJob {
-  user: { username: string; firstName?: string; lastName?: string; avatarUrl?: string };
-  liked?: boolean;
-  saved?: boolean;
-  likesCount?: number;
-  commentsCount?: number;
+// Enable smooth expand/collapse of the pulled-back comment view on Android
+// (iOS supports LayoutAnimation out of the box).
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Module-level so its identity is stable across renders (a fresh inline
-// keyExtractor would make FlatList re-key on every render).
+// Module-level so its identity is stable across renders.
 const keyExtractor = (item: FeedJob) => item.id;
+
+// A post counts as the "active" (on-screen) one when ≥80% visible — that post's
+// video autoplays; the others pause.
+const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
-  // Same underlying navigation object as `navigation` above, but typed as
-  // the bottom-tab nav so we can subscribe to the 'tabPress' event below.
+  // Same underlying navigation object, typed as the bottom-tab nav so we can
+  // subscribe to 'tabPress'.
   const tabNavigation = useNavigation<BottomTabNavigationProp<MainTabParams, 'Home'>>();
   const { user, refreshUser } = useUserStore();
   const isGuest = user?.isGuest === true;
@@ -63,39 +65,37 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [fullScreenImages, setFullScreenImages] = useState<string[]>([]);
-  const [fullScreenInitialIndex, setFullScreenInitialIndex] = useState(0);
-  const [fullScreenAi, setFullScreenAi] = useState<boolean[]>([]);
-  const [fullScreenLabels, setFullScreenLabels] = useState<string[]>([]);
-  const [fullScreenBadges, setFullScreenBadges] = useState<(OriginalImageBadge | null)[]>([]);
-  // Presigned mp4 URL for the full-screen video player (null = closed) + the
-  // creator's motion prompt to show under it.
-  const [videoUri, setVideoUri] = useState<string | null>(null);
-  const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
-  const openVideo = useCallback((item: FeedJob) => {
-    setVideoUri(item.videoUrl ?? null);
-    setVideoPrompt(item.motionPrompt ?? null);
-  }, []);
-
-  // Open the 4-slide TryOn carousel anchored to whichever thumbnail the user
-  // tapped. Slots that aren't present on the job are skipped, so the initial
-  // index falls back to the first available slide (which will normally be
-  // the requested one — the source thumbnail wouldn't render otherwise).
-  const openCarousel = useCallback((item: FeedJob, slot: CarouselSlot) => {
-    const slides = buildTryOnCarousel(item);
-    if (slides.length === 0) return;
-    setFullScreenImages(slides.map((s) => s.url));
-    setFullScreenAi(slides.map((s) => s.aiGenerated));
-    setFullScreenLabels(slides.map((s) => s.label));
-    setFullScreenBadges(slides.map((s) => s.badge));
-    setFullScreenInitialIndex(indexOfSlot(slides, slot));
-  }, []);
+  const [feedError, setFeedError] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ type: ReportTargetType; id: string } | null>(
     null,
   );
-  const [feedError, setFeedError] = useState(false);
   const commentDeltas = useCommentDeltas((s) => s.deltas);
   const clearCommentDeltas = useCommentDeltas((s) => s.clear);
+
+  // Measured height of one full-screen page (the space between the top title bar
+  // and the bottom tab bar). Each post fills exactly this so paging snaps
+  // one-post-per-swipe.
+  const [pageHeight, setPageHeight] = useState(0);
+  // The on-screen post (drives video autoplay) and the post currently pulled
+  // back to show comments (null = all full screen, the default).
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggleExpand = useCallback((id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedId((cur) => (cur === id ? null : id));
+  }, []);
+
+  // Track which post is on screen. Moving to a different post also collapses any
+  // pulled-back comment view, so the feed always returns to full screen.
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const first = viewableItems[0]?.item as FeedJob | undefined;
+      if (!first) return;
+      setActiveId(first.id);
+      setExpandedId((cur) => (cur && cur !== first.id ? null : cur));
+    },
+  ).current;
 
   // Show platform-native action sheet on iOS, basic Alert on Android, with
   // Report and Block options. Required by App Store Review Guideline 1.2.
@@ -105,8 +105,7 @@ export default function HomeScreen() {
       if (!requireRealUser('Sign up for post options.')) return;
       const isOwnPost = job.userId === user?.id;
 
-      // Own post → owner actions (Make Private / Share / Delete). Previously the
-      // menu was empty for own posts (just "Cancel"), so it looked like a dead end.
+      // Own post → owner actions (Make Private / Share / Delete).
       if (isOwnPost) {
         const privacyLabel = job.isPrivate ? 'Make Public' : 'Make Private';
 
@@ -114,8 +113,6 @@ export default function HomeScreen() {
           const newVal = !job.isPrivate;
           try {
             await api.patch(`/tryon/${job.id}/privacy`, { isPrivate: newVal });
-            // The feed shows only public posts, so making one private removes it
-            // from the feed; making public (defensive) just updates the flag.
             setJobs((prev) =>
               newVal
                 ? prev.filter((j) => j.id !== job.id)
@@ -211,8 +208,6 @@ export default function HomeScreen() {
           handleSelection,
         );
       } else {
-        // Minimal Android fallback. The app is iOS-first; Android UX can be improved later.
-        if (isOwnPost) return;
         Alert.alert('Actions', '', [
           { text: 'Report Post', onPress: () => handleSelection(0) },
           { text: 'Report User', onPress: () => handleSelection(1) },
@@ -235,12 +230,8 @@ export default function HomeScreen() {
       setHasMore(data.jobs.length === 20);
       setPage(p);
       setFeedError(false);
-      // Server counts now reflect every committed change, so the in-flight
-      // deltas would double-count if we kept them.
       if (refresh) clearCommentDeltas();
     } catch {
-      // Surface a retry banner instead of just an empty state — empty + no
-      // feedback makes a transient backend hiccup look like an empty feed.
       setFeedError(true);
     } finally {
       setLoading(false);
@@ -250,14 +241,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchFeed(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Refresh the Discover feed only when the Home tab button is pressed
-  // while Home is ALREADY the focused tab. Switching back to Home from a
-  // different tab should preserve the user's existing scroll position and
-  // feed cache. The bottom-tab navigator emits 'tabPress' before the focus
-  // change occurs, so `isFocused()` returns true only in the "already on
-  // Home, tapped Home again" case.
+  // Refresh the feed only when the Home tab is tapped while already focused.
   useEffect(() => {
     const unsubscribe = tabNavigation.addListener('tabPress', () => {
       if (!tabNavigation.isFocused()) return;
@@ -265,8 +252,6 @@ export default function HomeScreen() {
       fetchFeed(1, true);
     });
     return unsubscribe;
-    // fetchFeed reads only setters (stable across renders) so we don't need
-    // to add it to the dep array.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabNavigation]);
 
@@ -274,11 +259,9 @@ export default function HomeScreen() {
     setRefreshing(true);
     refreshUser();
     fetchFeed(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // `loading` is only true on the first fetch, so it can't guard pagination.
-  // A dedicated in-flight ref prevents a fast scroll from firing loadMore twice
-  // for the same page (which appends duplicate cards → duplicate-key warnings).
   const loadingMoreRef = useRef(false);
   const loadMore = () => {
     if (!hasMore || loadingMoreRef.current) return;
@@ -288,15 +271,9 @@ export default function HomeScreen() {
     });
   };
 
-  // Optimistic toggle of `liked` state on a feed item. Takes the whole job
-  // (not just an id) so it never needs to close over `jobs` — that keeps the
-  // callback stable, which is what lets memoized FeedCards skip re-rendering.
   const toggleLike = useCallback(
     async (job: FeedJob) => {
-      // Liking is account-bound — prompt a guest to sign up (before any
-      // optimistic UI change so the heart doesn't flash filled then revert).
       if (!requireRealUser('Sign up to like creations.')) return;
-      // Don't allow self-likes (server enforces too)
       if (user && job.user.username === user.username) return;
 
       const wasLiked = !!job.liked;
@@ -316,7 +293,6 @@ export default function HomeScreen() {
         if (wasLiked) await api.delete(`/likes/${job.id}`);
         else await api.post(`/likes/${job.id}`);
       } catch {
-        // Roll back on failure
         setJobs((prev) =>
           prev.map((j) =>
             j.id === job.id
@@ -338,61 +314,54 @@ export default function HomeScreen() {
     [navigation],
   );
 
-  const handleCommentsPress = useCallback(
-    (job: FeedJob) => navigation.navigate('TryOnComments', { jobId: job.id }),
-    [navigation],
-  );
-
-  // Toggle a look in the user's Saved Looks. Account-bound (guests are prompted
-  // to sign up). Optimistically flips the card's `saved` state (the bookmark
-  // turns yellow) and rolls back on failure. Server is idempotent both ways.
   const handleSavePress = useCallback(async (job: FeedJob) => {
     if (!requireRealUser('Sign up to save creations.')) return;
     const wasSaved = !!job.saved;
     setJobs((prev) => prev.map((j) => (j.id === job.id ? { ...j, saved: !wasSaved } : j)));
     const ok = wasSaved ? await unsaveLook(job.id) : await saveLook(job.id);
     if (!ok) {
-      // Roll back on failure.
       setJobs((prev) => prev.map((j) => (j.id === job.id ? { ...j, saved: wasSaved } : j)));
       Alert.alert('Could not save', 'Please try again.');
     }
   }, []);
 
-  // Memoized so its identity only changes when the comment deltas or one of
-  // the (already stable) handlers change — letting React.memo on FeedCard
-  // skip every row whose data is unchanged.
   const renderItem = useCallback(
     ({ item }: { item: FeedJob }) => (
-      <FeedCard
+      <FeedPost
         job={item}
-        commentsCountOverride={(item.commentsCount ?? 0) + (commentDeltas[item.id] ?? 0)}
-        onPhotoPress={openCarousel}
-        onVideoPress={openVideo}
-        onUsernamePress={handleUsernamePress}
-        onLikePress={toggleLike}
-        onSavePress={handleSavePress}
-        onMorePress={handleMoreActions}
-        onCommentsPress={handleCommentsPress}
+        height={pageHeight}
+        isActive={item.id === activeId}
+        expanded={item.id === expandedId}
+        commentsCount={(item.commentsCount ?? 0) + (commentDeltas[item.id] ?? 0)}
+        onToggleExpand={() => toggleExpand(item.id)}
+        onUsernamePress={() => handleUsernamePress(item)}
+        onLikePress={() => toggleLike(item)}
+        onSavePress={() => handleSavePress(item)}
+        onSharePress={() => shareTryOn(item.id)}
+        onMorePress={() => handleMoreActions(item)}
       />
     ),
     [
+      pageHeight,
+      activeId,
+      expandedId,
       commentDeltas,
-      openCarousel,
-      openVideo,
+      toggleExpand,
       handleUsernamePress,
       toggleLike,
+      handleSavePress,
       handleMoreActions,
-      handleCommentsPress,
     ],
   );
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.black} />
-      </View>
-    );
-  }
+  const getItemLayout = useCallback(
+    (_: ArrayLike<FeedJob> | null | undefined, index: number) => ({
+      length: pageHeight,
+      offset: pageHeight * index,
+      index,
+    }),
+    [pageHeight],
+  );
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -402,45 +371,40 @@ export default function HomeScreen() {
         rightComponent={
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate('Friends', { initialTab: 'following', openSearch: true })
+              navigation.navigate('Main', {
+                screen: 'Friends',
+                params: { initialTab: 'following', openSearch: true },
+              })
             }
             style={styles.searchIconButton}
             accessibilityLabel="Search users"
           >
-            <Ionicons name="search" size={22} color={Colors.black} />
+            <Ionicons name="search" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         }
       />
+
+      {/* Compact guest sign-up strip — part of the top chrome so it doesn't
+          overlap the full-screen posts. */}
       {isGuest ? (
         <TouchableOpacity
-          style={styles.guestBanner}
+          style={styles.guestStrip}
           onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
-          activeOpacity={0.9}
+          activeOpacity={0.85}
         >
-          <View style={styles.guestBannerTop}>
-            <Text style={styles.guestBannerTitle}>
-              {signupCreditsOffer
-                ? `Join free — get ${signupCreditGrant} more credits`
-                : 'Create your free account'}
-            </Text>
-            <View style={styles.guestBannerBtn}>
-              <Text style={styles.guestBannerBtnText}>Sign Up</Text>
-              <Ionicons name="arrow-forward" size={14} color={Colors.black} />
-            </View>
-          </View>
-          <Text style={styles.guestBannerSub}>
-            Save your creations, follow people, and buy credits — all on a free account.
+          <Ionicons name="sparkles" size={14} color={Colors.gold} />
+          <Text style={styles.guestStripText} numberOfLines={1}>
+            {signupCreditsOffer
+              ? `Join free — get ${signupCreditGrant} more credits`
+              : 'Create your free account'}
           </Text>
-          <View style={styles.guestBannerChips}>
-            {['No credit card', 'No subscription', 'Free to join'].map((c) => (
-              <View key={c} style={styles.guestChip}>
-                <Ionicons name="checkmark-circle" size={13} color={Colors.gold} />
-                <Text style={styles.guestChipText}>{c}</Text>
-              </View>
-            ))}
+          <View style={styles.guestStripBtn}>
+            <Text style={styles.guestStripBtnText}>Sign Up</Text>
+            <Ionicons name="arrow-forward" size={12} color={Colors.textPrimary} />
           </View>
         </TouchableOpacity>
       ) : null}
+
       {feedError ? (
         <View style={styles.errorBanner}>
           <Ionicons name="cloud-offline-outline" size={18} color={Colors.danger} />
@@ -450,15 +414,18 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       ) : null}
-      <FlatList
-        data={jobs}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.4}
-        ListFooterComponent={hasMore ? <ActivityIndicator style={styles.footer} /> : null}
-        ListEmptyComponent={
+
+      {/* Measure the page area so each post fills exactly the space between the
+          title bar and the tab bar. */}
+      <View
+        style={styles.feedArea}
+        onLayout={(e) => setPageHeight(e.nativeEvent.layout.height)}
+      >
+        {loading || pageHeight === 0 ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={Colors.textPrimary} />
+          </View>
+        ) : jobs.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🎨</Text>
             <Text style={styles.emptyTitle}>No creations yet</Text>
@@ -466,532 +433,104 @@ export default function HomeScreen() {
               Be the first to create something using the button below!
             </Text>
           </View>
-        }
-        contentContainerStyle={jobs.length === 0 ? styles.emptyContainer : undefined}
-      />
-      <FullScreenImageModal
-        visible={fullScreenImages.length > 0}
-        imageUrls={fullScreenImages}
-        initialIndex={fullScreenInitialIndex}
-        aiGenerated={fullScreenAi}
-        labels={fullScreenLabels}
-        originalBadges={fullScreenBadges}
-        onClose={() => setFullScreenImages([])}
-      />
+        ) : (
+          <FlatList
+            data={jobs}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            getItemLayout={getItemLayout}
+            pagingEnabled
+            showsVerticalScrollIndicator={false}
+            // Lock paging while a post is pulled back so the comment list scrolls
+            // freely; tapping the content collapses it and re-enables paging.
+            scrollEnabled={expandedId === null}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            onEndReached={loadMore}
+            onEndReachedThreshold={0.6}
+            initialNumToRender={2}
+            windowSize={3}
+            maxToRenderPerBatch={3}
+          />
+        )}
+      </View>
+
       <ReportSheet
         visible={reportTarget !== null}
         targetType={reportTarget?.type ?? 'TRYON_JOB'}
         targetId={reportTarget?.id ?? ''}
         onClose={() => setReportTarget(null)}
       />
-      <VideoPlayerModal
-        visible={videoUri !== null}
-        uri={videoUri}
-        motionPrompt={videoPrompt}
-        onClose={() => {
-          setVideoUri(null);
-          setVideoPrompt(null);
-        }}
-      />
     </View>
   );
 }
 
-const FeedCard = React.memo(function FeedCard({
-  job,
-  commentsCountOverride,
-  onPhotoPress,
-  onVideoPress,
-  onUsernamePress,
-  onLikePress,
-  onSavePress,
-  onMorePress,
-  onCommentsPress,
-}: {
-  job: FeedJob;
-  // Effective comment count to display on the card. Lets the parent layer in
-  // unsynced state (e.g. comments posted on TryOnCommentsScreen since the
-  // feed was last fetched).
-  commentsCountOverride: number;
-  // Handlers receive the job rather than being per-item closures, so the
-  // parent can pass stable useCallback references — that's what lets
-  // React.memo skip re-rendering cards whose data hasn't changed. onPhotoPress
-  // also takes a slot identifying which carousel slide to anchor on.
-  onPhotoPress: (job: FeedJob, slot: CarouselSlot) => void;
-  onVideoPress: (job: FeedJob) => void;
-  onUsernamePress: (job: FeedJob) => void;
-  onLikePress: (job: FeedJob) => void;
-  onSavePress: (job: FeedJob) => void;
-  onMorePress: (job: FeedJob) => void;
-  onCommentsPress: (job: FeedJob) => void;
-}) {
-  // Collect all available result images
-  const resultImages: string[] = [];
-  if (job.resultFullBodyUrl) resultImages.push(job.resultFullBodyUrl);
-  if (job.resultMediumUrl) resultImages.push(job.resultMediumUrl);
-
-  const displayUrl = resultImages[0];
-  const isVideo = job.kind === 'VIDEO';
-  // A video's poster is its source image (bodyPhotoUrl).
-  const videoPoster = job.bodyPhotoUrl;
-  const fullName = [job.user.firstName, job.user.lastName].filter(Boolean).join(' ');
-
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <TouchableOpacity
-          style={styles.headerUserRow}
-          onPress={() => onUsernamePress(job)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.avatar}>
-            {job.user.avatarUrl ? (
-              <RetryableImage uri={job.user.avatarUrl} style={styles.avatarImg} />
-            ) : (
-              <Text style={styles.avatarInitial}>{job.user.username[0].toUpperCase()}</Text>
-            )}
-          </View>
-          <View>
-            {fullName ? (
-              <>
-                <Text style={styles.displayName}>{fullName}</Text>
-                <Text style={styles.username}>@{job.user.username}</Text>
-              </>
-            ) : (
-              <Text style={styles.displayName}>@{job.user.username}</Text>
-            )}
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.likeButton}
-            onPress={() => onLikePress(job)}
-            accessibilityLabel={job.liked ? 'Unlike' : 'Like'}
-            hitSlop={10}
-          >
-            <Ionicons
-              name={job.liked ? 'heart' : 'heart-outline'}
-              size={24}
-              color={job.liked ? Colors.danger : Colors.black}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.likeButton}
-            onPress={() => onSavePress(job)}
-            accessibilityLabel={job.saved ? 'Remove from your creations' : 'Save to your creations'}
-            hitSlop={10}
-          >
-            <Ionicons
-              name={job.saved ? 'bookmark' : 'bookmark-outline'}
-              size={22}
-              color={job.saved ? Colors.gold : Colors.black}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.likeButton}
-            onPress={() => onMorePress(job)}
-            accessibilityLabel="More actions"
-            hitSlop={10}
-          >
-            <Ionicons name="ellipsis-horizontal" size={22} color={Colors.black} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {isVideo ? (
-        // Video card: full-width poster (the source image) with a ▶ overlay;
-        // tapping plays the generated clip. No side-thumb column.
-        <View style={styles.videoRow}>
-          <TouchableOpacity
-            style={styles.videoContainer}
-            onPress={() => onVideoPress(job)}
-            activeOpacity={0.9}
-            accessibilityLabel="Play video"
-          >
-            {videoPoster ? (
-              <RetryableImage uri={videoPoster} style={styles.videoPoster} resizeMode="cover" />
-            ) : (
-              <View style={[styles.videoPoster, styles.resultPlaceholder]} />
-            )}
-            <View style={styles.playOverlay}>
-              <Ionicons name="play" size={34} color={Colors.white} />
-            </View>
-            <AiGeneratedBadge />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.resultsRow}>
-          {displayUrl ? (
-            <TouchableOpacity
-              style={styles.resultImageContainer}
-              // Result image opens the carousel at "Full Body" — falls back to
-              // first available result if full-body is missing.
-              onPress={() => onPhotoPress(job, job.resultFullBodyUrl ? 'full' : 'medium')}
-              activeOpacity={0.9}
-            >
-              <RetryableImage uri={displayUrl} style={styles.resultImage} resizeMode="cover" />
-              <AiGeneratedBadge />
-              {resultImages.length > 1 && (
-                <View style={styles.multiImageBadge}>
-                  <Text style={styles.multiImageText}>1/{resultImages.length}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <View style={[styles.resultImage, styles.resultPlaceholder]}>
-              <ActivityIndicator color={Colors.gray400} />
-            </View>
-          )}
-
-          <View style={styles.thumbColumn}>
-            {job.bodyPhotoUrl ? (
-              <TouchableOpacity onPress={() => onPhotoPress(job, 'body')} activeOpacity={0.9}>
-                <RetryableImage
-                  uri={job.bodyPhotoUrl}
-                  style={styles.sideThumb}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.sideThumb, styles.sideThumbPlaceholder]} />
-            )}
-            {job.clothingPhoto1Url ? (
-              <TouchableOpacity onPress={() => onPhotoPress(job, 'clothing')} activeOpacity={0.9}>
-                <RetryableImage
-                  uri={job.clothingPhoto1Url}
-                  style={styles.sideThumb}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.sideThumb, styles.sideThumbPlaceholder]} />
-            )}
-          </View>
-        </View>
-      )}
-
-      {job.title ? (
-        <Text style={styles.caption} numberOfLines={3}>
-          {job.title}
-        </Text>
-      ) : null}
-
-      {/* For an AI video, show the motion prompt the creator used to animate it. */}
-      {isVideo && job.motionPrompt ? (
-        <Text style={styles.motionPrompt} numberOfLines={3}>
-          <Text style={styles.motionPromptLabel}>Prompt: </Text>
-          {job.motionPrompt}
-        </Text>
-      ) : null}
-
-      <View style={styles.cardFooter}>
-        {(job.likesCount ?? 0) > 0 ? (
-          <Text style={styles.likesCount}>
-            {job.likesCount} {job.likesCount === 1 ? 'like' : 'likes'}
-          </Text>
-        ) : (
-          <View />
-        )}
-
-        {/* Right-aligned actions: share + comments. Feed cards are public
-            (COMPLETE, non-private) so they're always shareable. */}
-        <View style={styles.footerRight}>
-          <TouchableOpacity
-            style={styles.shareButton}
-            onPress={() => shareTryOn(job.id)}
-            accessibilityLabel="Share this creation"
-            hitSlop={10}
-          >
-            <Ionicons name="share-outline" size={20} color={Colors.black} />
-          </TouchableOpacity>
-          {/* Comments icon — always visible (even with zero comments) so a user
-              can be the first to comment. */}
-          <TouchableOpacity
-            style={styles.commentsButton}
-            onPress={() => onCommentsPress(job)}
-            accessibilityLabel="Open comments"
-            hitSlop={10}
-          >
-            <Ionicons name="chatbubble-outline" size={20} color={Colors.black} />
-            {commentsCountOverride > 0 ? (
-              <Text style={styles.commentsCount}>{commentsCountOverride}</Text>
-            ) : null}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
-});
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.black },
+  feedArea: { flex: 1, backgroundColor: Colors.black },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  searchIconButton: {
-    padding: Spacing.sm,
-    marginRight: Spacing.xs,
-  },
-  guestBanner: {
-    backgroundColor: Colors.black,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    gap: Spacing.xs,
-  },
-  guestBannerTop: {
+  searchIconButton: { padding: Spacing.sm, marginRight: Spacing.xs },
+  guestStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  guestBannerTitle: {
-    flex: 1,
-    fontSize: Typography.fontSizeLG,
-    fontWeight: Typography.fontWeightHeavy,
-    color: Colors.white,
-  },
-  guestBannerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.accent,
-    borderRadius: Radius.full,
-    paddingVertical: 6,
-    paddingHorizontal: Spacing.md,
-  },
-  guestBannerBtnText: {
-    fontSize: Typography.fontSizeSM,
-    fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
-  },
-  guestBannerSub: {
-    fontSize: Typography.fontSizeSM,
-    color: Colors.gray200,
-  },
-  guestBannerChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginTop: Spacing.xs,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  guestChip: {
+  guestStripText: {
+    flex: 1,
+    fontSize: Typography.fontSizeSM,
+    fontWeight: Typography.fontWeightSemiBold,
+    color: Colors.textPrimary,
+  },
+  guestStripBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
+    backgroundColor: Colors.gold,
+    borderRadius: Radius.full,
+    paddingVertical: 5,
+    paddingHorizontal: Spacing.sm,
   },
-  guestChipText: {
+  guestStripBtnText: {
     fontSize: Typography.fontSizeXS,
-    color: Colors.white,
-    fontWeight: Typography.fontWeightMedium,
+    fontWeight: Typography.fontWeightBold,
+    color: Colors.textPrimary,
   },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    backgroundColor: Colors.gray100,
+    backgroundColor: Colors.surface,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray200,
   },
-  errorBannerText: {
-    flex: 1,
-    fontSize: Typography.fontSizeSM,
-    color: Colors.gray800,
-  },
+  errorBannerText: { flex: 1, fontSize: Typography.fontSizeSM, color: Colors.textPrimary },
   errorBannerAction: {
     fontSize: Typography.fontSizeSM,
-    fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
-  },
-  card: {
-    marginHorizontal: Spacing.md,
-    marginBottom: Spacing.lg,
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    overflow: 'hidden',
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.md,
-    gap: Spacing.sm,
-  },
-  headerUserRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    flex: 1,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.gray200,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarImg: { width: '100%', height: '100%' },
-  avatarInitial: {
-    fontSize: Typography.fontSizeMD,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.gray600,
+    color: Colors.accent,
   },
-  displayName: {
-    fontSize: Typography.fontSizeMD,
-    fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
-  },
-  username: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  likeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resultsRow: { flexDirection: 'row', gap: Spacing.sm, padding: Spacing.md, paddingTop: 0 },
-  videoRow: { padding: Spacing.md, paddingTop: 0 },
-  videoContainer: {
-    position: 'relative',
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-    backgroundColor: Colors.gray100,
-  },
-  videoPoster: { width: '100%', aspectRatio: 3 / 4 },
-  playOverlay: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: 64,
-    height: 64,
-    marginLeft: -32,
-    marginTop: -32,
-    borderRadius: 32,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resultImageContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  resultImage: {
-    flex: 1,
-    aspectRatio: 3 / 4,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.gray100,
-  },
-  resultPlaceholder: { alignItems: 'center', justifyContent: 'center' },
-  multiImageBadge: {
-    position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Radius.sm,
-  },
-  multiImageText: {
-    color: Colors.white,
-    fontSize: Typography.fontSizeXS,
-    fontWeight: Typography.fontWeightSemiBold,
-  },
-  thumbColumn: {
-    width: 90,
-    gap: Spacing.sm,
-    justifyContent: 'flex-start',
-  },
-  sideThumb: {
-    width: 90,
-    aspectRatio: 3 / 4,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.gray100,
-  },
-  sideThumbPlaceholder: {
-    backgroundColor: Colors.gray100,
-  },
-  caption: {
-    fontSize: Typography.fontSizeSM,
-    color: Colors.black,
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.sm,
-  },
-  motionPrompt: {
-    fontSize: Typography.fontSizeSM,
-    color: Colors.gray600,
-    fontStyle: 'italic',
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.xs,
-  },
-  motionPromptLabel: {
-    color: Colors.gray400,
-    fontStyle: 'normal',
-    fontWeight: '600',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
-    paddingTop: 4,
-    minHeight: 36,
-  },
-  likesCount: {
-    fontSize: Typography.fontSizeSM,
-    fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
-  },
-  footerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  shareButton: {
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 4,
-  },
-  commentsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 4,
-  },
-  commentsCount: {
-    fontSize: Typography.fontSizeSM,
-    fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
-  },
-  footer: { padding: Spacing.lg },
-  emptyContainer: { flex: 1 },
   emptyState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xxl,
-    marginTop: 80,
+    gap: Spacing.sm,
   },
-  emptyIcon: { fontSize: 48, marginBottom: Spacing.md },
+  emptyIcon: { fontSize: 48 },
   emptyTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
-    marginBottom: Spacing.sm,
+    color: Colors.white,
   },
   emptySubtitle: {
-    fontSize: Typography.fontSizeMD,
-    color: Colors.gray600,
+    fontSize: Typography.fontSizeSM,
+    color: Colors.gray400,
     textAlign: 'center',
-    lineHeight: 22,
   },
 });

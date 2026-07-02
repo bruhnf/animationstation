@@ -24,9 +24,9 @@ import { RootStackParams } from '../navigation';
 import TryOnDetailModal from '../components/TryOnDetailModal';
 import VideoPlayerModal from '../components/VideoPlayerModal';
 import RetryableImage from '../components/RetryableImage';
-import UploadTipsSheet from '../components/UploadTipsSheet';
 import CreditDisplay from '../components/CreditDisplay';
-import { processImageForUpload, isLowResolution, confirmLowResolution } from '../utils/imageUtils';
+import CreationsGrid, { CreationCounts } from '../components/CreationsGrid';
+import { processImageForUpload } from '../utils/imageUtils';
 
 type Nav = NativeStackNavigationProp<RootStackParams>;
 
@@ -74,118 +74,35 @@ export default function ProfileScreen() {
   const navigation = useNavigation<Nav>();
   const { user, updateUser, logout, refreshUser } = useUserStore();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [history, setHistory] = useState<TryOnJob[]>([]);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
-  // Count of saved closet items (Designs) — fetched separately from history.
-  const [designCount, setDesignCount] = useState(0);
+  // Live counts of the unified creations grid (images + videos + total), fed by
+  // CreationsGrid so the creator-stat tiles stay accurate.
+  const [creationCounts, setCreationCounts] = useState<CreationCounts>({
+    images: 0,
+    videos: 0,
+    total: 0,
+  });
+  // Bumped on pull-to-refresh to force the embedded CreationsGrid to reload.
+  const [reloadToken, setReloadToken] = useState(0);
   const [uploading, setUploading] = useState<string | null>(null);
-  const [selectedJob, setSelectedJob] = useState<TryOnJob | null>(null);
-  // Presigned mp4 URL for the full-screen video player (null = closed) + the
-  // creator's motion prompt to show under it.
-  const [videoUri, setVideoUri] = useState<string | null>(null);
-  const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  // Multi-select state for bulk-delete on the user's own try-on history.
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [deleting, setDeleting] = useState(false);
-  const [tipsVisible, setTipsVisible] = useState(false);
 
-  function exitSelectionMode() {
-    setSelectionMode(false);
-    setSelectedIds(new Set());
-  }
-
-  function toggleSelected(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function enterSelectionWith(id: string) {
-    setSelectionMode(true);
-    setSelectedIds(new Set([id]));
-  }
-
-  async function deleteSelected() {
-    if (selectedIds.size === 0) return;
-    const ids = Array.from(selectedIds);
-    Alert.alert(
-      'Delete Creations',
-      `Permanently delete ${ids.length} ${ids.length === 1 ? 'creation' : 'creations'}? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              const { data } = await api.post<{ deleted: number }>('/tryon/bulk-delete', {
-                jobIds: ids,
-              });
-              setHistory((prev) => prev.filter((j) => !selectedIds.has(j.id)));
-              exitSelectionMode();
-              if (data.deleted < ids.length) {
-                Alert.alert(
-                  'Some creations could not be deleted',
-                  `${data.deleted} of ${ids.length} were removed.`,
-                );
-              }
-            } catch {
-              Alert.alert('Error', 'Could not delete creations. Please try again.');
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ],
-    );
-  }
-
-  // Re-fetch on every tab focus, not just mount: the tab navigator keeps this
-  // screen mounted, so a try-on completed over on the TryOn tab would otherwise
-  // not appear until pull-to-refresh. The first focus doubles as the initial
-  // load (spinner shows while historyLoaded is false); later focuses re-fetch
-  // silently and the grid just updates in place. refreshUser keeps the header
-  // stats (try-on count, credits) in step with the new session.
+  // The creations grid (list, selection, delete, detail modals) now lives in the
+  // shared <CreationsGrid> below — it fetches + merges /tryon/history and /closet
+  // and re-fetches on focus. Here we only refresh the header (credits/stats).
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
-      loadDesignCount();
       refreshUser();
     }, []),
   );
 
-  async function loadHistory() {
-    try {
-      const { data } = await api.get<{ jobs: TryOnJob[] }>('/tryon/history');
-      setHistory(data.jobs);
-    } catch {}
-    setHistoryLoaded(true);
-  }
-
-  async function loadDesignCount() {
-    try {
-      const { data } = await api.get<{ count: number }>('/closet');
-      setDesignCount(data.count ?? 0);
-    } catch {}
-  }
-
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refreshUser(), loadHistory()]);
+    await refreshUser();
+    setReloadToken((t) => t + 1); // force the embedded grid to reload too
     setRefreshing(false);
   }, []);
 
-  async function handlePhotoUpload(
-    field: 'avatar' | 'fullBody' | 'medium',
-    endpoint: string,
-    aspect: [number, number],
-  ) {
+  async function handlePhotoUpload(field: 'avatar', endpoint: string, aspect: [number, number]) {
     // No permission request here — launchImageLibraryAsync uses
     // PHPickerViewController on iOS 14+, which runs out-of-process and only
     // returns photos the user explicitly selects. No library-wide access is
@@ -193,28 +110,19 @@ export default function ProfileScreen() {
     // would be unnecessary friction (and over-collection per Apple's HIG).
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: field === 'avatar',
-      aspect: field === 'avatar' ? aspect : undefined,
+      allowsEditing: true,
+      aspect,
       quality: 0.85,
     });
     if (result.canceled || !result.assets[0]) return;
 
-    // Body photos set the quality ceiling for every future try-on, so warn on
-    // low-res sources up front. Avatars are display-only — never AI input.
-    if (
-      field !== 'avatar' &&
-      isLowResolution(result.assets[0].width, result.assets[0].height) &&
-      !(await confirmLowResolution('body'))
-    ) {
-      return;
-    }
-
+    // The avatar is display-only (never sent to AI), so no low-res warning.
     setUploading(field);
     try {
       // Convert HEIF/HEIC to JPEG for server compatibility
       const processedImage = await processImageForUpload(result.assets[0].uri, {
-        maxWidth: field === 'avatar' ? 512 : 1536,
-        maxHeight: field === 'avatar' ? 512 : 2048,
+        maxWidth: 512,
+        maxHeight: 512,
         compress: 0.85,
       });
 
@@ -224,8 +132,6 @@ export default function ProfileScreen() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       if (field === 'avatar') updateUser({ avatarUrl: data.url });
-      if (field === 'fullBody') updateUser({ fullBodyUrl: data.url });
-      if (field === 'medium') updateUser({ mediumBodyUrl: data.url });
     } catch {
       Alert.alert('Upload Failed', 'Could not upload photo. Please try again.');
     } finally {
@@ -233,7 +139,7 @@ export default function ProfileScreen() {
     }
   }
 
-  async function handlePhotoDelete(field: 'avatar' | 'fullBody' | 'medium', endpoint: string) {
+  async function handlePhotoDelete(field: 'avatar', endpoint: string) {
     Alert.alert('Remove Photo', 'Are you sure you want to remove this photo?', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -243,8 +149,6 @@ export default function ProfileScreen() {
           try {
             await api.delete(endpoint);
             if (field === 'avatar') updateUser({ avatarUrl: undefined });
-            if (field === 'fullBody') updateUser({ fullBodyUrl: undefined });
-            if (field === 'medium') updateUser({ mediumBodyUrl: undefined });
           } catch {
             Alert.alert('Error', 'Could not remove photo.');
           }
@@ -282,7 +186,7 @@ export default function ProfileScreen() {
         <Text style={styles.headerTitle}>User Profile</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => setMenuVisible(true)} style={styles.menuButton}>
-            <Ionicons name="ellipsis-vertical" size={22} color={Colors.black} />
+            <Ionicons name="ellipsis-vertical" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -361,21 +265,21 @@ export default function ProfileScreen() {
         <View style={styles.creatorStats}>
           <CreatorStat
             icon="image"
-            value={history.filter((j) => j.kind !== 'VIDEO').length}
+            value={creationCounts.images}
             label="Images"
             onPress={() => navigation.navigate('TryOn')}
           />
           <View style={styles.creatorDivider} />
           <CreatorStat
             icon="videocam"
-            value={history.filter((j) => j.kind === 'VIDEO').length}
+            value={creationCounts.videos}
             label="Videos"
             onPress={() => navigation.navigate('Video')}
           />
           <View style={styles.creatorDivider} />
           <CreatorStat
-            icon="color-palette"
-            value={designCount}
+            icon="albums"
+            value={creationCounts.total}
             label="Library"
             onPress={() => navigation.navigate('Closet', undefined)}
           />
@@ -385,14 +289,18 @@ export default function ProfileScreen() {
         <View style={styles.statsRow}>
           <TouchableOpacity
             style={styles.stat}
-            onPress={() => navigation.navigate('Friends', { initialTab: 'following' })}
+            onPress={() =>
+              navigation.navigate('Main', { screen: 'Friends', params: { initialTab: 'following' } })
+            }
           >
             <Text style={styles.statValue}>{user.followingCount}</Text>
             <Text style={styles.statLabel}>Following</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.stat}
-            onPress={() => navigation.navigate('Friends', { initialTab: 'followers' })}
+            onPress={() =>
+              navigation.navigate('Main', { screen: 'Friends', params: { initialTab: 'followers' } })
+            }
           >
             <Text style={styles.statValue}>{user.followersCount}</Text>
             <Text style={styles.statLabel}>Followers</Text>
@@ -405,210 +313,22 @@ export default function ProfileScreen() {
 
         {user.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
 
-        {/* Body Photos Section */}
+        {/* Creation History — the user's generated assets are the only content
+            below the profile header (the old TryOn body-photo uploads are gone). */}
         <View style={styles.section}>
-          <View style={styles.sectionTitleRow}>
-            <Text style={styles.sectionTitle}>My Photos</Text>
-            <TouchableOpacity onPress={() => setTipsVisible(true)} hitSlop={8}>
-              <Text style={styles.tipsLink}>📸 Tips</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.sectionHint}>
-            These are used to generate your images. Tap to change. Long-press to remove.
-          </Text>
-          <View style={styles.bodyPhotosRow}>
-            <BodyPhotoSlot
-              label="Full Body"
-              url={user.fullBodyUrl}
-              loading={uploading === 'fullBody'}
-              onPress={() => handlePhotoUpload('fullBody', '/upload/full-body', [3, 4])}
-              onLongPress={() =>
-                user.fullBodyUrl && handlePhotoDelete('fullBody', '/upload/full-body')
-              }
-            />
-            <BodyPhotoSlot
-              label="Waist Up (optional)"
-              url={user.mediumBodyUrl}
-              loading={uploading === 'medium'}
-              onPress={() => handlePhotoUpload('medium', '/upload/medium-body', [3, 4])}
-              onLongPress={() =>
-                user.mediumBodyUrl && handlePhotoDelete('medium', '/upload/medium-body')
-              }
-            />
-          </View>
-        </View>
-
-        {/* Creation History */}
-        <View style={styles.section}>
-          <View style={styles.historyHeader}>
-            <Text style={styles.sectionTitle}>My Creations</Text>
-            {historyLoaded && history.length > 0 ? (
-              selectionMode ? (
-                <TouchableOpacity onPress={exitSelectionMode} hitSlop={8}>
-                  <Text style={styles.historyHeaderAction}>Cancel</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={() => setSelectionMode(true)} hitSlop={8}>
-                  <Text style={styles.historyHeaderAction}>Select</Text>
-                </TouchableOpacity>
-              )
-            ) : null}
-          </View>
-          {historyLoaded && history.length > 0 ? (
-            // Storage usage hint. Mirrors the 500-session cap enforced
-            // server-side. Color escalates as the user approaches the limit
-            // so they get a visible warning before the next try-on submission
-            // is rejected with TRYON_LIMIT_REACHED.
-            <Text
-              style={[
-                styles.storageUsage,
-                history.length >= TRYON_STORAGE_LIMIT * 0.95 && styles.storageUsageDanger,
-                history.length >= TRYON_STORAGE_LIMIT * 0.8 &&
-                  history.length < TRYON_STORAGE_LIMIT * 0.95 &&
-                  styles.storageUsageWarn,
-              ]}
-            >
-              {history.length}/{TRYON_STORAGE_LIMIT} creations used. Save some of your creations.
-            </Text>
-          ) : null}
-          {!historyLoaded ? (
-            <ActivityIndicator color={Colors.gray400} style={{ marginTop: Spacing.lg }} />
-          ) : history.length === 0 ? (
-            <Text style={styles.emptyHistory}>No creations yet. Create your first one!</Text>
-          ) : (
-            <FlatList
-              data={history}
-              numColumns={3}
-              scrollEnabled={false}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => {
-                const isVideo = item.kind === 'VIDEO';
-                // Videos have no result image — their poster is the source (bodyPhotoUrl).
-                const url = isVideo
-                  ? item.bodyPhotoUrl
-                  : (item.resultFullBodyUrl ?? item.resultMediumUrl);
-                const hasResults = isVideo
-                  ? !!item.videoUrl
-                  : !!(item.resultFullBodyUrl || item.resultMediumUrl);
-                const isSelected = selectedIds.has(item.id);
-                return (
-                  <TouchableOpacity
-                    style={styles.historyItem}
-                    onPress={() => {
-                      if (selectionMode) {
-                        toggleSelected(item.id);
-                        return;
-                      }
-                      if (isVideo) {
-                        if (item.videoUrl) {
-                          setVideoUri(item.videoUrl);
-                          setVideoPrompt(item.motionPrompt ?? null);
-                        }
-                      } else if (hasResults) {
-                        setSelectedJob(item);
-                      }
-                    }}
-                    onLongPress={() => {
-                      // Long-press anywhere in the history grid enters
-                      // selection mode and selects that item, mirroring the
-                      // platform-native multi-select pattern used by Photos.
-                      if (!selectionMode) enterSelectionWith(item.id);
-                      else toggleSelected(item.id);
-                    }}
-                    activeOpacity={selectionMode || hasResults ? 0.7 : 1}
-                  >
-                    {url ? (
-                      <>
-                        <RetryableImage uri={url} style={styles.historyImage} resizeMode="cover" />
-                        {isVideo && (
-                          <View style={styles.historyPlay} pointerEvents="none">
-                            <Ionicons name="play" size={20} color={Colors.white} />
-                          </View>
-                        )}
-                        {item.isPrivate && (
-                          <View style={styles.privateBadge}>
-                            <Ionicons name="lock-closed" size={10} color={Colors.white} />
-                          </View>
-                        )}
-                      </>
-                    ) : (
-                      <View style={[styles.historyImage, styles.historyPlaceholder]}>
-                        <Text style={styles.historyStatus}>{item.status}</Text>
-                      </View>
-                    )}
-                    {selectionMode ? (
-                      <View
-                        style={[
-                          styles.selectionOverlay,
-                          isSelected && styles.selectionOverlayActive,
-                        ]}
-                        pointerEvents="none"
-                      >
-                        <View
-                          style={[styles.selectionCheck, isSelected && styles.selectionCheckActive]}
-                        >
-                          {isSelected ? (
-                            <Ionicons name="checkmark" size={16} color={Colors.white} />
-                          ) : null}
-                        </View>
-                      </View>
-                    ) : null}
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          )}
+          {/* Unified creations — all generated images + videos (merged from
+              /tryon/history + /closet), with per-item view/detail/delete. The
+              grid, selection, and detail/video/closet modals all live inside
+              CreationsGrid so the Library tab and this screen stay identical. */}
+          <CreationsGrid
+            title="My Creations"
+            scrollEnabled={false}
+            contentPaddingBottom={0}
+            onCountChange={setCreationCounts}
+            reloadToken={reloadToken}
+          />
         </View>
       </ScrollView>
-
-      {/* Floating delete bar — only visible in selection mode. Sits above the
-          tab bar so it remains tappable on every device. */}
-      {selectionMode ? (
-        <View style={[styles.deleteBar, { paddingBottom: insets.bottom + Spacing.sm }]}>
-          <TouchableOpacity
-            style={[
-              styles.deleteButton,
-              (selectedIds.size === 0 || deleting) && styles.deleteButtonDisabled,
-            ]}
-            onPress={deleteSelected}
-            disabled={selectedIds.size === 0 || deleting}
-          >
-            {deleting ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <Text style={styles.deleteButtonText}>
-                {selectedIds.size === 0
-                  ? 'Select items to delete'
-                  : `Delete Selected (${selectedIds.size})`}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      ) : null}
-
-      <UploadTipsSheet visible={tipsVisible} kind="body" onClose={() => setTipsVisible(false)} />
-
-      {/* Try-On Detail Modal */}
-      <VideoPlayerModal
-        visible={videoUri !== null}
-        uri={videoUri}
-        motionPrompt={videoPrompt}
-        onClose={() => {
-          setVideoUri(null);
-          setVideoPrompt(null);
-        }}
-      />
-      <TryOnDetailModal
-        visible={selectedJob !== null}
-        job={selectedJob}
-        onClose={() => setSelectedJob(null)}
-        onPrivacyChanged={(jobId, isPrivate) => {
-          setHistory((prev) => prev.map((j) => (j.id === jobId ? { ...j, isPrivate } : j)));
-        }}
-        onSavedChanged={(jobId, saved) => {
-          setHistory((prev) => prev.map((j) => (j.id === jobId ? { ...j, saved } : j)));
-        }}
-      />
 
       {/* Hamburger dropdown menu */}
       <Modal
@@ -637,42 +357,8 @@ export default function ProfileScreen() {
   );
 }
 
-function BodyPhotoSlot({
-  label,
-  url,
-  loading,
-  onPress,
-  onLongPress,
-}: {
-  label: string;
-  url?: string;
-  loading: boolean;
-  onPress: () => void;
-  onLongPress: () => void;
-}) {
-  return (
-    <TouchableOpacity style={styles.bodyPhotoSlot} onPress={onPress} onLongPress={onLongPress}>
-      {loading ? (
-        <ActivityIndicator color={Colors.gray400} />
-      ) : url ? (
-        <RetryableImage uri={url} style={styles.bodyPhotoImage} resizeMode="cover" />
-      ) : (
-        <View style={styles.bodyPhotoEmpty}>
-          <Text style={styles.bodyPhotoPlusIcon}>+</Text>
-          <Text style={styles.bodyPhotoEmptyLabel}>{label}</Text>
-        </View>
-      )}
-      {url && (
-        <View style={styles.bodyPhotoLabel}>
-          <Text style={styles.bodyPhotoLabelText}>{label}</Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -684,7 +370,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   headerLeft: {
@@ -756,7 +442,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subscriptionActive: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: 'rgba(52,211,153,0.12)',
   },
   subscriptionInactive: {
     backgroundColor: Colors.gray100,
@@ -802,7 +488,7 @@ const styles = StyleSheet.create({
   fullName: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   username: {
     fontSize: Typography.fontSizeSM,
@@ -823,7 +509,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   statLabel: { fontSize: Typography.fontSizeXS, color: Colors.gray600, marginTop: 2 },
   bio: {
@@ -861,7 +547,7 @@ const styles = StyleSheet.create({
   closetBadgeText: {
     fontSize: Typography.fontSizeXS,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     letterSpacing: 0.5,
   },
   closetCardTop: {
@@ -899,7 +585,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closetCtaText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -907,7 +593,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   sectionHint: { fontSize: Typography.fontSizeXS, color: Colors.gray400, marginBottom: Spacing.md },
@@ -969,7 +655,7 @@ const styles = StyleSheet.create({
   historyHeaderAction: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
   },
@@ -995,7 +681,7 @@ const styles = StyleSheet.create({
   selectionOverlayActive: {
     backgroundColor: 'rgba(0,0,0,0.35)',
     borderWidth: 2,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
   },
   selectionCheck: {
     position: 'absolute',
@@ -1012,7 +698,7 @@ const styles = StyleSheet.create({
   },
   selectionCheckActive: {
     backgroundColor: Colors.black,
-    borderColor: Colors.black,
+    borderColor: Colors.border,
   },
   deleteBar: {
     position: 'absolute',
@@ -1021,7 +707,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.gray200,
   },
@@ -1071,7 +757,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' },
   menuSheet: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     paddingBottom: 40,
@@ -1083,6 +769,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: Colors.gray100,
   },
-  menuItemText: { fontSize: Typography.fontSizeMD, color: Colors.black },
+  menuItemText: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary },
   menuItemDanger: { color: Colors.danger },
 });

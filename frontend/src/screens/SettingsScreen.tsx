@@ -359,7 +359,7 @@ function SettingButton({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   sectionHeader: {
     fontSize: Typography.fontSizeSM,
     fontWeight: Typography.fontWeightSemiBold,
@@ -379,10 +379,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: Colors.gray100,
   },
-  settingLabel: { fontSize: Typography.fontSizeMD, color: Colors.black },
+  settingLabel: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary },
   settingValue: { fontSize: Typography.fontSizeMD, color: Colors.gray600 },
   settingButton: { padding: Spacing.md, borderBottomWidth: 1, borderColor: Colors.gray100 },
-  settingButtonText: { fontSize: Typography.fontSizeMD, color: Colors.black },
+  settingButtonText: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary },
   dangerSection: { marginTop: Spacing.xl },
   dangerText: { color: Colors.danger },
   disabled: { opacity: 0.5 },

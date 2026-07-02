@@ -70,14 +70,14 @@ export default function ReferralScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={26} color={Colors.black} />
+          <Ionicons name="chevron-back" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Invite Friends</Text>
         <View style={styles.backBtn} />
       </View>
 
       {!summary && !error ? (
-        <ActivityIndicator style={{ marginTop: Spacing.xl }} color={Colors.black} />
+        <ActivityIndicator style={{ marginTop: Spacing.xl }} color={Colors.textPrimary} />
       ) : error ? (
         <View style={styles.center}>
           <Text style={styles.errText}>Couldn&apos;t load your invite info.</Text>
@@ -107,7 +107,7 @@ export default function ReferralScreen() {
           <View style={{ height: 18 }} />
 
           <TouchableOpacity style={styles.shareBtn} onPress={shareInvite}>
-            <Ionicons name="share-outline" size={18} color={Colors.black} />
+            <Ionicons name="share-outline" size={18} color={Colors.textPrimary} />
             <Text style={styles.shareText}>Share invite</Text>
           </TouchableOpacity>
 
@@ -132,7 +132,7 @@ export default function ReferralScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -144,17 +144,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeLG,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errText: { color: Colors.gray600, fontSize: Typography.fontSizeMD },
-  retry: { marginTop: Spacing.sm, color: Colors.black, fontWeight: Typography.fontWeightSemiBold },
+  retry: { marginTop: Spacing.sm, color: Colors.textPrimary, fontWeight: Typography.fontWeightSemiBold },
   body: { paddingHorizontal: Spacing.lg, alignItems: 'center', paddingTop: Spacing.lg },
   emoji: { fontSize: 48, marginBottom: Spacing.sm },
   headline: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   sub: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   code: {
     fontSize: 26,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
     letterSpacing: 3,
   },
   copiedNote: { color: Colors.success, fontSize: Typography.fontSizeSM, marginTop: 2, height: 18 },
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   shareText: {
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightBold,
     fontSize: Typography.fontSizeMD,
   },
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   statNum: {
     fontSize: Typography.fontSizeXL,
     fontWeight: Typography.fontWeightBold,
-    color: Colors.black,
+    color: Colors.textPrimary,
   },
   statLabel: { fontSize: Typography.fontSizeSM, color: Colors.gray600, marginTop: 2 },
 });

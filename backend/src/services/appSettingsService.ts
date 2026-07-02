@@ -205,3 +205,35 @@ export async function setVideoCreditCost(value: number): Promise<number> {
   log.info('Video credit cost updated', { value });
   return value;
 }
+
+// Gates the client-side welcome splash screen shown to users at login (they can
+// opt out on the device). Admin-configurable at runtime; the public /api/config
+// endpoint echoes the live value so the app can show or suppress the splash
+// without a rebuild. Defaults to false (splash off) until an admin enables it.
+export const WELCOME_SPLASH_ENABLED_KEY = 'welcomeSplashEnabled';
+export const DEFAULT_WELCOME_SPLASH_ENABLED = false;
+
+/**
+ * Read whether the welcome splash screen is enabled. Returns the stored value,
+ * or DEFAULT_WELCOME_SPLASH_ENABLED when no row exists. Stored as '1' (true) /
+ * '0' (false) in the AppSettings table.
+ */
+export async function getWelcomeSplashEnabled(): Promise<boolean> {
+  const row = await prisma.appSetting.findUnique({ where: { key: WELCOME_SPLASH_ENABLED_KEY } });
+  if (!row) return DEFAULT_WELCOME_SPLASH_ENABLED;
+  return row.value === '1';
+}
+
+/**
+ * Persist whether the welcome splash screen is enabled. Stores '1' (true) /
+ * '0' (false) in the AppSettings table and returns the boolean.
+ */
+export async function setWelcomeSplashEnabled(value: boolean): Promise<boolean> {
+  await prisma.appSetting.upsert({
+    where: { key: WELCOME_SPLASH_ENABLED_KEY },
+    create: { key: WELCOME_SPLASH_ENABLED_KEY, value: value ? '1' : '0' },
+    update: { value: value ? '1' : '0' },
+  });
+  log.info('Welcome splash enabled updated', { value });
+  return value;
+}

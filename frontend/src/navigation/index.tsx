@@ -1,17 +1,21 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
-import { NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  NavigatorScreenParams,
+  DarkTheme as NavDarkTheme,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useUserStore } from '../store/useUserStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useConfigStore } from '../store/useConfigStore';
-import { Colors } from '../constants/theme';
+import { Colors, Gradients } from '../constants/theme';
 
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
-import OnboardingPhotoScreen from '../screens/OnboardingPhotoScreen';
 import AboutScreen from '../screens/AboutScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TryOnScreen from '../screens/TryOnScreen';
@@ -37,12 +41,12 @@ import CleanUpScreen from '../screens/CleanUpScreen';
 import DesignScreen from '../screens/DesignScreen';
 import SignupCTA from '../components/ui/SignupCTA';
 import SplashAnnouncementModal from '../components/SplashAnnouncementModal';
+import WelcomeSplash from '../components/WelcomeSplash';
 import { navigationRef } from './navigationRef';
 
 export type AuthStackParams = {
   Login: undefined;
   Signup: undefined;
-  OnboardingPhoto: undefined;
   // About is reachable pre-signup so prospective users can see the value
   // proposition, tier features, and live StoreKit pricing before being asked
   // to register. Required for App Store Guideline 5.1.1(v) compliance.
@@ -50,11 +54,15 @@ export type AuthStackParams = {
 };
 
 export type MainTabParams = {
+  // Home is the global feed — a continuous scroll of every user's public
+  // creations. (The neon hub that used to live here is now the admin-toggleable
+  // welcome splash.)
   Home: undefined;
+  // Friends tab — following / followers lists + user search. Optional params let
+  // a link (Profile stats, feed search icon) open a specific tab / focus search.
   Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean } | undefined;
   // Center FAB → the Create hub, the single landing spot for every creation
-  // feature (Try-On, Design, Video, Clean-Up, Closet). Replaces the old
-  // separate Design/Video/TryOn tabs.
+  // feature (Text-to-Image, Image-to-Video, Transform, Clean-Up).
   Create: undefined;
   Inbox: undefined;
   Profile: undefined;
@@ -79,7 +87,6 @@ export type RootStackParams = {
   EditProfile: undefined;
   AdminConsole: undefined;
   Purchase: undefined;
-  Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean };
   PublicProfile: { username: string };
   BlockedUsers: undefined;
   ChangePassword: undefined;
@@ -102,41 +109,57 @@ const Stack = createNativeStackNavigator<RootStackParams>();
 const AuthStack = createNativeStackNavigator<AuthStackParams>();
 const Tab = createBottomTabNavigator<MainTabParams>();
 
+// Dark navigation theme so inter-screen gaps / card transitions render on the
+// app's deep-navy canvas instead of React Navigation's default white.
+const navTheme = {
+  ...NavDarkTheme,
+  colors: {
+    ...NavDarkTheme.colors,
+    background: Colors.background,
+    card: Colors.backgroundElevated,
+    text: Colors.textPrimary,
+    border: Colors.border,
+    primary: Colors.accentCyan,
+    notification: Colors.accentMagenta,
+  },
+};
+
 function AuthNavigator() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignupScreen} />
-      <AuthStack.Screen name="OnboardingPhoto" component={OnboardingPhotoScreen} />
       <AuthStack.Screen name="About" component={AboutScreen} />
     </AuthStack.Navigator>
   );
 }
 
-// Center "Create" FAB — the prominent gateway to the Create hub. Black disc with
-// a gold camera, echoing the gold-on-black theme.
+// Center "Create" FAB — the prominent gateway to the Create hub. Neon
+// cyan→purple gradient disc with a cyan glow, matching the app's accent system.
 function CreateTabIcon({ focused }: { focused: boolean }) {
   return (
-    <View
+    <LinearGradient
+      colors={Gradients.primary}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={{
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: Colors.black,
         borderWidth: focused ? 2 : 0,
-        borderColor: Colors.gold,
+        borderColor: Colors.white,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 6,
+        shadowColor: Colors.accentCyan,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.6,
+        shadowRadius: 12,
+        elevation: 8,
       }}
     >
-      <Ionicons name="camera" size={30} color={Colors.gold} />
-    </View>
+      <Ionicons name="add" size={34} color={Colors.white} />
+    </LinearGradient>
   );
 }
 
@@ -165,33 +188,31 @@ function MainTabs() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: Colors.black,
-        tabBarInactiveTintColor: Colors.gray400,
+        tabBarActiveTintColor: Colors.accentCyan,
+        tabBarInactiveTintColor: Colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopColor: Colors.gray200,
-          height: 70,
-          paddingBottom: 10,
+          backgroundColor: Colors.backgroundElevated,
+          borderTopColor: Colors.border,
+          borderTopWidth: 1,
+          height: 72,
+          paddingBottom: 12,
+          paddingTop: 6,
         },
-        tabBarLabelStyle: { fontSize: 10 },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tab.Screen
         name="Friends"
         component={FriendsScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -207,20 +228,22 @@ function MainTabs() {
         component={isGuest ? InboxTabForGuest : InboxScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mail-outline" size={size} color={color} />
+            <Ionicons name="notifications" size={size} color={color} />
           ),
           tabBarBadge:
             !isGuest && unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : undefined,
-          tabBarBadgeStyle: { backgroundColor: Colors.black, color: Colors.white, fontSize: 10 },
+          tabBarBadgeStyle: {
+            backgroundColor: Colors.accentMagenta,
+            color: Colors.white,
+            fontSize: 10,
+          },
         }}
       />
       <Tab.Screen
         name="Profile"
         component={isGuest ? GuestProfileScreen : ProfileScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
     </Tab.Navigator>
@@ -245,10 +268,10 @@ export default function AppNavigator() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.surface,
         }}
       >
-        <ActivityIndicator size="large" color={Colors.black} />
+        <ActivityIndicator size="large" color={Colors.textPrimary} />
       </View>
     );
   }
@@ -260,7 +283,7 @@ export default function AppNavigator() {
   // — they get a guest session in initialize().
   if (!user && sessionEnded) {
     return (
-      <NavigationContainer ref={navigationRef}>
+      <NavigationContainer ref={navigationRef} theme={navTheme}>
         <AuthNavigator />
       </NavigationContainer>
     );
@@ -276,7 +299,7 @@ export default function AppNavigator() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.surface,
           padding: 32,
         }}
       >
@@ -290,13 +313,13 @@ export default function AppNavigator() {
         <TouchableOpacity
           onPress={() => initialize()}
           style={{
-            backgroundColor: Colors.black,
+            backgroundColor: Colors.accent,
             borderRadius: 24,
             paddingVertical: 12,
             paddingHorizontal: 28,
           }}
         >
-          <Text style={{ color: Colors.white, fontWeight: '700' }}>Retry</Text>
+          <Text style={{ color: Colors.textInverse, fontWeight: '700' }}>Retry</Text>
         </TouchableOpacity>
       </View>
     );
@@ -305,7 +328,7 @@ export default function AppNavigator() {
   const isGuest = user.isGuest === true;
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* Main tabs render for BOTH guest and real users — a guest always has a
             session, so there's no sign-in wall. The screens below differ by
@@ -434,6 +457,10 @@ export default function AppNavigator() {
           Mounted once per cold start, over the whole app, for guests and real
           users alike. Renders nothing when no splash is published. */}
       <SplashAnnouncementModal />
+      {/* Admin-toggleable welcome hub splash (the neon "Imagine. Create.
+          Transcend." screen). Gated on the welcomeSplashEnabled config flag +
+          the user's local opt-out. Renders nothing when off. */}
+      <WelcomeSplash />
     </NavigationContainer>
   );
 }

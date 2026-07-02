@@ -18,13 +18,20 @@ const s3 = new S3Client({
 export type TryOnPerspective = 'full_body' | 'medium';
 
 export interface TryOnInput {
-  userBodyImageUrl: string;
-  perspective: TryOnPerspective;
+  // The reference image(s) the user is transforming. At least one; all are sent
+  // to the model and preserved as the subject(s).
   clothingImageUrls: string[];
-  // Optional free-form user prompt threaded through the multi-image compose
-  // path (AnimationStation feature 2). When present it drives the composition;
-  // when absent a neutral combine/enhance prompt is used.
+  // Optional free-form prompt threaded through the compose path (feature 2).
+  // When present it drives the requested scene/style; when absent a neutral
+  // enhance/combine instruction is used.
   userPrompt?: string;
+  // Optional legacy body-photo input, prepended as the primary subject when
+  // present. AnimationStation's free-form transform has no body photos, so this
+  // is normally undefined; retained only for signature/back-compat.
+  userBodyImageUrl?: string;
+  // Optional perspective label; no longer scopes framing (free-form), kept so
+  // callers can tag logs / result slots.
+  perspective?: TryOnPerspective;
 }
 
 export interface TryOnOutput {
@@ -162,9 +169,9 @@ export class ContentModeratedError extends Error {
 // General multi-image composition prompt (AnimationStation feature 2). The
 // reference images are provided to the model; the user's free-form prompt (when
 // present) drives the requested scene/style while the reference subjects are
-// preserved. `perspective` is retained for signature compatibility with the
-// worker's per-perspective loop but no longer scopes the framing.
-function buildPrompt(perspective: TryOnPerspective, userPrompt?: string): string {
+// preserved. `perspective` is retained for signature compatibility only and no
+// longer scopes the framing.
+function buildPrompt(perspective: TryOnPerspective | undefined, userPrompt?: string): string {
   void perspective;
   const cleaned = typeof userPrompt === 'string' ? userPrompt.trim() : '';
   if (cleaned) {
@@ -694,24 +701,27 @@ export async function generateTryOnImage(input: TryOnInput): Promise<string> {
 
   log.info('Try-on generation started', {
     perspective,
-    bodyImageUrl: userBodyImageUrl.substring(0, 80),
-    clothingCount: clothingImageUrls.length,
+    hasBodyImage: !!userBodyImageUrl,
+    referenceCount: clothingImageUrls.length,
   });
 
-  // Fetch and validate body image
-  const bodyImage = await fetchImageAsBase64(userBodyImageUrl, 'body-image');
-
-  // Fetch and validate clothing imag
-  const clothingImages = await Promise.all(
-    clothingImageUrls.map((url, i) => fetchImageAsBase64(url, `clothing-image-${i + 1}`)),
+  // Fetch the reference image(s) the user is transforming.
+  const referenceImages = await Promise.all(
+    clothingImageUrls.map((url, i) => fetchImageAsBase64(url, `reference-image-${i + 1}`)),
   );
 
-  // Build images array as objects with url field (xAI /images/edits format)
+  // Build images array as objects with url field (xAI /images/edits format).
   // Reference: https://docs.x.ai/developers/rest-api-reference/inference/images
-  const images = [
-    { url: `data:${bodyImage.mimeType};base64,${bodyImage.base64}` },
-    ...clothingImages.map((img) => ({ url: `data:${img.mimeType};base64,${img.base64}` })),
-  ];
+  // A legacy body photo (if ever provided) is prepended as the primary subject;
+  // AnimationStation's free-form transform sends only the reference image(s).
+  const images: Array<{ url: string }> = [];
+  if (userBodyImageUrl) {
+    const bodyImage = await fetchImageAsBase64(userBodyImageUrl, 'body-image');
+    images.push({ url: `data:${bodyImage.mimeType};base64,${bodyImage.base64}` });
+  }
+  images.push(
+    ...referenceImages.map((img) => ({ url: `data:${img.mimeType};base64,${img.base64}` })),
+  );
 
   const prompt = buildPrompt(perspective, userPrompt);
 

@@ -83,7 +83,7 @@ export default function SplashAnnouncementModal() {
               <Ionicons
                 name={dontShowAgain ? 'checkbox' : 'square-outline'}
                 size={22}
-                color={Colors.black}
+                color={Colors.textPrimary}
               />
               <Text style={styles.dismissLabel}>Don&apos;t show this again</Text>
             </TouchableOpacity>
@@ -98,7 +98,7 @@ export default function SplashAnnouncementModal() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: Colors.surface },
   image: { flex: 1, width: '100%' },
   footer: {
     paddingHorizontal: Spacing.lg,

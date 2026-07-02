@@ -50,7 +50,7 @@ export default function SignupCTA({
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.iconCircle}>
-        <Ionicons name={icon ?? ICONS[context]} size={46} color={Colors.black} />
+        <Ionicons name={icon ?? ICONS[context]} size={46} color={Colors.textPrimary} />
       </View>
 
       <Text style={styles.title}>{copy.title}</Text>
@@ -95,7 +95,7 @@ export default function SignupCTA({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.white },
+  screen: { flex: 1, backgroundColor: Colors.surface },
   content: {
     flexGrow: 1,
     alignItems: 'center',
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Typography.fontSizeHero,
     fontWeight: Typography.fontWeightHeavy,
-    color: Colors.black,
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: Spacing.sm,
   },
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   bulletRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   bulletText: {
     fontSize: Typography.fontSizeMD,
-    color: Colors.black,
+    color: Colors.textPrimary,
     fontWeight: Typography.fontWeightMedium,
     flex: 1,
   },

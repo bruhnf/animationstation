@@ -66,8 +66,16 @@ function alertAdminsOfTryOnFailure(data: {
 const worker = new Worker<TryOnJobData>(
   'tryon',
   async (job) => {
-    const { jobId, userId, clothingUrls, bodyPhotos, promptText } = job.data;
+    const { jobId, userId, clothingUrls, promptText } = job.data;
     const startTime = Date.now();
+
+    // AnimationStation is free-form: one generation per submission (there are no
+    // per-body-photo perspectives). A single 'full_body' unit keeps the result
+    // in resultFullBodyUrl — what the feed / grid / detail read — and lets the
+    // existing moderation / refund / skip-on-retry machinery below run unchanged
+    // (classifyOutcomes maps a lone outcome cleanly: ok→clean, moderated→
+    // all_blocked, failed→all_failed).
+    const genUnits: Array<{ perspective: 'full_body' | 'medium' }> = [{ perspective: 'full_body' }];
 
     logJob('started', {
       jobId,
@@ -75,7 +83,7 @@ const worker = new Worker<TryOnJobData>(
       userId,
       attempt: job.attemptsMade + 1,
       clothingCount: clothingUrls.length,
-      perspectives: bodyPhotos.map((p) => p.perspective),
+      perspectives: genUnits.map((p) => p.perspective),
     });
 
     await prisma.tryOnJob.update({
@@ -109,7 +117,7 @@ const worker = new Worker<TryOnJobData>(
     // upward (instead of thrown) so the caller can complete the job with
     // whatever survived.
     async function processPerspective(
-      bodyPhoto: (typeof bodyPhotos)[number],
+      bodyPhoto: (typeof genUnits)[number],
     ): Promise<PerspectiveOutcome> {
       if (existingKeyFor(bodyPhoto.perspective)) {
         log.info('Skipping perspective already generated on a prior attempt', {
@@ -119,10 +127,10 @@ const worker = new Worker<TryOnJobData>(
         return 'ok';
       }
 
-      log.debug('Processing perspective', {
+      log.debug('Processing generation', {
         jobId,
         perspective: bodyPhoto.perspective,
-        bodyImageRef: bodyPhoto.url.substring(0, 80),
+        referenceCount: clothingUrls.length,
       });
 
       try {
@@ -148,16 +156,17 @@ const worker = new Worker<TryOnJobData>(
     // The generate→download→upload→persist pipeline for one perspective.
     // Throws on transient failure; returns 'moderated' on a policy block.
     async function generateAndPersist(
-      bodyPhoto: (typeof bodyPhotos)[number],
+      bodyPhoto: (typeof genUnits)[number],
     ): Promise<PerspectiveOutcome> {
       // grokService accepts S3 keys (preferred) or full URLs (legacy rows).
+      // Free-form transform: the reference image(s) the user uploaded are the
+      // only inputs — no body photo is prepended.
       let resultUrl: string;
       try {
         resultUrl = await generateTryOnImage({
-          userBodyImageUrl: bodyPhoto.url,
-          perspective: bodyPhoto.perspective,
           clothingImageUrls: clothingUrls,
           userPrompt: promptText ?? undefined,
+          perspective: bodyPhoto.perspective,
         });
       } catch (genErr) {
         if (genErr instanceof ContentModeratedError) {
@@ -220,14 +229,15 @@ const worker = new Worker<TryOnJobData>(
       return 'ok';
     }
 
-    // Generate the perspectives CONCURRENTLY (previously sequential, which made a
-    // 2-photo user wait for the SUM of both Grok calls instead of the longer one).
-    const outcomes = await Promise.all(bodyPhotos.map(processPerspective));
-    const succeeded = bodyPhotos.filter((_, i) => outcomes[i] === 'ok').map((p) => p.perspective);
-    const moderated = bodyPhotos
+    // Run the generation unit(s). Kept as a map/Promise.all so the surrounding
+    // outcome-classification + partial/refund machinery stays intact; today
+    // there is exactly one free-form generation per job.
+    const outcomes = await Promise.all(genUnits.map(processPerspective));
+    const succeeded = genUnits.filter((_, i) => outcomes[i] === 'ok').map((p) => p.perspective);
+    const moderated = genUnits
       .filter((_, i) => outcomes[i] === 'moderated')
       .map((p) => p.perspective);
-    const failed = bodyPhotos.filter((_, i) => outcomes[i] === 'failed').map((p) => p.perspective);
+    const failed = genUnits.filter((_, i) => outcomes[i] === 'failed').map((p) => p.perspective);
     const verdict = classifyOutcomes(outcomes);
 
     // EVERY perspective blocked → genuine policy rejection. Terminal: BullMQ
