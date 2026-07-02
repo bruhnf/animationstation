@@ -46,7 +46,8 @@ const COPY: Record<SignupContext, { title: string; message: string }> = {
   },
   inbox: {
     title: 'Join the community',
-    message: 'Sign up to follow people and get notified about likes and comments on your creations.',
+    message:
+      'Sign up to follow people and get notified about likes and comments on your creations.',
   },
   profile: {
     title: 'Save your creations',

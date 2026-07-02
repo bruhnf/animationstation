@@ -148,7 +148,11 @@ const styles = StyleSheet.create({
   },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errText: { color: Colors.gray600, fontSize: Typography.fontSizeMD },
-  retry: { marginTop: Spacing.sm, color: Colors.textPrimary, fontWeight: Typography.fontWeightSemiBold },
+  retry: {
+    marginTop: Spacing.sm,
+    color: Colors.textPrimary,
+    fontWeight: Typography.fontWeightSemiBold,
+  },
   body: { paddingHorizontal: Spacing.lg, alignItems: 'center', paddingTop: Spacing.lg },
   emoji: { fontSize: 48, marginBottom: Spacing.sm },
   headline: {

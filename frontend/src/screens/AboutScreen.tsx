@@ -137,8 +137,8 @@ export default function AboutScreen({ navigation }: Props) {
         <Text style={styles.sectionHeader}>How it works</Text>
         <Text style={styles.bodyText}>
           Type a prompt to generate an image from scratch, or upload a reference image and describe
-          how you want it transformed. AnimationStation uses AI to create the image for you — and you
-          can even turn any image into a short motion video.
+          how you want it transformed. AnimationStation uses AI to create the image for you — and
+          you can even turn any image into a short motion video.
         </Text>
       </View>
 
@@ -223,8 +223,8 @@ export default function AboutScreen({ navigation }: Props) {
       <View style={[styles.section, styles.whyAccountSection]}>
         <Text style={styles.sectionHeader}>Why an account is required</Text>
         <Text style={styles.bodyText}>
-          AnimationStation's AI generates images and videos that are personalized to you, which means
-          your account isn't just for login — it's where the app's core functionality lives:
+          AnimationStation's AI generates images and videos that are personalized to you, which
+          means your account isn't just for login — it's where the app's core functionality lives:
         </Text>
         <View style={styles.bulletList}>
           <BulletItem>

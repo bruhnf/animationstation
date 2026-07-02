@@ -403,7 +403,12 @@ function CommentRow({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.surface },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: Spacing.xl },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.xl,
+  },
   listContent: { paddingVertical: Spacing.sm, paddingBottom: Spacing.md },
   emptyState: { alignItems: 'center', padding: Spacing.xl, gap: Spacing.sm },
   emptyText: { fontSize: Typography.fontSizeSM, color: Colors.gray600 },
