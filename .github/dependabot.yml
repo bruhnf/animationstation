@@ -30,16 +30,16 @@ updates:
     ignore:
       - dependency-name: expo
       - dependency-name: expo-*
-      - dependency-name: "@expo/*"
+      - dependency-name: '@expo/*'
       - dependency-name: babel-preset-expo
       - dependency-name: jest-expo
       - dependency-name: react
       - dependency-name: react-dom
       - dependency-name: react-native
       - dependency-name: react-native-*
-      - dependency-name: "@react-native/*"
-      - dependency-name: "@react-native-*"
-      - dependency-name: "@types/react"
+      - dependency-name: '@react-native/*'
+      - dependency-name: '@react-native-*'
+      - dependency-name: '@types/react'
 
   - package-ecosystem: github-actions
     directory: /
