@@ -1,0 +1,40 @@
+{
+  "project": "AnimationStation",
+  "repoUrl": "https://github.com/bruhnf/animationstation.git",
+  "sshUser": "ubuntu",
+  "sshKey": "~/.ssh/lsdefault.pem",
+  "appDir": "/opt/animationstation",
+  "servers": [
+    {
+      "name": "evofaceflow-prod",
+      "role": "prod",
+      "ip": "34.227.203.230",
+      "host": "animationstation.ai",
+      "healthUrl": "https://animationstation.ai/health",
+      "expectedBranch": "main",
+      "containerPrefix": "animationstation",
+      "apiContainer": "animationstation-api",
+      "note": "Lightsail instance name still 'evofaceflow-prod' (pre-AnimationStation brand). Co-hosts TryOn; TryOn's nginx owns :80/:443."
+    },
+    {
+      "name": "evofaceflow-dev",
+      "role": "dev",
+      "ip": "54.173.136.56",
+      "host": "dev.animationstation.ai",
+      "healthUrl": "https://dev.animationstation.ai/health",
+      "expectedBranch": "main",
+      "containerPrefix": "animationstation",
+      "apiContainer": "animationstation-api",
+      "note": "Lightsail instance name still 'evofaceflow-dev'. Co-hosts TryOn."
+    },
+    {
+      "name": "bruhnfreeman-com",
+      "role": "shared-host",
+      "ip": "3.223.180.176",
+      "host": "bruhnfreeman.com",
+      "healthUrl": "",
+      "inventoryOnly": true,
+      "note": "Personal Lightsail box. Hosts bruhnfreeman.com plus other apps (Merlin, NaturalBliss, bizcardscan) behind a dockerized Caddy. The old animationstation deployment here was decommissioned 2026-07-02 (volumes retained). NOT part of the AnimationStation dev/prod flow - inventory only."
+    }
+  ]
+}

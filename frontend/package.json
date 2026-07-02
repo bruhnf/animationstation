@@ -4,6 +4,8 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
+    "start:go": "expo start --go",
+    "start:go:tunnel": "expo start --go --tunnel",
     "start:dev": "cross-env APP_VARIANT=development expo start --tunnel",
     "start:dev:lan": "cross-env APP_VARIANT=development expo start",
     "android": "expo run:android",
