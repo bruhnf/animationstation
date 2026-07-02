@@ -104,7 +104,7 @@ jobs:
       # tsc, runtime file copies) so a broken Dockerfile fails here instead of
       # during a manual deploy. No push; gha cache keeps it fast.
       - name: Build backend image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./backend
           push: false
