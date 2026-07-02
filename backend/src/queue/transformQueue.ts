@@ -9,12 +9,17 @@ export const transformQueue = new Queue('transform', { connection });
 export interface CreationData {
   jobId: string;
   userId: string;
-  // The reference image(s) the user is transforming (S3 keys). At least one.
+  // The reference image(s) the user is transforming (S3 keys). EMPTY for a
+  // pure text-to-image generation (promptText is then required — enforced at
+  // submit); one or two keys for a transform/compose.
   clothingUrls: string[];
-  // Free-form prompt describing the requested transform. Carried from the job
-  // row into the worker and forwarded to generateTransformImage. Optional — a blank
-  // prompt falls back to a neutral enhance/combine instruction.
+  // Free-form prompt describing the requested generation/transform. Required
+  // when clothingUrls is empty; optional otherwise (a blank prompt falls back
+  // to a neutral enhance/combine instruction).
   promptText?: string | null;
+  // User-chosen output aspect ratio ('2:3' | '3:2' | '1:1' | '9:16' | '16:9'),
+  // validated at submit. Null → model default.
+  aspectRatio?: string | null;
 }
 
 export async function enqueueTransform(data: CreationData, delayMs = 0): Promise<void> {

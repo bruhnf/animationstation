@@ -11,6 +11,7 @@ import { computeQueueDelayMs } from '../services/throttleService';
 import { resizeImageForGeneration } from '../utils/imageProcessor';
 import { createChildLogger } from '../services/logger';
 import { OUTFIT_POLICY_MESSAGE, containsBannedTerm } from '../utils/outfitPrompt';
+import { VALID_IMAGE_ASPECTS } from '../services/grokService';
 
 const log = createChildLogger('CreationsController');
 
@@ -81,14 +82,13 @@ export async function submitTransform(req: Request, res: Response): Promise<void
       ? req.body.closetItemId.trim()
       : null;
 
-  if ((!files || files.length === 0) && !closetItemId) {
-    res.status(400).json({ error: 'At least one clothing photo (or a closet item) is required' });
-    return;
-  }
   if (files && files.length > 0 && closetItemId) {
-    res.status(400).json({ error: 'Send either a clothing photo or a closet item, not both' });
+    res.status(400).json({ error: 'Send either a reference photo or a closet item, not both' });
     return;
   }
+  // Text-to-image path: no reference images at all. The prompt (validated
+  // below) then becomes mandatory — an empty submit has nothing to generate.
+  const isTextToImage = (!files || files.length === 0) && !closetItemId;
 
   const { userId } = req.user;
 
@@ -197,6 +197,20 @@ export async function submitTransform(req: Request, res: Response): Promise<void
     return;
   }
   const promptText = promptResult.value;
+  if (isTextToImage && !promptText) {
+    res.status(400).json({
+      error: 'PROMPT_REQUIRED',
+      message: 'Describe what you want to create, or attach a photo to transform.',
+    });
+    return;
+  }
+
+  // Optional output aspect ratio from the create UI. Anything outside the
+  // known set is treated as "not specified" so client drift can't hard-fail.
+  const aspectRatio =
+    typeof req.body?.aspectRatio === 'string' && VALID_IMAGE_ASPECTS.has(req.body.aspectRatio)
+      ? req.body.aspectRatio
+      : null;
 
   // Pre-allocate the jobId so the credit-deduction transaction can be tagged
   // with it (the worker's failure handler parses the tag to refund).
@@ -228,10 +242,10 @@ export async function submitTransform(req: Request, res: Response): Promise<void
       `${uuidv4()}-closet.jpg`,
     );
     clothingKeys.push(key);
-  } else {
+  } else if (files && files.length > 0) {
     // Upload path: resize + store. Stores S3 keys, not public URLs — the
     // bucket is private; presigned URLs are minted at read time.
-    for (const file of files!) {
+    for (const file of files) {
       const processed = await resizeImageForGeneration(file.buffer);
       const baseFilename = safeFilename(file.originalname).replace(/\.[^/.]+$/, '');
       const filename = `${uuidv4()}-${baseFilename}.jpg`;
@@ -310,7 +324,8 @@ export async function submitTransform(req: Request, res: Response): Promise<void
           userId,
           isPrivate,
           title,
-          refImage1Url: clothingKeys[0],
+          // Null for a pure text-to-image generation (no reference inputs).
+          refImage1Url: clothingKeys[0] ?? null,
           refImage2Url: clothingKeys[1] ?? null,
           // Free-form transform has no body photo; the reference image lives in
           // refImage1Url and the generated result in resultImageUrl.
@@ -368,7 +383,7 @@ export async function submitTransform(req: Request, res: Response): Promise<void
   // spent), then surface a 503 so the client can retry.
   try {
     await enqueueTransform(
-      { jobId, userId, clothingUrls: clothingKeys, promptText },
+      { jobId, userId, clothingUrls: clothingKeys, promptText, aspectRatio },
       throttle.delayMs,
     );
   } catch (enqueueErr) {

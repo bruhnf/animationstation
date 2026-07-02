@@ -15,6 +15,10 @@ export interface VideoJobData {
   referenceImageKeys?: string[];
   motionPrompt: string;
   creditCost: number; // credits charged at submit; refunded on terminal failure
+  // Optional clip length in seconds (1–15, clamped at submit). Null → Grok default (8s).
+  durationSec?: number | null;
+  // Optional output aspect ratio, validated at submit. Null → follow the source image.
+  aspectRatio?: string | null;
 }
 
 export async function enqueueVideo(data: VideoJobData, delayMs = 0): Promise<void> {
