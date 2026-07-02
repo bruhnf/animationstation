@@ -10,10 +10,10 @@ import { storage } from '../utils/storage';
 //                 can actually reach: a LAN IP for an emulator on the same Wi-Fi,
 //                 or your personal ngrok hostname for a physical device. Do NOT
 //                 commit your ngrok URL — it's tied to your free-tier session.
-//   - 'dev' = Dev server (animationstation.bruhnfreeman.com/api). Used for the
+//   - 'dev' = Dev server (dev.animationstation.ai/api). Used for the
 //                 Expo dev-client builds that exercise the dev backend,
 //                 including Apple Sandbox in-app purchases.
-//   - 'prod'    = Live server (animationstation.bruhnfreeman.com/api).
+//   - 'prod'    = Live server (animationstation.ai/api).
 //
 // ⚠️ MUST be 'prod' for any App Store / production EAS build. A dev or local
 //    URL shipped to the App Store points real users at the wrong backend.
@@ -25,8 +25,8 @@ type ApiEnv = 'local' | 'dev' | 'prod';
 const ENV = 'prod' as ApiEnv;
 
 const LOCAL_URL = 'http://localhost:3000/api';
-const DEV_URL = 'https://animationstation.bruhnfreeman.com/api';
-const LIVE_URL = 'https://animationstation.bruhnfreeman.com/api';
+const DEV_URL = 'https://dev.animationstation.ai/api';
+const LIVE_URL = 'https://animationstation.ai/api';
 
 export const BASE_URL = ENV === 'local' ? LOCAL_URL : ENV === 'dev' ? DEV_URL : LIVE_URL;
 

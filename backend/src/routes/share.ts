@@ -272,7 +272,7 @@ ${videoMeta}
     <h1>${p.caption || `${p.name}'s creation`}</h1>
     <p class="sub">${p.caption ? `${p.name}'s creation · ` : ''}Made with AnimationStation — generate AI images and videos.</p>
     <a class="cta" href="${p.store}">Get the app</a>
-    <a class="link" href="${p.site}">animationstation.bruhnfreeman.com</a>
+    <a class="link" href="${p.site}">animationstation.ai</a>
   </div>
 </body>
 </html>`;
@@ -290,7 +290,7 @@ function notFoundPage(site: string, store: string): string {
   <h1>This content isn't available</h1>
   <p style="color:#666">It may be private or no longer exist.</p>
   <a class="cta" href="${store}">Get AnimationStation</a>
-  <p style="margin-top:14px"><a href="${site}" style="color:#888;font-size:13px">animationstation.bruhnfreeman.com</a></p>
+  <p style="margin-top:14px"><a href="${site}" style="color:#888;font-size:13px">animationstation.ai</a></p>
 </div></body></html>`;
 }
 

@@ -334,7 +334,7 @@ app.get('/health', async (_req, res) => {
 });
 
 // Marketing + account website (static HTML/CSS/JS). Served at the site root so
-// animationstation.bruhnfreeman.com shows the site, while /api/* stays the API.
+// animationstation.ai shows the site, while /api/* stays the API.
 // Mounted AFTER every /api route and the health/share/admin/verified routes so
 // it can never shadow them — only otherwise-unmatched GETs fall through to a
 // static file. `extensions: ['html']` gives clean URLs (/login → login.html).

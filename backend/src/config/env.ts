@@ -100,7 +100,7 @@ export const env = {
   frontendDeepLink: optional('FRONTEND_DEEP_LINK', 'animationstation://'),
   // Public-facing website root, used for redirects in flows that finish on the
   // marketing site (e.g. the post-verification success page).
-  websiteUrl: optional('WEBSITE_URL', 'https://animationstation.bruhnfreeman.com'),
+  websiteUrl: optional('WEBSITE_URL', 'https://animationstation.ai'),
 
   apple: {
     // iOS bundle identifier — must match the receipt's bundleId.
@@ -133,7 +133,7 @@ if (env.nodeEnv === 'production') {
   const productionMisconfigurations: string[] = [];
   if (!env.appUrl || env.appUrl === 'http://localhost:3000') {
     productionMisconfigurations.push(
-      'APP_URL is unset or still the localhost default. Set it to the public API URL (e.g. https://animationstation.bruhnfreeman.com).',
+      'APP_URL is unset or still the localhost default. Set it to the public API URL (e.g. https://animationstation.ai).',
     );
   }
   if (productionMisconfigurations.length > 0) {

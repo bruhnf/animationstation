@@ -1,7 +1,7 @@
 // AnimationStation Web Authentication
 //
 // The site and API are served from the same host
-// (animationstation.bruhnfreeman.com), so the API is always same-origin.
+// (animationstation.ai), so the API is always same-origin.
 const API_BASE = '/api';
 
 // Store tokens in localStorage
