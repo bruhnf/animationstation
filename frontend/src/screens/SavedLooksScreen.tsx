@@ -147,7 +147,11 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 44, marginBottom: Spacing.sm },
   muted: { color: Colors.gray600, fontSize: Typography.fontSizeMD, textAlign: 'center' },
-  retry: { marginTop: Spacing.sm, color: Colors.textPrimary, fontWeight: Typography.fontWeightSemiBold },
+  retry: {
+    marginTop: Spacing.sm,
+    color: Colors.textPrimary,
+    fontWeight: Typography.fontWeightSemiBold,
+  },
   cell: { flex: 1 / 2, aspectRatio: 3 / 4, padding: 2, position: 'relative' },
   image: { width: '100%', height: '100%', borderRadius: 6 },
   cellActions: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', gap: 6 },

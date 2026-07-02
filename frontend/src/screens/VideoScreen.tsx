@@ -49,9 +49,7 @@ const MOTION_IDEAS = [
 ];
 
 // The chosen source image to animate.
-type Source =
-  | { type: 'photo'; uri: string }
-  | { type: 'tryon'; jobId: string; previewUrl: string };
+type Source = { type: 'photo'; uri: string } | { type: 'tryon'; jobId: string; previewUrl: string };
 
 // A pickable past creation for the "Use a Creation" picker — unified across both
 // generation collections so a video can start from ANY image the user has made:
@@ -238,7 +236,13 @@ export default function VideoScreen() {
           if (j.kind === 'VIDEO') continue;
           const previewUrl = j.resultFullBodyUrl || j.resultMediumUrl;
           if (!previewUrl) continue;
-          items.push({ key: `tryon:${j.id}`, previewUrl, source: 'tryon', job: j, createdAt: j.createdAt });
+          items.push({
+            key: `tryon:${j.id}`,
+            previewUrl,
+            source: 'tryon',
+            job: j,
+            createdAt: j.createdAt,
+          });
         }
       }
       if (closetRes.status === 'fulfilled') {
@@ -379,10 +383,7 @@ export default function VideoScreen() {
           { text: 'Get Credits', onPress: () => navigation.navigate('Purchase') },
         ]);
       } else if (error?.error === 'NO_BODY_PHOTOS') {
-        Alert.alert(
-          'Photo Missing',
-          error.message ?? 'Upload that photo in your profile first.',
-        );
+        Alert.alert('Photo Missing', error.message ?? 'Upload that photo in your profile first.');
       } else if (error?.error === 'INVALID_MOTION_PROMPT') {
         Alert.alert(
           'Describe the motion',
@@ -873,7 +874,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
   },
-  resultCaption: { fontSize: Typography.fontSizeMD, color: Colors.textPrimary, textAlign: 'center' },
+  resultCaption: {
+    fontSize: Typography.fontSizeMD,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
   queuedEmoji: { fontSize: 40 },
   queuedCountdown: {
     fontSize: Typography.fontSizeXL,

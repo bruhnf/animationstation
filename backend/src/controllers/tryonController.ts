@@ -367,10 +367,7 @@ export async function submitTryOn(req: Request, res: Response): Promise<void> {
   // Roll it back here: mark the row FAILED and refund the credit (if one was
   // spent), then surface a 503 so the client can retry.
   try {
-    await enqueueTryOn(
-      { jobId, userId, clothingUrls: clothingKeys, promptText },
-      throttle.delayMs,
-    );
+    await enqueueTryOn({ jobId, userId, clothingUrls: clothingKeys, promptText }, throttle.delayMs);
   } catch (enqueueErr) {
     log.error('Failed to enqueue try-on after commit — rolling back', {
       userId,

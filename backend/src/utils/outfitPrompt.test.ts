@@ -153,7 +153,10 @@ test('randomOutfitIdea: every output is a valid, accepted prompt', () => {
 
 test('randomOutfitIdea: deterministic given rand, picks from the idea list', () => {
   const first = randomOutfitIdea(() => 0);
-  assert.equal(first, randomOutfitIdea(() => 0));
+  assert.equal(
+    first,
+    randomOutfitIdea(() => 0),
+  );
   const last = randomOutfitIdea(() => 0.999);
   assert.equal(typeof last, 'string');
   assert.notEqual(first, last);

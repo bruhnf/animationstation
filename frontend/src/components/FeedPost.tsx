@@ -97,7 +97,12 @@ export default function FeedPost({
       <Pressable onPress={onToggleExpand} style={[styles.content, { height: contentHeight }]}>
         {isVideo ? (
           job.videoUrl ? (
-            <VideoView player={player} style={styles.media} contentFit="cover" nativeControls={false} />
+            <VideoView
+              player={player}
+              style={styles.media}
+              contentFit="cover"
+              nativeControls={false}
+            />
           ) : videoPoster ? (
             <RetryableImage uri={videoPoster} style={styles.media} resizeMode="cover" />
           ) : (
@@ -115,11 +120,7 @@ export default function FeedPost({
         {/* Mute/unmute for video (default muted). */}
         {isVideo && job.videoUrl ? (
           <TouchableOpacity style={styles.muteBtn} onPress={toggleMute} hitSlop={10}>
-            <Ionicons
-              name={muted ? 'volume-mute' : 'volume-high'}
-              size={18}
-              color={Colors.white}
-            />
+            <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={18} color={Colors.white} />
           </TouchableOpacity>
         ) : null}
 
@@ -132,11 +133,7 @@ export default function FeedPost({
 
         {/* Creator + caption, bottom-left. */}
         <View style={styles.creatorWrap} pointerEvents="box-none">
-          <TouchableOpacity
-            style={styles.creatorRow}
-            onPress={onUsernamePress}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.creatorRow} onPress={onUsernamePress} activeOpacity={0.8}>
             <View style={styles.avatar}>
               {job.user.avatarUrl ? (
                 <RetryableImage uri={job.user.avatarUrl} style={styles.avatarImg} />

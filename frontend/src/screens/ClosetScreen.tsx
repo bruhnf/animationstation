@@ -153,45 +153,48 @@ export default function ClosetScreen() {
           <CreationsGrid contentPaddingBottom={insets.bottom + Spacing.xl} />
         </View>
       ) : (
-      <FlatList
-        data={items}
-        keyExtractor={(i) => i.id}
-        renderItem={renderItem}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + Spacing.xl }]}
-        ListEmptyComponent={
-          loading ? (
-            <ActivityIndicator style={styles.emptySpinner} color={Colors.textPrimary} />
-          ) : loadError ? (
-            <View style={styles.emptyWrap}>
-              <Text style={styles.emptyText}>Couldn&apos;t load your library.</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setLoading(true);
-                  void loadCloset();
-                }}
-              >
-                <Text style={styles.retryLink}>Try again</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.emptyWrap}>
-              <Text style={styles.emptyEmoji}>🖼️</Text>
-              <Text style={styles.emptyText}>Your library is empty.</Text>
-              {!pickerMode ? (
+        <FlatList
+          data={items}
+          keyExtractor={(i) => i.id}
+          renderItem={renderItem}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: insets.bottom + Spacing.xl },
+          ]}
+          ListEmptyComponent={
+            loading ? (
+              <ActivityIndicator style={styles.emptySpinner} color={Colors.textPrimary} />
+            ) : loadError ? (
+              <View style={styles.emptyWrap}>
+                <Text style={styles.emptyText}>Couldn&apos;t load your library.</Text>
                 <TouchableOpacity
-                  style={styles.designLink}
-                  onPress={() => navigation.navigate('Design')}
+                  onPress={() => {
+                    setLoading(true);
+                    void loadCloset();
+                  }}
                 >
-                  <Ionicons name="color-palette" size={16} color={Colors.textPrimary} />
-                  <Text style={styles.designLinkText}>Generate an Image</Text>
+                  <Text style={styles.retryLink}>Try again</Text>
                 </TouchableOpacity>
-              ) : null}
-            </View>
-          )
-        }
-      />
+              </View>
+            ) : (
+              <View style={styles.emptyWrap}>
+                <Text style={styles.emptyEmoji}>🖼️</Text>
+                <Text style={styles.emptyText}>Your library is empty.</Text>
+                {!pickerMode ? (
+                  <TouchableOpacity
+                    style={styles.designLink}
+                    onPress={() => navigation.navigate('Design')}
+                  >
+                    <Ionicons name="color-palette" size={16} color={Colors.textPrimary} />
+                    <Text style={styles.designLinkText}>Generate an Image</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            )
+          }
+        />
       )}
 
       <Modal

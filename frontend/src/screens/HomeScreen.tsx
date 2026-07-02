@@ -37,10 +37,7 @@ type Nav = NativeStackNavigationProp<RootStackParams>;
 
 // Enable smooth expand/collapse of the pulled-back comment view on Android
 // (iOS supports LayoutAnimation out of the box).
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -88,14 +85,12 @@ export default function HomeScreen() {
 
   // Track which post is on screen. Moving to a different post also collapses any
   // pulled-back comment view, so the feed always returns to full screen.
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      const first = viewableItems[0]?.item as FeedJob | undefined;
-      if (!first) return;
-      setActiveId(first.id);
-      setExpandedId((cur) => (cur && cur !== first.id ? null : cur));
-    },
-  ).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    const first = viewableItems[0]?.item as FeedJob | undefined;
+    if (!first) return;
+    setActiveId(first.id);
+    setExpandedId((cur) => (cur && cur !== first.id ? null : cur));
+  }).current;
 
   // Show platform-native action sheet on iOS, basic Alert on Android, with
   // Report and Block options. Required by App Store Review Guideline 1.2.
@@ -417,10 +412,7 @@ export default function HomeScreen() {
 
       {/* Measure the page area so each post fills exactly the space between the
           title bar and the tab bar. */}
-      <View
-        style={styles.feedArea}
-        onLayout={(e) => setPageHeight(e.nativeEvent.layout.height)}
-      >
+      <View style={styles.feedArea} onLayout={(e) => setPageHeight(e.nativeEvent.layout.height)}>
         {loading || pageHeight === 0 ? (
           <View style={styles.centered}>
             <ActivityIndicator size="large" color={Colors.textPrimary} />
