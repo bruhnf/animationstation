@@ -210,7 +210,11 @@ export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
               />
               <Text style={styles.dontShowText}>Do not display at next login</Text>
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.9} onPress={splash.onDismiss} style={styles.continueBtn}>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={splash.onDismiss}
+              style={styles.continueBtn}
+            >
               <LinearGradient
                 colors={Gradients.primary}
                 start={{ x: 0, y: 0 }}
@@ -366,7 +370,12 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSizeMD,
     lineHeight: 20,
   },
-  ctaWrap: { marginTop: Spacing.lg, alignSelf: 'flex-start', borderRadius: Radius.full, ...Shadow_cta() },
+  ctaWrap: {
+    marginTop: Spacing.lg,
+    alignSelf: 'flex-start',
+    borderRadius: Radius.full,
+    ...Shadow_cta(),
+  },
   cta: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -419,7 +428,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     minHeight: 150,
   },
-  bigCardGlow: { position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: 45, opacity: 0.5 },
+  bigCardGlow: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    opacity: 0.5,
+  },
   bigIcon: {
     width: 40,
     height: 40,
@@ -437,7 +454,12 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeightBold,
     marginBottom: 4,
   },
-  bigDesc: { color: Colors.textSecondary, fontSize: Typography.fontSizeXS, lineHeight: 16, flex: 1 },
+  bigDesc: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSizeXS,
+    lineHeight: 16,
+    flex: 1,
+  },
   tagPill: {
     flexDirection: 'row',
     alignItems: 'center',

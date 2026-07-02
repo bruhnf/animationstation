@@ -614,8 +614,8 @@ export default function PurchaseScreen() {
           <View>
             <Text style={styles.sectionTitle}>Buy Credits</Text>
             <Text style={styles.sectionSubtitle}>
-              Credits never expire. Your weekly generation allowance is used first; credits are spent
-              only after the weekly allowance runs out.
+              Credits never expire. Your weekly generation allowance is used first; credits are
+              spent only after the weekly allowance runs out.
             </Text>
 
             {creditPacksToShow.length === 0 ? (
