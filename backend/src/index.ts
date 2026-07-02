@@ -341,6 +341,26 @@ app.get('/health', async (_req, res) => {
 // The directory is bind-mounted from ./website in docker-compose (not baked into
 // the image), so site edits deploy without a backend rebuild.
 const websiteDir = path.join(__dirname, '../website');
+
+// The static site (login / signup / account / creations / …) drives every button
+// with inline <script> blocks and inline event handlers (onclick / onsubmit).
+// Helmet's strict default CSP — script-src 'self'; script-src-attr 'none' — blocks
+// both, so the inline handlers never run: clicking "Log In" silently does nothing
+// (the form falls back to a native submit that just clears the inputs). Relax
+// script-src for the site the same way /admin does above; every other directive
+// stays as strict as the API's. Runs after Helmet set the strict header, and only
+// for GETs that fell through every /api and system route to the static site.
+// Skipped in dev (Helmet CSP is disabled there, mirroring that intent).
+if (!env.isDev) {
+  app.use((_req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self' 'unsafe-inline';script-src-attr 'unsafe-inline';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+    );
+    next();
+  });
+}
+
 app.use(express.static(websiteDir, { extensions: ['html'], index: false }));
 app.get('/', (_req, res) => res.sendFile(path.join(websiteDir, 'index.html')));
 

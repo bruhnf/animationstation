@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bruhnfreeman.animationstation",
+      "bundleIdentifier": "ai.animationstation.app",
       "infoPlist": {
         "NSPhotoLibraryAddUsageDescription": "AnimationStation saves your AI-generated images and videos to your photo library when you choose to.",
         "ITSAppUsesNonExemptEncryption": false
@@ -121,7 +121,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.bruhnfreeman.animationstation",
+      "package": "ai.animationstation.app",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
@@ -174,27 +174,27 @@
       },
       "appleProducts": {
         "subscriptions": {
-          "basicMonthly": "com.bruhnfreeman.animationstation.basic.monthly.v1",
-          "premiumMonthly": "com.bruhnfreeman.animationstation.premium.monthly.v1"
+          "basicMonthly": "ai.animationstation.app.basic.monthly",
+          "premiumMonthly": "ai.animationstation.app.premium.monthly"
         },
         "credits": {
           "FREE": {
-            "10": "com.bruhnfreeman.animationstation.credits.10.free.v1",
-            "25": "com.bruhnfreeman.animationstation.credits.25.free.v1",
-            "50": "com.bruhnfreeman.animationstation.credits.50.free.v1",
-            "100": "com.bruhnfreeman.animationstation.credits.100.free.v1"
+            "10": "ai.animationstation.app.credits.10.free",
+            "25": "ai.animationstation.app.credits.25.free",
+            "50": "ai.animationstation.app.credits.50.free",
+            "100": "ai.animationstation.app.credits.100.free"
           },
           "BASIC": {
-            "10": "com.bruhnfreeman.animationstation.credits.10.basic.v1",
-            "25": "com.bruhnfreeman.animationstation.credits.25.basic.v1",
-            "50": "com.bruhnfreeman.animationstation.credits.50.basic.v1",
-            "100": "com.bruhnfreeman.animationstation.credits.100.basic.v1"
+            "10": "ai.animationstation.app.credits.10.basic",
+            "25": "ai.animationstation.app.credits.25.basic",
+            "50": "ai.animationstation.app.credits.50.basic",
+            "100": "ai.animationstation.app.credits.100.basic"
           },
           "PREMIUM": {
-            "10": "com.bruhnfreeman.animationstation.credits.10.premium.v1",
-            "25": "com.bruhnfreeman.animationstation.credits.25.premium.v1",
-            "50": "com.bruhnfreeman.animationstation.credits.50.premium.v1",
-            "100": "com.bruhnfreeman.animationstation.credits.100.premium.v1"
+            "10": "ai.animationstation.app.credits.10.premium",
+            "25": "ai.animationstation.app.credits.25.premium",
+            "50": "ai.animationstation.app.credits.50.premium",
+            "100": "ai.animationstation.app.credits.100.premium"
           }
         }
       }

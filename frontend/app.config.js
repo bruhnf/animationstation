@@ -7,7 +7,7 @@
 // with the `development` profile set APP_VARIANT=development (see eas.json),
 // which gives the dev client its own identity:
 //   - name "AnimationStation Dev" (so the two icons are distinguishable)
-//   - bundle ID com.bruhnfreeman.animationstation.dev (separate app to iOS)
+//   - bundle ID ai.animationstation.app.dev (separate app to iOS)
 //   - scheme animationstation-dev:// (so deep links don't collide with the store app)
 //
 // Everything else comes straight from app.json, which remains the single

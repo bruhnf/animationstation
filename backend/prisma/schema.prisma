@@ -289,7 +289,7 @@ model ApplePurchase {
   transactionId         String    @unique
   // Original transaction id — stable across renewals of the same subscription.
   originalTransactionId String
-  // App Store product identifier (e.g. com.bruhnfreeman.animationstation.basic.monthly).
+  // App Store product identifier (e.g. ai.animationstation.app.basic.monthly).
   productId             String
   // Subscription tier this purchase grants on our side.
   tier                  UserTier

@@ -22,13 +22,17 @@ export interface FeedJob extends Creation {
 const EXPANDED_CONTENT_FRACTION = 0.42;
 
 /**
- * One full-screen post in the immersive feed. The AI result (image or muted,
- * looping, autoplaying video) fills the page edge-to-edge; the creator, caption,
- * and the like / comment / share / save / more actions are overlays on top of it
- * (the ✨AI-generated badge stays visible per Guideline 4.0; the ⋯ menu keeps
- * Report/Block reachable per Guideline 1.2). Tapping the content pulls it back
- * into a top window and shows the comment thread underneath; tapping again
- * returns to full screen. Default is always full screen.
+ * One full-screen post in the immersive feed. The AI result fills the page:
+ * videos (muted, looping, autoplaying) and images are shown edge-to-edge, and
+ * an image that isn't the phone's aspect ratio is letterboxed (resizeMode
+ * "contain") against black rather than cropped. The creator, caption, and the
+ * like / comment / share / save / more actions are overlays on top of it (the
+ * ✨AI-generated badge stays visible per Guideline 4.0; the ⋯ menu keeps
+ * Report/Block reachable per Guideline 1.2).
+ *
+ * Interactions: the COMMENT button opens/closes the comment view (pulls the
+ * content into a top window with the thread underneath). Tapping the content
+ * itself pauses/resumes a video and does nothing to an image.
  */
 export default function FeedPost({
   job,
@@ -64,6 +68,9 @@ export default function FeedPost({
   const contentHeight = expanded ? Math.round(height * EXPANDED_CONTENT_FRACTION) : height;
 
   const [muted, setMuted] = useState(true);
+  // Whether the viewer manually paused this video by tapping it. Reset whenever
+  // the post scrolls back into view so a fresh view always autoplays.
+  const [userPaused, setUserPaused] = useState(false);
   // One player per video post. Muted + looping; only the on-screen (active) post
   // plays — the rest pause so we never play several clips at once.
   const player = useVideoPlayer(isVideo ? (job.videoUrl ?? null) : null, (p) => {
@@ -74,8 +81,12 @@ export default function FeedPost({
   useEffect(() => {
     if (!isVideo) return;
     try {
-      if (isActive) player.play();
-      else player.pause();
+      if (isActive) {
+        player.play();
+        setUserPaused(false);
+      } else {
+        player.pause();
+      }
     } catch {
       // player may be released mid-transition; ignore.
     }
@@ -91,10 +102,26 @@ export default function FeedPost({
     }
   }
 
+  // Tapping the content pauses/resumes a video; images do nothing.
+  function handleContentPress() {
+    if (!isVideo) return;
+    try {
+      if (userPaused) {
+        player.play();
+        setUserPaused(false);
+      } else {
+        player.pause();
+        setUserPaused(true);
+      }
+    } catch {
+      // player may be released; ignore.
+    }
+  }
+
   return (
     <View style={[styles.page, { height }]}>
-      {/* Content window (image or video). Tapping toggles the comment view. */}
-      <Pressable onPress={onToggleExpand} style={[styles.content, { height: contentHeight }]}>
+      {/* Content window (image or video). Tapping pauses/resumes a video; images ignore taps. */}
+      <Pressable onPress={handleContentPress} style={[styles.content, { height: contentHeight }]}>
         {isVideo ? (
           job.videoUrl ? (
             <VideoView
@@ -109,10 +136,17 @@ export default function FeedPost({
             <View style={[styles.media, styles.placeholder]} />
           )
         ) : displayUrl ? (
-          <RetryableImage uri={displayUrl} style={styles.media} resizeMode="cover" />
+          <RetryableImage uri={displayUrl} style={styles.media} resizeMode="contain" />
         ) : (
           <View style={[styles.media, styles.placeholder]} />
         )}
+
+        {/* Paused indicator — video only, shown when the viewer tapped to pause. */}
+        {isVideo && userPaused ? (
+          <View style={styles.pauseOverlay} pointerEvents="none">
+            <Ionicons name="play" size={64} color="rgba(255,255,255,0.9)" />
+          </View>
+        ) : null}
 
         {/* Guideline 4.0 — visible AI disclosure over every result. */}
         <AiGeneratedBadge />
@@ -236,6 +270,11 @@ const styles = StyleSheet.create({
   content: { width: '100%', backgroundColor: Colors.black, overflow: 'hidden' },
   media: { width: '100%', height: '100%' },
   placeholder: { backgroundColor: Colors.gray800 },
+  pauseOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   muteBtn: {
     position: 'absolute',
     top: Spacing.sm,

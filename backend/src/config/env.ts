@@ -104,7 +104,7 @@ export const env = {
 
   apple: {
     // iOS bundle identifier — must match the receipt's bundleId.
-    bundleId: optional('APPLE_BUNDLE_ID', 'com.bruhnfreeman.animationstation'),
+    bundleId: optional('APPLE_BUNDLE_ID', 'ai.animationstation.app'),
     // Numeric App Store ID for this app (find in App Store Connect URL).
     appAppleId: parseInt(optional('APPLE_APP_APPLE_ID', '0'), 10),
     // Which Apple environment this server is configured to verify notifications from.

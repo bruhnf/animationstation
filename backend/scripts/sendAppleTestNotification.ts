@@ -5,7 +5,7 @@
  *   APPLE_ISSUER_ID=...    \
  *   APPLE_KEY_ID=...       \
  *   APPLE_PRIVATE_KEY_PATH=./secrets/AuthKey_XXXXXXXXXX.p8 \
- *   APPLE_BUNDLE_ID=com.bruhnfreeman.animationstation \
+ *   APPLE_BUNDLE_ID=ai.animationstation.app \
  *   npx ts-node scripts/sendAppleTestNotification.ts [sandbox|production]
  *
  * Defaults to sandbox. Apple sends the test notification to whichever URL is

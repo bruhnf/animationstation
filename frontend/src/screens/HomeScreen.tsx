@@ -434,7 +434,7 @@ export default function HomeScreen() {
             pagingEnabled
             showsVerticalScrollIndicator={false}
             // Lock paging while a post is pulled back so the comment list scrolls
-            // freely; tapping the content collapses it and re-enables paging.
+            // freely; the comment button collapses it and re-enables paging.
             scrollEnabled={expandedId === null}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
