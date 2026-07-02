@@ -13,6 +13,12 @@ updates:
     groups:
       backend-minor-patch:
         update-types: [minor, patch]
+    # ioredis must stay in LOCKSTEP with bullmq's exact ioredis pin (bullmq
+    # declares e.g. "ioredis": "5.10.1" exactly); an independent bump leaves two
+    # copies in the tree whose Redis types clash and tsc fails in every queue
+    # file (#4, #19). Bump it manually whenever bullmq is bumped.
+    ignore:
+      - dependency-name: ioredis
 
   - package-ecosystem: npm
     directory: /frontend
