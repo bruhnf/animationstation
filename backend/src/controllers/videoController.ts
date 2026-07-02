@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import prisma from '../lib/prisma';
 import { uploadToS3, copyWithinS3, deleteFromS3, keyFromUrl } from '../services/s3Service';
 import { presignCreations } from '../services/imageUrlService';
+import { VALID_IMAGE_ASPECTS } from '../services/grokService';
 import { safeFilename } from '../middleware/uploadMiddleware';
 import { resizeImageForGeneration } from '../utils/imageProcessor';
 import { enqueueVideo } from '../queue/videoQueue';
@@ -108,6 +109,19 @@ export async function submitVideo(req: Request, res: Response): Promise<void> {
   }
   const motionPrompt = promptResult.value!;
   const title = sanitizeCreationTitle(req.body?.title);
+
+  // Optional clip length from the create UI. Clamped to Grok's supported range
+  // (1–15s); anything unparseable falls back to the 8s default.
+  const requestedDuration = Number.parseInt(String(req.body?.durationSec ?? ''), 10);
+  const durationSec = Number.isFinite(requestedDuration)
+    ? Math.min(15, Math.max(1, requestedDuration))
+    : null;
+  // Optional output aspect ratio; unknown values are ignored (worker then lets
+  // the source image's own aspect drive the output).
+  const aspectRatio =
+    typeof req.body?.aspectRatio === 'string' && VALID_IMAGE_ASPECTS.has(req.body.aspectRatio)
+      ? req.body.aspectRatio
+      : null;
   // Guest videos are forced PRIVATE — anonymous accounts never publish public UGC
   // (keeps the Guideline 1.2 moderation surface small), matching guest creations.
   const isPrivate =
@@ -289,6 +303,8 @@ export async function submitVideo(req: Request, res: Response): Promise<void> {
         referenceImageKeys: secondImageKey ? [secondImageKey] : undefined,
         motionPrompt,
         creditCost,
+        durationSec,
+        aspectRatio,
       },
       throttle.delayMs,
     );

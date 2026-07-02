@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/node';
 import { connection, CreationData } from './transformQueue';
 import { recordModerationStrike } from '../services/moderationService';
 import {
+  generateImageFromText,
   generateTransformImage,
   downloadGeneratedImage,
   ContentModeratedError,
@@ -66,7 +67,7 @@ function alertAdminsOfGenerationFailure(data: {
 const worker = new Worker<CreationData>(
   'transform',
   async (job) => {
-    const { jobId, userId, clothingUrls, promptText } = job.data;
+    const { jobId, userId, clothingUrls, promptText, aspectRatio } = job.data;
     const startTime = Date.now();
 
     // AnimationStation is free-form: one generation per submission (there are no
@@ -159,15 +160,20 @@ const worker = new Worker<CreationData>(
       bodyPhoto: (typeof genUnits)[number],
     ): Promise<PerspectiveOutcome> {
       // grokService accepts S3 keys (preferred) or full URLs (legacy rows).
-      // Free-form transform: the reference image(s) the user uploaded are the
-      // only inputs — no body photo is prepended.
+      // With reference image(s): a free-form transform/compose (images/edits).
+      // With NO images: a pure text-to-image generation from the prompt (the
+      // submit endpoint guarantees promptText is non-empty in that case).
       let resultUrl: string;
       try {
-        resultUrl = await generateTransformImage({
-          clothingImageUrls: clothingUrls,
-          userPrompt: promptText ?? undefined,
-          perspective: bodyPhoto.perspective,
-        });
+        resultUrl =
+          clothingUrls.length === 0
+            ? await generateImageFromText(promptText!, aspectRatio ?? '2:3')
+            : await generateTransformImage({
+                clothingImageUrls: clothingUrls,
+                userPrompt: promptText ?? undefined,
+                perspective: bodyPhoto.perspective,
+                aspectRatio,
+              });
       } catch (genErr) {
         if (genErr instanceof ContentModeratedError) {
           // Policy rejection for THIS perspective. Don't fail the job from in

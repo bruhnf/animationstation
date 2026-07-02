@@ -5,7 +5,7 @@ import prisma from '../lib/prisma';
 import { uploadToS3, deleteFromS3, keyFromUrl } from '../services/s3Service';
 import { presignClosetItem, presignClosetItems } from '../services/imageUrlService';
 import {
-  generateOutfitImage,
+  generateImageFromText,
   cleanupClothingImage,
   downloadGeneratedImage,
   ContentModeratedError,
@@ -146,7 +146,7 @@ export async function generateOutfit(req: Request, res: Response): Promise<void>
 
   try {
     const prompt = buildOutfitPrompt(description);
-    const resultRef = await generateOutfitImage(prompt);
+    const resultRef = await generateImageFromText(prompt);
 
     // Normalize through the same pipeline as uploaded clothing photos (1024px
     // long side, JPEG) so creations from the closet behave identically.

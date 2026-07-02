@@ -100,7 +100,7 @@ PostgreSQL 15 via Prisma. Schema: [backend/prisma/schema.prisma](backend/prisma/
 
 ## Environment Variables
 
-See [backend/.env.example](backend/.env.example) for the full annotated list: `DATABASE_URL`, `JWT_SECRET`/`JWT_REFRESH_SECRET`, `REFRESH_TOKEN_ROTATION`, `ADMIN_API_KEY`/`ADMIN_EMAILS`, AWS + `AWS_S3_BUCKET`, `REDIS_URL`, `GROK_API_KEY`, `ALLOWED_ORIGINS`, `APP_URL`, SMTP/SES sender config, Apple IAP config (`APPLE_BUNDLE_ID` = `ai.animationstation.app`, root certs dir, Server API key), `SENTRY_*`, `WORKER_ENABLED`.
+See [backend/.env.example](backend/.env.example) for the full annotated list: `DATABASE_URL`, `JWT_SECRET`/`JWT_REFRESH_SECRET`, `REFRESH_TOKEN_ROTATION`, `ADMIN_API_KEY`/`ADMIN_EMAILS`, AWS + `AWS_S3_BUCKET`, `REDIS_URL`, `GROK_API_KEY`, `ALLOWED_ORIGINS`, `APP_URL`, SMTP/SES sender config, Apple IAP config (`APPLE_BUNDLE_ID` = `com.bruhnfreeman.animationstation`, root certs dir, Server API key), `SENTRY_*`, `WORKER_ENABLED`.
 
 ## Git workflow
 

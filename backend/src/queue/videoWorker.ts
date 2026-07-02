@@ -43,7 +43,15 @@ function alertAdminsOfVideoFailure(data: {
 const worker = new Worker<VideoJobData>(
   'video',
   async (job) => {
-    const { jobId, userId, sourceImageKey, referenceImageKeys, motionPrompt } = job.data;
+    const {
+      jobId,
+      userId,
+      sourceImageKey,
+      referenceImageKeys,
+      motionPrompt,
+      durationSec,
+      aspectRatio,
+    } = job.data;
     const startTime = Date.now();
 
     logJob('started', { jobId, jobType: 'video', userId, attempt: job.attemptsMade + 1 });
@@ -62,6 +70,8 @@ const worker = new Worker<VideoJobData>(
       try {
         resultUrl = await generateVideo(sourceImageKey, motionPrompt, {
           referenceImageRefs: referenceImageKeys,
+          durationSec: durationSec ?? undefined,
+          aspectRatio: aspectRatio ?? undefined,
         });
       } catch (genErr) {
         if (genErr instanceof ContentModeratedError) {

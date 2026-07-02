@@ -32,7 +32,15 @@ export interface CreationInput {
   // Optional perspective label; no longer scopes framing (free-form), kept so
   // callers can tag logs / result slots.
   perspective?: CreationPerspective;
+  // Optional output aspect ratio (e.g. '16:9', '2:3'). Validated upstream
+  // against VALID_IMAGE_ASPECTS; omitted → the model picks per prompt/source.
+  aspectRatio?: string | null;
 }
+
+// Aspect ratios the create UI offers (mirrors Grok Imagine's own picker).
+// Controllers validate request values against this set; anything else is
+// ignored rather than rejected so an older/newer client can't hard-fail.
+export const VALID_IMAGE_ASPECTS = new Set(['2:3', '3:2', '1:1', '9:16', '16:9']);
 
 export interface CreationOutput {
   perspective: CreationPerspective;
@@ -188,25 +196,26 @@ function buildPrompt(perspective: CreationPerspective | undefined, userPrompt?: 
 }
 
 /**
- * Text-to-image generation for the Outfit Designer (closet items). Takes the
- * already-wrapped server-side prompt (see utils/outfitPrompt.ts — raw user text
- * must NEVER reach this function) and returns the result image as a URL or
- * data: URI, same contract as generateTransformImage. Moderation blocks throw
- * ContentModeratedError so the caller can apply the strike/refund policy.
+ * Text-to-image generation. Used by BOTH the Outfit Designer (closet items —
+ * pass the wrapped catalog prompt from utils/outfitPrompt.ts, default 3:4) and
+ * the unified Create flow (sanitized free-form prompt + user-chosen aspect).
+ * Returns the result image as a URL or data: URI, same contract as
+ * generateTransformImage. Moderation blocks throw ContentModeratedError so the
+ * caller can apply the strike/refund policy.
  */
-export async function generateOutfitImage(prompt: string): Promise<string> {
+export async function generateImageFromText(prompt: string, aspectRatio = '3:4'): Promise<string> {
   const endpoint = `${env.grok.apiUrl}/images/generations`;
-  log.info('Outfit generation started', { promptLength: prompt.length });
+  log.info('Text-to-image generation started', { promptLength: prompt.length, aspectRatio });
 
   const requestBody = {
     model: 'grok-imagine-image',
     prompt,
     n: 1,
     response_format: 'url',
-    // Portrait only. Without this Grok picks an orientation per prompt and
-    // outfits sometimes come back landscape; 3:4 matches the closet card
-    // aspect ratio and Grok's own creation output canvas (864×1152).
-    aspect_ratio: '3:4',
+    // Without this Grok picks an orientation per prompt. Callers pass the
+    // user's chosen ratio (create UI) or 3:4 (closet cards / Grok's own
+    // creation output canvas, 864×1152).
+    aspect_ratio: aspectRatio,
   };
 
   const startTime = Date.now();
@@ -697,12 +706,13 @@ export async function downloadVideo(url: string): Promise<Buffer> {
 }
 
 export async function generateTransformImage(input: CreationInput): Promise<string> {
-  const { userBodyImageUrl, perspective, clothingImageUrls, userPrompt } = input;
+  const { userBodyImageUrl, perspective, clothingImageUrls, userPrompt, aspectRatio } = input;
 
   log.info('Creation generation started', {
     perspective,
     hasBodyImage: !!userBodyImageUrl,
     referenceCount: clothingImageUrls.length,
+    aspectRatio: aspectRatio ?? null,
   });
 
   // Fetch the reference image(s) the user is transforming.
@@ -738,6 +748,9 @@ export async function generateTransformImage(input: CreationInput): Promise<stri
     images, // Array of { url: "data:..." } objects for multi-image editing
     n: 1,
     response_format: 'url',
+    // Only sent when the user picked a ratio; otherwise the edit keeps the
+    // model's default framing (typically follows the source image).
+    ...(aspectRatio ? { aspect_ratio: aspectRatio } : {}),
   };
 
   const startTime = Date.now();

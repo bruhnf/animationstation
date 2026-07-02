@@ -36,7 +36,7 @@ import VideoScreen from '../screens/VideoScreen';
 import CompareScreen from '../screens/CompareScreen';
 import ReferralScreen from '../screens/ReferralScreen';
 import SavedLooksScreen from '../screens/SavedLooksScreen';
-import CreateHubScreen from '../screens/CreateHubScreen';
+import CreateScreen from '../screens/CreateScreen';
 import CleanUpScreen from '../screens/CleanUpScreen';
 import DesignScreen from '../screens/DesignScreen';
 import SignupCTA from '../components/ui/SignupCTA';
@@ -217,7 +217,7 @@ function MainTabs() {
       />
       <Tab.Screen
         name="Create"
-        component={CreateHubScreen}
+        component={CreateScreen}
         options={{
           tabBarLabel: '',
           tabBarIcon: ({ focused }) => <CreateTabIcon focused={focused} />,
