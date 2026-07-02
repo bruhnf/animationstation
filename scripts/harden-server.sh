@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# harden-server.sh — security hardening for the TryOn Lightsail servers
+# harden-server.sh — security hardening for the AnimationStation Lightsail servers
 # (Ubuntu 22.04). Runs identically on DEV (54.173.136.56 / api-dev / develop) and
-# PROD (34.227.203.230 / api.evofaceflow.com / main) — environment is determined
+# PROD (34.227.203.230 / api.animationstation.com / main) — environment is determined
 # purely by which host you run it on. Dry-run on prod first.
 #
 # Companion document: scripts/HARDENING_SUMMARY.md  — READ IT BEFORE RUNNING.
@@ -44,7 +44,7 @@ BACKUP_DIR="/root/hardening-backups/${TS}"
 LOG_FILE="/var/log/server-hardening-${TS}.log"
 
 # Project + secrets locations (DEV)
-PROJECT_DIR="/opt/evofaceflow/TryOn"
+PROJECT_DIR="/opt/animationstation/AnimationStation"
 ALLOW_SSH_USER="ubuntu"   # only this user may SSH in after hardening
 
 # ----------------------------------------------------------------------------
@@ -115,7 +115,7 @@ require_root() {
 # ----------------------------------------------------------------------------
 require_root
 mkdir -p "$BACKUP_DIR"
-log "TryOn DEV server hardening — ${TS}"
+log "AnimationStation DEV server hardening — ${TS}"
 log "Mode: $([[ $DRY_RUN -eq 1 ]] && echo DRY-RUN || echo APPLY)   Backups: $BACKUP_DIR   Log: $LOG_FILE"
 
 # ============================================================================
@@ -227,7 +227,7 @@ if [[ -f /etc/fail2ban/jail.d/00-local.conf ]]; then
 fi
 write_file /etc/fail2ban/jail.local <<'EOF'
 # Managed by harden-server.sh — host-level jails (host SSH only).
-# The nginx web jails run inside the tryon-fail2ban container; this is separate.
+# The nginx web jails run inside the creation-fail2ban container; this is separate.
 [DEFAULT]
 banaction = ufw
 bantime   = 1h

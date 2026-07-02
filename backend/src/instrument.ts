@@ -37,7 +37,7 @@ function deriveRelease(): string | undefined {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const pkg = require('../package.json') as { version?: string };
-    return pkg.version ? `tryon-backend@${pkg.version}` : undefined;
+    return pkg.version ? `animationstation-backend@${pkg.version}` : undefined;
   } catch {
     return undefined;
   }

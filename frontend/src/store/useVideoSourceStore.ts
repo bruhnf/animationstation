@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 // Hand-off channel for "MAKE VIDEO!" — when the user taps it on a completed
-// try-on (e.g. in TryOnDetailModal's full-screen carousel), the EXACT image
+// creation (e.g. in CreationDetailModal's full-screen carousel), the EXACT image
 // currently displayed is parked here and VideoScreen consumes (and clears) it on
 // focus, seeding the source box. We pass the image URL (not a jobId) so whatever
 // slide the user is looking at — AI full-body, AI medium, the clothing photo, or

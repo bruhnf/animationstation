@@ -12,7 +12,7 @@ import CreditDisplay from '../components/CreditDisplay';
 
 /**
  * The Create hub — the single landing spot for every creation feature, opened by
- * the center tab. Replaces the old "press TryOn → dead-end" flow. Available to
+ * the center tab. Replaces the old "press Transform → dead-end" flow. Available to
  * guests and real users alike (guests can use any feature they have credits for;
  * the destination screens handle out-of-credits + sign-up nudges).
  */
@@ -72,7 +72,7 @@ export default function CreateHubScreen() {
           title="Transform an Image"
           subtitle="Upload a reference image and a prompt to reimagine it."
           highlight
-          onPress={() => navigation.navigate('TryOn')}
+          onPress={() => navigation.navigate('Transform')}
         />
         <View style={{ height: Spacing.md }} />
         <FeatureCard

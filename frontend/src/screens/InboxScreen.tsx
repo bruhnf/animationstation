@@ -90,7 +90,7 @@ export default function InboxScreen() {
         n.type === 'LIKE') &&
       n.jobId
     ) {
-      navigation.navigate('TryOnComments', {
+      navigation.navigate('Comments', {
         jobId: n.jobId,
         commentId: n.commentId ?? undefined,
       });
@@ -180,9 +180,9 @@ function NotificationRow({
   else if (notification.type === 'COMMENT') message = 'commented on your creation';
   else if (notification.type === 'COMMENT_REPLY') message = 'replied to your comment';
   else if (notification.type === 'COMMENT_LIKE') message = 'liked your comment';
-  else if (notification.type === 'TRYON_COMPLETE') message = 'Your creation is ready';
+  else if (notification.type === 'CREATION_COMPLETE') message = 'Your creation is ready';
 
-  const jobThumbUrl = notification.job?.resultFullBodyUrl ?? notification.job?.resultMediumUrl;
+  const jobThumbUrl = notification.job?.resultImageUrl ?? notification.job?.resultImage2Url;
 
   return (
     <TouchableOpacity

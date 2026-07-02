@@ -51,7 +51,7 @@ interface UserStore {
   // Mints a fresh anonymous guest session (tokens + user). Used on first launch
   // and after logout, so the app always lands on the browsable guest experience
   // rather than a blank/null state. `welcomeCredits` defaults to true (the
-  // new-visitor free-try-on hook); pass false for logout so a former real user
+  // new-visitor free-creation hook); pass false for logout so a former real user
   // isn't handed a fresh credit grant.
   createGuestSession: (welcomeCredits?: boolean) => Promise<void>;
   setUser: (user: User, accessToken: string, refreshToken: string) => Promise<void>;

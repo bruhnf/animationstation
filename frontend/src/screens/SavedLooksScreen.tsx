@@ -16,12 +16,12 @@ import { Colors, Typography, Spacing } from '../constants/theme';
 import RetryableImage from '../components/RetryableImage';
 import AiGeneratedBadge from '../components/AiGeneratedBadge';
 import { unsaveLook } from '../utils/looks';
-import { shareTryOn } from '../utils/share';
-import type { TryOnJob } from '../types';
+import { shareCreation } from '../utils/share';
+import type { Creation } from '../types';
 import type { RootStackParams } from '../navigation';
 
 type Nav = NativeStackNavigationProp<RootStackParams, 'SavedLooks'>;
-type SavedLook = TryOnJob & { savedAt: string };
+type SavedLook = Creation & { savedAt: string };
 
 // Brainstorm feature #1 — "Saved Creations". The user's bookmarked results
 // in one place: re-view, share, or remove. Closes the create -> keep loop.
@@ -63,13 +63,17 @@ export default function SavedLooksScreen() {
   }
 
   const renderItem = ({ item }: { item: SavedLook }) => {
-    const url = item.resultFullBodyUrl ?? item.resultMediumUrl;
+    const url = item.resultImageUrl ?? item.resultImage2Url;
     return (
       <View style={styles.cell}>
         {url ? <RetryableImage uri={url} style={styles.image} resizeMode="cover" /> : null}
         <AiGeneratedBadge />
         <View style={styles.cellActions}>
-          <TouchableOpacity style={styles.cellBtn} onPress={() => shareTryOn(item.id)} hitSlop={8}>
+          <TouchableOpacity
+            style={styles.cellBtn}
+            onPress={() => shareCreation(item.id)}
+            hitSlop={8}
+          >
             <Ionicons name="share-outline" size={16} color={Colors.white} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.cellBtn} onPress={() => remove(item.id)} hitSlop={8}>

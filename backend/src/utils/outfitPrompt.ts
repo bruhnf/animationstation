@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Image-prompt safety — pure, unit-tested module.
  *
  * AnimationStation is a general free-form AI image/video generator. Free user
@@ -156,7 +156,7 @@ export function randomOutfitIdea(rand: () => number = Math.random): string {
 // prompt is a fixed server-side template; an OPTIONAL user instruction is
 // sanitized + denylisted and used as the PRIMARY directive. xAI's filters + the
 // strike system handle the long tail (a block throws ContentModeratedError like
-// generate/try-on).
+// generate/creation).
 // ---------------------------------------------------------------------------
 
 export const CLEANUP_INSTRUCTION_MAX = 200;

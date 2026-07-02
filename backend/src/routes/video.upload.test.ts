@@ -24,7 +24,7 @@ function makeApp() {
   const app = express();
   app.post('/video', uploadVideoSources, (req, res) => {
     const kind = (s: ReturnType<typeof selectVideoSources>['primary']) =>
-      s ? (s.file ? 'photo' : s.sourceJobId ? 'tryon' : 'body') : null;
+      s ? (s.file ? 'photo' : s.sourceJobId ? 'transform' : 'body') : null;
     const { primary, second } = selectVideoSources(
       req.body,
       req.files as VideoRequestFiles | undefined,
@@ -54,14 +54,14 @@ test('photo + photo2 → both slots detected', async () => {
   assert.equal(res.body.second, 'photo');
 });
 
-test('photo (primary) + sourceJobId2 body field (transition) → photo + tryon', async () => {
+test('photo (primary) + sourceJobId2 body field (transition) → photo + creation', async () => {
   const res = await attachPhoto(
     request(makeApp()).post('/video').field('sourceJobId2', 'job-9'),
     'photo',
     'a.jpg',
   );
   assert.equal(res.body.primary, 'photo');
-  assert.equal(res.body.second, 'tryon');
+  assert.equal(res.body.second, 'transform');
 });
 
 test('body-field-only source (no upload) → detected', async () => {

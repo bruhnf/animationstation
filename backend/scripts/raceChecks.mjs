@@ -5,11 +5,11 @@
  * throwaway users. Never run against a live database.
  *
  *   cd backend
- *   $env:DATABASE_URL='postgresql://tryon:tryon_dev@localhost:5432/tryon_db'
+ *   $env:DATABASE_URL='postgresql://animationstation:animationstation_dev@localhost:5432/animationstation_db'
  *   node scripts/raceChecks.mjs
  *
  * What it proves / disproves:
- *   A.  The conditional credit decrement used by tryonController.submitTryOn
+ *   A.  The conditional credit decrement used by creationsController.submitTransform
  *       (updateMany WHERE credits >= 1) cannot double-spend under concurrency.
  *   B1. The PRE-FIX verifyEmail welcome-grant pattern (findFirst on the token,
  *       then an unconditional update) double-grants under concurrency. Kept as
@@ -18,8 +18,8 @@
  *   B2. The conditional-update pattern verifyEmail now uses grants exactly once.
  *   C1. The PRE-FIX weekly-limit gate (count, then create in a later
  *       transaction) overshoots the weekly cap under concurrency. Kept as
- *       documentation of why submitTryOn locks the user row (fixed 2026-06-11).
- *   C2. The pattern submitTryOn now uses — user-row lock (FOR UPDATE), recount
+ *       documentation of why submitTransform locks the user row (fixed 2026-06-11).
+ *   C2. The pattern submitTransform now uses — user-row lock (FOR UPDATE), recount
  *       inside the lock, then create + conditional credit charge — holds the
  *       cap exactly and never grants a free overshoot.
  */
@@ -52,7 +52,7 @@ async function makeUser(data = {}) {
   });
 }
 
-// ── A. Conditional credit decrement (submitTryOn's guard) ──────────────────
+// ── A. Conditional credit decrement (submitTransform's guard) ──────────────────
 async function checkConditionalDecrement(credits, attempts) {
   const user = await makeUser({ credits });
   const results = await Promise.all(
@@ -143,57 +143,57 @@ async function checkVerifyEmailFixedPattern(attempts) {
 }
 
 // ── C. Weekly-limit gate (count, then create) ───────────────────────────────
-// Replicates submitTryOn's gate for a BASIC user (12/week) sitting at 11 used:
+// Replicates submitTransform's gate for a BASIC user (12/week) sitting at 11 used:
 // each concurrent submit counts the window, sees 11 < 12, and creates a job on
 // the free allowance.
 async function checkWeeklyLimitRace(limit, alreadyUsed, attempts) {
   const user = await makeUser({ tier: 'BASIC', credits: 0 });
   const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  await prisma.tryOnJob.createMany({
+  await prisma.creation.createMany({
     data: Array.from({ length: alreadyUsed }, () => ({
       id: randomUUID(),
       userId: user.id,
-      clothingPhoto1Url: 'race-check',
+      refImage1Url: 'race-check',
       perspectivesUsed: [],
     })),
   });
 
   await Promise.all(
     Array.from({ length: attempts }, async () => {
-      const weekCount = await prisma.tryOnJob.count({
+      const weekCount = await prisma.creation.count({
         where: { userId: user.id, createdAt: { gte: weekStart }, status: { not: 'FAILED' } },
       });
       if (weekCount < limit) {
-        await prisma.tryOnJob.create({
-          data: { id: randomUUID(), userId: user.id, clothingPhoto1Url: 'race-check', perspectivesUsed: [] },
+        await prisma.creation.create({
+          data: { id: randomUUID(), userId: user.id, refImage1Url: 'race-check', perspectivesUsed: [] },
         });
       }
     }),
   );
 
-  const total = await prisma.tryOnJob.count({ where: { userId: user.id } });
+  const total = await prisma.creation.count({ where: { userId: user.id } });
   // This documents the BUG: pass = the overshoot is demonstrated.
   report(
     `C1: PRE-FIX weekly gate at ${alreadyUsed}/${limit} with ${attempts} concurrent submits`,
     total > limit,
     `${total} jobs in window (cap is ${limit}) — count-then-create overshoots by ${total - limit}`,
   );
-  await prisma.tryOnJob.deleteMany({ where: { userId: user.id } });
+  await prisma.creation.deleteMany({ where: { userId: user.id } });
   await prisma.user.delete({ where: { id: user.id } });
 }
 
-// The pattern submitTryOn now uses: lock the user row, recount inside the
+// The pattern submitTransform now uses: lock the user row, recount inside the
 // lock, create the job, and charge a credit when the allowance is spent.
 // Seeded at 11/12 with 2 credits and 5 concurrent submits, exactly one rides
 // the last free slot, exactly two pay a credit, and the other two roll back.
 async function checkWeeklyLimitFixedPattern(limit, alreadyUsed, credits, attempts) {
   const user = await makeUser({ tier: 'BASIC', credits });
   const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  await prisma.tryOnJob.createMany({
+  await prisma.creation.createMany({
     data: Array.from({ length: alreadyUsed }, () => ({
       id: randomUUID(),
       userId: user.id,
-      clothingPhoto1Url: 'race-check',
+      refImage1Url: 'race-check',
       perspectivesUsed: [],
     })),
   });
@@ -204,12 +204,12 @@ async function checkWeeklyLimitFixedPattern(limit, alreadyUsed, credits, attempt
       try {
         await prisma.$transaction(async (tx) => {
           await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
-          const weekCountNow = await tx.tryOnJob.count({
+          const weekCountNow = await tx.creation.count({
             where: { userId: user.id, createdAt: { gte: weekStart }, status: { not: 'FAILED' } },
           });
           const payWithCredit = !(weekCountNow < limit);
-          await tx.tryOnJob.create({
-            data: { id: randomUUID(), userId: user.id, clothingPhoto1Url: 'race-check', perspectivesUsed: [] },
+          await tx.creation.create({
+            data: { id: randomUUID(), userId: user.id, refImage1Url: 'race-check', perspectivesUsed: [] },
           });
           if (payWithCredit) {
             const deducted = await tx.user.updateMany({
@@ -225,7 +225,7 @@ async function checkWeeklyLimitFixedPattern(limit, alreadyUsed, credits, attempt
     }),
   );
 
-  const total = await prisma.tryOnJob.count({ where: { userId: user.id } });
+  const total = await prisma.creation.count({ where: { userId: user.id } });
   const final = await prisma.user.findUnique({ where: { id: user.id }, select: { credits: true } });
   const expectedTotal = limit + credits; // free up to the cap, then one per credit
   report(
@@ -233,12 +233,12 @@ async function checkWeeklyLimitFixedPattern(limit, alreadyUsed, credits, attempt
     total === expectedTotal && final.credits === 0 && rolledBack === attempts - (limit - alreadyUsed) - credits,
     `${total} jobs (expected ${expectedTotal}: cap ${limit} free + ${credits} paid), balance ${final.credits} (expected 0), ${rolledBack} rolled back`,
   );
-  await prisma.tryOnJob.deleteMany({ where: { userId: user.id } });
+  await prisma.creation.deleteMany({ where: { userId: user.id } });
   await prisma.user.delete({ where: { id: user.id } });
 }
 
 console.log('Race checks against', dbUrl.replace(/:[^:@/]+@/, ':***@'));
-console.log('\n[A] submitTryOn conditional credit decrement (expected: race-safe)');
+console.log('\n[A] submitTransform conditional credit decrement (expected: race-safe)');
 await checkConditionalDecrement(1, 10);
 await checkConditionalDecrement(5, 25);
 console.log('\n[B] verifyEmail welcome grant (B1 demonstrates the bug, B2 the fix)');

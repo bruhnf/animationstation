@@ -16,20 +16,20 @@ import api from '../config/api';
 import { Colors, Typography, Spacing } from '../constants/theme';
 import RetryableImage from '../components/RetryableImage';
 import AiGeneratedBadge from '../components/AiGeneratedBadge';
-import type { TryOnJob } from '../types';
+import type { Creation } from '../types';
 import type { RootStackParams } from '../navigation';
 
 type Nav = NativeStackNavigationProp<RootStackParams, 'Compare'>;
 
 // Brainstorm feature #4 — "Compare Creations". Pick two of your completed
-// creations and view them side by side. Reuses the existing /tryon/history
+// creations and view them side by side. Reuses the existing /creation/history
 // endpoint and the AI-generated badge; nothing new on the backend. Reached from
 // the Profile menu ("Compare Creations").
 export default function CompareScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
 
-  const [history, setHistory] = useState<TryOnJob[]>([]);
+  const [history, setHistory] = useState<Creation[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   // Selected job ids, in tap order. Capped at 2.
@@ -47,10 +47,10 @@ export default function CompareScreen() {
   const load = useCallback(async () => {
     try {
       setLoadError(false);
-      const { data } = await api.get<{ jobs: TryOnJob[] }>('/tryon/history');
+      const { data } = await api.get<{ jobs: Creation[] }>('/creations/history');
       // Only COMPLETE jobs that actually have a result image can be compared.
       const usable = (data.jobs ?? []).filter(
-        (j) => j.status === 'COMPLETE' && (j.resultFullBodyUrl || j.resultMediumUrl),
+        (j) => j.status === 'COMPLETE' && (j.resultImageUrl || j.resultImage2Url),
       );
       if (mounted.current) setHistory(usable);
     } catch {
@@ -73,12 +73,12 @@ export default function CompareScreen() {
   }
 
   const jobById = (id: string) => history.find((j) => j.id === id);
-  const resultUrl = (j?: TryOnJob) => j?.resultFullBodyUrl ?? j?.resultMediumUrl;
+  const resultUrl = (j?: Creation) => j?.resultImageUrl ?? j?.resultImage2Url;
 
   const left = jobById(selected[0]);
   const right = jobById(selected[1]);
 
-  const renderItem = ({ item }: { item: TryOnJob }) => {
+  const renderItem = ({ item }: { item: Creation }) => {
     const url = resultUrl(item);
     const idx = selected.indexOf(item.id);
     const isSelected = idx >= 0;

@@ -1,7 +1,7 @@
 import { Worker, UnrecoverableError } from 'bullmq';
 import * as Sentry from '@sentry/node';
 import { v4 as uuidv4 } from 'uuid';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 import { VideoJobData } from './videoQueue';
 import { generateVideo, downloadVideo, ContentModeratedError } from '../services/grokService';
 import { uploadToS3 } from '../services/s3Service';
@@ -11,7 +11,7 @@ import {
   moderationWarningMessage,
   MODERATION_USER_MESSAGE,
 } from '../utils/moderationGrace';
-import { sendTryOnFailureAlert } from '../services/emailService';
+import { sendGenerationFailureAlert } from '../services/emailService';
 import { adminDashboardUrl } from '../utils/adminUrl';
 import { env } from '../config/env';
 import prisma from '../lib/prisma';
@@ -19,7 +19,7 @@ import { createChildLogger, logJob, logUpload } from '../services/logger';
 
 const log = createChildLogger('VideoWorker');
 
-// Same sentinel pattern as tryonWorker: a moderation block is re-raised as an
+// Same sentinel pattern as transformWorker: a moderation block is re-raised as an
 // UnrecoverableError carrying this message so the `failed` handler applies the
 // strike/grace policy and BullMQ won't retry a policy rejection.
 const MODERATION_ERROR = 'CONTENT_MODERATED';
@@ -35,8 +35,8 @@ function alertAdminsOfVideoFailure(data: {
   if (env.adminEmails.length === 0) return;
   const adminUrl = adminDashboardUrl(env.appUrl);
   void Promise.allSettled(
-    // Reuse the try-on failure email shape — same fields, just a video job.
-    env.adminEmails.map((email) => sendTryOnFailureAlert(email, { ...data, adminUrl })),
+    // Reuse the creation failure email shape — same fields, just a video job.
+    env.adminEmails.map((email) => sendGenerationFailureAlert(email, { ...data, adminUrl })),
   );
 }
 
@@ -48,10 +48,10 @@ const worker = new Worker<VideoJobData>(
 
     logJob('started', { jobId, jobType: 'video', userId, attempt: job.attemptsMade + 1 });
 
-    await prisma.tryOnJob.update({ where: { id: jobId }, data: { status: 'PROCESSING' } });
+    await prisma.creation.update({ where: { id: jobId }, data: { status: 'PROCESSING' } });
 
     // Skip-on-retry: if a prior attempt already produced the video, don't re-pay.
-    const existing = await prisma.tryOnJob.findUnique({
+    const existing = await prisma.creation.findUnique({
       where: { id: jobId },
       select: { videoUrl: true },
     });
@@ -76,7 +76,7 @@ const worker = new Worker<VideoJobData>(
       }
 
       const buffer = await downloadVideo(resultUrl);
-      const key = await uploadToS3('tryon-videos', userId, `${uuidv4()}.mp4`, buffer, 'video/mp4');
+      const key = await uploadToS3('videos', userId, `${uuidv4()}.mp4`, buffer, 'video/mp4');
       logUpload('completed', {
         userId,
         fileType: 'video-result',
@@ -85,15 +85,15 @@ const worker = new Worker<VideoJobData>(
         success: true,
       });
 
-      await prisma.tryOnJob.update({ where: { id: jobId }, data: { videoUrl: key } });
+      await prisma.creation.update({ where: { id: jobId }, data: { videoUrl: key } });
     }
 
     await prisma.$transaction([
-      prisma.tryOnJob.update({
+      prisma.creation.update({
         where: { id: jobId },
         data: { status: 'COMPLETE', perspectivesUsed: ['video'] },
       }),
-      prisma.user.update({ where: { id: userId }, data: { tryOnCount: { increment: 1 } } }),
+      prisma.user.update({ where: { id: userId }, data: { creationCount: { increment: 1 } } }),
     ]);
 
     logJob('completed', { jobId, jobType: 'video', userId, durationMs: Date.now() - startTime });
@@ -155,7 +155,7 @@ worker.on('failed', async (job, err) => {
   }
 
   try {
-    await prisma.tryOnJob.update({
+    await prisma.creation.update({
       where: { id: jobId },
       data: { status: 'FAILED', errorMessage },
     });
@@ -181,7 +181,7 @@ worker.on('failed', async (job, err) => {
 // USAGE transaction with `(video=<jobId>)` and the refund mirrors its amount
 // (videos cost more than 1, and the admin cost is tunable, so we read the actual
 // charged amount rather than hardcoding). Idempotent + FOR UPDATE-locked, same
-// as the try-on refund.
+// as the creation refund.
 async function refundVideoCredit(jobId: string, userId: string): Promise<boolean> {
   try {
     return await prisma.$transaction(async (tx) => {

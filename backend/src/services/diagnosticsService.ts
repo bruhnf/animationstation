@@ -4,7 +4,7 @@
  * Goal: one call that paints a complete operational picture so a problem can be
  * triaged in seconds instead of an SSH session — process health, dependency
  * latency, BullMQ queue depth + recent worker failures, which external
- * integrations are actually wired up on THIS box, try-on throughput/failures over
+ * integrations are actually wired up on THIS box, creation throughput/failures over
  * the last 24h, and the credit economy over the last 7 days.
  *
  * Every section is wrapped so a single failing probe (e.g. Redis down) degrades
@@ -14,7 +14,7 @@
 import os from 'os';
 import { Queue } from 'bullmq';
 import prisma from '../lib/prisma';
-import { connection, tryonQueue } from '../queue/tryonQueue';
+import { connection, transformQueue } from '../queue/transformQueue';
 import { appleNotificationQueue } from '../queue/appleNotificationQueue';
 import { env } from '../config/env';
 import { getSentryStatus, SentryStatus } from './sentryService';
@@ -124,17 +124,17 @@ async function jobStats24h() {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const stuckBefore = new Date(Date.now() - STUCK_PROCESSING_MINUTES * 60 * 1000);
     const [byStatus, stuckProcessing, recentFailures] = await Promise.all([
-      prisma.tryOnJob.groupBy({
+      prisma.creation.groupBy({
         by: ['status'],
         where: { createdAt: { gte: since } },
         _count: { _all: true },
       }),
       // Jobs wedged in PROCESSING well past any reasonable run time — the single
       // best signal that the worker or Grok pipeline has stalled.
-      prisma.tryOnJob.count({
+      prisma.creation.count({
         where: { status: 'PROCESSING', updatedAt: { lt: stuckBefore } },
       }),
-      prisma.tryOnJob.findMany({
+      prisma.creation.findMany({
         where: { status: 'FAILED', createdAt: { gte: since } },
         orderBy: { updatedAt: 'desc' },
         take: 5,
@@ -211,10 +211,10 @@ export interface Diagnostics {
 
 export async function collectDiagnostics(): Promise<Diagnostics> {
   const memory = process.memoryUsage();
-  const [postgres, redis, tryon, apple, jobs24h, economy] = await Promise.all([
+  const [postgres, redis, creation, apple, jobs24h, economy] = await Promise.all([
     probePostgres(),
     probeRedis(),
-    snapshotQueue(tryonQueue, true),
+    snapshotQueue(transformQueue, true),
     snapshotQueue(appleNotificationQueue, false),
     jobStats24h(),
     economy7d(),
@@ -239,7 +239,7 @@ export async function collectDiagnostics(): Promise<Diagnostics> {
       loadAvg: os.loadavg().map((n) => Math.round(n * 100) / 100),
     },
     dependencies: { postgres, redis },
-    queues: [tryon, apple],
+    queues: [creation, apple],
     integrations: integrationsStatus(),
     config: configFlags(),
     jobs24h,

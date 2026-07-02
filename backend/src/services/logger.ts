@@ -125,8 +125,8 @@ if (!env.isDev || process.env.LOG_TO_FILE === 'true') {
 // AWS CloudWatch Logs transport — additive. Only enabled when CLOUDWATCH_LOG_GROUP
 // is set in the env, so dev environments and untriaged deployments don't ship logs.
 //
-// The transport uses the `tryon-log-shipper` IAM user's credentials, which are
-// scoped to `logs:PutLogEvents` on `/tryon/*` log groups only. Credentials are
+// The transport uses the `animationstation-log-shipper` IAM user's credentials, which are
+// scoped to `logs:PutLogEvents` on `/animationstation/*` log groups only. Credentials are
 // passed explicitly so they remain separate from the backend's S3 credentials —
 // least privilege per service.
 //
@@ -185,7 +185,7 @@ export const logger = winston.createLogger({
   level: getLogLevel(),
   levels,
   defaultMeta: {
-    service: 'tryon-api',
+    service: 'creation-api',
     env: env.nodeEnv,
   },
   transports,

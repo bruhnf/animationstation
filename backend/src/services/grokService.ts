@@ -15,9 +15,9 @@ const s3 = new S3Client({
     : undefined,
 });
 
-export type TryOnPerspective = 'full_body' | 'medium';
+export type CreationPerspective = 'full_body' | 'medium';
 
-export interface TryOnInput {
+export interface CreationInput {
   // The reference image(s) the user is transforming. At least one; all are sent
   // to the model and preserved as the subject(s).
   clothingImageUrls: string[];
@@ -31,11 +31,11 @@ export interface TryOnInput {
   userBodyImageUrl?: string;
   // Optional perspective label; no longer scopes framing (free-form), kept so
   // callers can tag logs / result slots.
-  perspective?: TryOnPerspective;
+  perspective?: CreationPerspective;
 }
 
-export interface TryOnOutput {
-  perspective: TryOnPerspective;
+export interface CreationOutput {
+  perspective: CreationPerspective;
   resultImageUrl: string;
 }
 
@@ -58,7 +58,7 @@ export function detectImageFormat(buffer: Buffer): string | null {
 }
 
 /**
- * Resolves the input — which may be an S3 key (e.g. "body-photos/<uid>/<file>.jpg"),
+ * Resolves the input — which may be an S3 key (e.g. "source-images/<uid>/<file>.jpg"),
  * a legacy public URL, or a fully-qualified non-S3 URL — into an S3 key, or null
  * if it's a non-S3 HTTP URL that should be fetched via plain HTTP.
  */
@@ -148,7 +148,7 @@ async function fetchImageAsBase64(
 /**
  * Thrown when xAI's content moderation blocks a generation (e.g. an attempt to
  * produce nude / sexual / revealing-attire imagery). Kept distinct from
- * transient technical failures so the try-on worker can skip the credit refund
+ * transient technical failures so the creation worker can skip the credit refund
  * AND skip retries for a policy rejection (Terms of Service §5.4), while still
  * refunding genuine failures.
  *
@@ -171,7 +171,7 @@ export class ContentModeratedError extends Error {
 // present) drives the requested scene/style while the reference subjects are
 // preserved. `perspective` is retained for signature compatibility only and no
 // longer scopes the framing.
-function buildPrompt(perspective: TryOnPerspective | undefined, userPrompt?: string): string {
+function buildPrompt(perspective: CreationPerspective | undefined, userPrompt?: string): string {
   void perspective;
   const cleaned = typeof userPrompt === 'string' ? userPrompt.trim() : '';
   if (cleaned) {
@@ -191,7 +191,7 @@ function buildPrompt(perspective: TryOnPerspective | undefined, userPrompt?: str
  * Text-to-image generation for the Outfit Designer (closet items). Takes the
  * already-wrapped server-side prompt (see utils/outfitPrompt.ts — raw user text
  * must NEVER reach this function) and returns the result image as a URL or
- * data: URI, same contract as generateTryOnImage. Moderation blocks throw
+ * data: URI, same contract as generateTransformImage. Moderation blocks throw
  * ContentModeratedError so the caller can apply the strike/refund policy.
  */
 export async function generateOutfitImage(prompt: string): Promise<string> {
@@ -205,13 +205,13 @@ export async function generateOutfitImage(prompt: string): Promise<string> {
     response_format: 'url',
     // Portrait only. Without this Grok picks an orientation per prompt and
     // outfits sometimes come back landscape; 3:4 matches the closet card
-    // aspect ratio and Grok's own try-on output canvas (864×1152).
+    // aspect ratio and Grok's own creation output canvas (864×1152).
     aspect_ratio: '3:4',
   };
 
   const startTime = Date.now();
   // Single text-to-image call is much faster than an edit, but keep a generous
-  // ceiling consistent with the try-on call.
+  // ceiling consistent with the creation call.
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 90000);
 
@@ -308,7 +308,7 @@ export async function generateOutfitImage(prompt: string): Promise<string> {
 
 // Fixed server-side cleanup prompt. Turns a messy user upload (website
 // screenshot with text/prices/UI, a photo of a person wearing the item, a
-// cluttered scene) into a clean catalog-style product shot the try-on pipeline
+// cluttered scene) into a clean catalog-style product shot the creation pipeline
 // can use. The instructions to strip people/text/logos also keep the output
 // inside the same "ordinary clothing product shot" envelope the Outfit Designer
 // enforces, so the moderation posture is unchanged.
@@ -318,7 +318,7 @@ export async function generateOutfitImage(prompt: string): Promise<string> {
  * `cleanedInstruction` (already sanitized by validateCleanupInstruction) is
  * embedded in the fixed base prompt via buildCleanupPrompt. Returns the result
  * as a URL or data: URI; a moderation block throws ContentModeratedError so the
- * caller can apply the same strike/refund policy as generate/try-on.
+ * caller can apply the same strike/refund policy as generate/creation.
  */
 export async function cleanupClothingImage(
   imageBuffer: Buffer,
@@ -426,7 +426,7 @@ export async function cleanupClothingImage(
 
 /**
  * Resolve a generation result (https URL or data: URI) into image bytes.
- * Mirrors the try-on worker's download step; exported so the closet
+ * Mirrors the creation worker's download step; exported so the closet
  * controller can reuse it.
  */
 export async function downloadGeneratedImage(resultRef: string): Promise<Buffer> {
@@ -462,7 +462,7 @@ export interface VideoGenOptions {
 }
 
 // How long we'll wait for a video to finish before giving up (transient failure
-// → refund + retry semantics, same as a try-on technical failure).
+// → refund + retry semantics, same as a creation technical failure).
 const VIDEO_POLL_INTERVAL_MS = 5000;
 const VIDEO_MAX_WAIT_MS = 6 * 60 * 1000; // 6 minutes
 
@@ -471,10 +471,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /**
  * Animate a source image into a short video. `imageRef` is an S3 key (preferred)
  * or legacy full URL — fetched and inlined as a data URI, never sent as an
- * arbitrary URL (same SSRF-safe posture as the try-on path). `motionPrompt` is
+ * arbitrary URL (same SSRF-safe posture as the creation path). `motionPrompt` is
  * the user's animation instruction. Returns the result video URL (https) on
  * success; throws ContentModeratedError on a policy block and a plain Error on
- * any transient/technical failure (so the worker refunds + retries like try-on).
+ * any transient/technical failure (so the worker refunds + retries like creation).
  */
 export async function generateVideo(
   imageRef: string,
@@ -498,7 +498,7 @@ export async function generateVideo(
 
   // Fetch the PRIMARY source once so we can both inline it AND measure its aspect
   // ratio. We must tell Grok the aspect that matches the source — its default is
-  // 16:9, so a portrait try-on/body photo would come back squished. (R2V uses the
+  // 16:9, so a portrait creation/body photo would come back squished. (R2V uses the
   // first image's aspect as the output frame.)
   const primary = await fetchImageAsBase64(
     imageRef,
@@ -696,10 +696,10 @@ export async function downloadVideo(url: string): Promise<Buffer> {
   }
 }
 
-export async function generateTryOnImage(input: TryOnInput): Promise<string> {
+export async function generateTransformImage(input: CreationInput): Promise<string> {
   const { userBodyImageUrl, perspective, clothingImageUrls, userPrompt } = input;
 
-  log.info('Try-on generation started', {
+  log.info('Creation generation started', {
     perspective,
     hasBodyImage: !!userBodyImageUrl,
     referenceCount: clothingImageUrls.length,
@@ -806,7 +806,7 @@ export async function generateTryOnImage(input: TryOnInput): Promise<string> {
         perspective,
         resultType: 'url',
       });
-      log.info('Try-on generation completed', { perspective, durationMs, resultType: 'url' });
+      log.info('Creation generation completed', { perspective, durationMs, resultType: 'url' });
       return imageData.url;
     }
 
@@ -821,7 +821,7 @@ export async function generateTryOnImage(input: TryOnInput): Promise<string> {
         resultType: 'base64',
         resultLength: imageData.b64_json.length,
       });
-      log.info('Try-on generation completed', { perspective, durationMs, resultType: 'base64' });
+      log.info('Creation generation completed', { perspective, durationMs, resultType: 'base64' });
       return `data:image/png;base64,${imageData.b64_json}`;
     }
 

@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: tryon
-      POSTGRES_PASSWORD: tryon_dev
-      POSTGRES_DB: tryon_db
+      POSTGRES_USER: animationstation
+      POSTGRES_PASSWORD: animationstation_dev
+      POSTGRES_DB: animationstation_db
     ports:
       - '127.0.0.1:5432:5432'
     volumes:
@@ -29,7 +29,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql://tryon:tryon_dev@postgres:5432/tryon_db
+      DATABASE_URL: postgresql://animationstation:animationstation_dev@postgres:5432/animationstation_db
       REDIS_URL: redis://redis:6379
       LOG_LEVEL: debug
       LOG_TO_FILE: 'true'

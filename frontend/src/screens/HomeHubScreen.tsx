@@ -52,7 +52,7 @@ export default function HomeHubScreen({ splash }: { splash?: HubSplashProps }) {
     fn();
   };
   const goCreate = () => go(() => navigate('Create'));
-  const goImage = () => go(() => navigate('TryOn'));
+  const goImage = () => go(() => navigate('Transform'));
   const goVideo = () => go(() => navigate('Video'));
   const goDesign = () => go(() => navigate('Design'));
 

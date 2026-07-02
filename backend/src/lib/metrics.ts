@@ -10,7 +10,7 @@ import { Request, Response, NextFunction } from 'express';
 // scraper, never the public internet. (Dev nginx's catch-all 404s it already.)
 export const register = new client.Registry();
 
-register.setDefaultLabels({ app: 'tryon-backend' });
+register.setDefaultLabels({ app: 'animationstation-backend' });
 client.collectDefaultMetrics({ register });
 
 const httpRequestDuration = new client.Histogram({

@@ -4,12 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
-import { TryOnJob } from '../types';
+import { Creation } from '../types';
 import RetryableImage from './RetryableImage';
 import AiGeneratedBadge from './AiGeneratedBadge';
 import FeedComments from './FeedComments';
 
-export interface FeedJob extends TryOnJob {
+export interface FeedJob extends Creation {
   user: { username: string; firstName?: string; lastName?: string; avatarUrl?: string };
   liked?: boolean;
   saved?: boolean;
@@ -57,9 +57,9 @@ export default function FeedPost({
 }) {
   const isVideo = job.kind === 'VIDEO';
   // Image posts show the AI result; video posts play the generated clip (its
-  // poster/source is bodyPhotoUrl, shown until the player is ready).
-  const displayUrl = job.resultFullBodyUrl || job.resultMediumUrl;
-  const videoPoster = job.bodyPhotoUrl;
+  // poster/source is sourceImageUrl, shown until the player is ready).
+  const displayUrl = job.resultImageUrl || job.resultImage2Url;
+  const videoPoster = job.sourceImageUrl;
   const fullName = [job.user.firstName, job.user.lastName].filter(Boolean).join(' ');
   const contentHeight = expanded ? Math.round(height * EXPANDED_CONTENT_FRACTION) : height;
 

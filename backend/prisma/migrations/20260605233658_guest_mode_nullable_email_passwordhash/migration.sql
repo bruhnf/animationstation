@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "users" ADD COLUMN     "isGuest" BOOLEAN NOT NULL DEFAULT false,
-ALTER COLUMN "email" DROP NOT NULL,
-ALTER COLUMN "passwordHash" DROP NOT NULL;

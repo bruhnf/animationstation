@@ -3,34 +3,110 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CLAUDE — TryOn Docs</title>
+<title>CLAUDE — AnimationStation Docs</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="topbar">
-  <a href="index.html" class="brand">TryOn Docs</a>
-  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html" class="active">CLAUDE</a><a href="deployment.html">DEPLOYMENT</a><a href="contributing.html">CONTRIBUTING</a><a href="todos.html">TODOS</a><a href="release-notes.html">RELEASE NOTES</a><a href="testflight-checklist.html">TESTFLIGHT CHECKLIST</a></nav>
+  <a href="index.html" class="brand">AnimationStation Docs</a>
+  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html" class="active">CLAUDE</a><a href="deployment.html">DEPLOYMENT</a><a href="contributing.html">CONTRIBUTING</a></nav>
 </header>
 <div class="layout">
   <aside class="sidebar">
     <h2 class="toc-title">On this page</h2>
-    <ul class="toc"><li><a href="#development-environment-notice">Development Environment Notice</a></li><li><a href="#deployment-checklist">⚠️ DEPLOYMENT CHECKLIST</a></li><li><a href="#project-overview">Project Overview</a></li><li><a href="#commands">Commands</a><ul><li><a href="#backend">Backend</a></li><li><a href="#frontend-local-expo-dev-only-not-for-distribution">Frontend (local Expo dev only — not for distribution)</a></li><li><a href="#switching-between-local-dev-and-live-backend">Switching Between Local, Dev, and Live Backend</a></li><li><a href="#docker-backend-services-only">Docker (Backend Services Only)</a></li><li><a href="#cicd">CI/CD</a></li><li><a href="#git-workflow">Git workflow</a></li></ul></li><li><a href="#logging">Logging</a><ul><li><a href="#log-levels">Log Levels</a></li><li><a href="#environment-variables">Environment Variables</a></li><li><a href="#log-files-production">Log Files (Production)</a></li><li><a href="#viewing-logs">Viewing Logs</a></li><li><a href="#log-management-strategy">Log Management Strategy</a></li><li><a href="#whats-logged">What's Logged</a></li></ul></li><li><a href="#error-tracking-observability-sentry">Error Tracking &amp;amp; Observability (Sentry)</a></li><li><a href="#architecture">Architecture</a><ul><li><a href="#website-website">Website (website/)</a></li><li><a href="#backend-backendsrc">Backend (backend/src/)</a></li><li><a href="#frontend-frontendsrc">Frontend (frontend/src/)</a></li></ul></li><li><a href="#database-schema-postgresql-via-prisma">Database Schema (PostgreSQL via Prisma)</a><ul><li><a href="#users">Users</a></li><li><a href="#applepurchase">ApplePurchase</a></li><li><a href="#like">Like</a></li><li><a href="#notification">Notification</a></li><li><a href="#refreshtoken">RefreshToken</a></li><li><a href="#tryonjobs">TryOnJobs</a></li><li><a href="#comment">Comment</a></li><li><a href="#commentlike">CommentLike</a></li><li><a href="#userlocations">UserLocations</a></li><li><a href="#follows">Follows</a></li><li><a href="#appsettings-admin-controlled">AppSettings (admin-controlled)</a></li><li><a href="#credittransaction">CreditTransaction</a></li><li><a href="#report">Report</a></li><li><a href="#userblock">UserBlock</a></li></ul></li><li><a href="#key-business-rules">Key Business Rules</a><ul><li><a href="#body-photo-handling">Body Photo Handling</a></li><li><a href="#onboarding-photo-upload-consent">Onboarding / Photo Upload Consent</a></li><li><a href="#ai-processing-consent-app-store-guidelines-511i-512i">AI Processing Consent (App Store Guidelines 5.1.1(i) / 5.1.2(i))</a></li><li><a href="#guest-mode-browse-try-before-signup">Guest Mode (browse &amp;amp; try before signup)</a></li><li><a href="#outfit-designer-closet-text-to-outfit-try-on">Outfit Designer &amp;amp; Closet (text-to-outfit → try-on)</a></li><li><a href="#ai-video-image-to-video-130">AI Video (image-to-video) — 1.3.0</a></li><li><a href="#splash-announcement-screen-backend-controlled">Splash / Announcement Screen (backend-controlled)</a></li><li><a href="#engagement-growth-features-120-enjoyment-batch">Engagement &amp;amp; Growth Features (1.2.0 — &amp;quot;enjoyment&amp;quot; batch)</a></li><li><a href="#subscription-credits">Subscription &amp;amp; Credits</a></li><li><a href="#soft-per-user-throttle-queue-pacing-in-seconds">Soft per-user throttle (queue pacing in seconds)</a></li><li><a href="#apple-in-app-purchases">Apple In-App Purchases</a></li><li><a href="#content-moderation-app-store-guideline-12">Content Moderation (App Store Guideline 1.2)</a></li><li><a href="#ai-generated-content-disclosure-guideline-40">AI-Generated Content Disclosure (Guideline 4.0)</a></li><li><a href="#admin-access-ui-gating">Admin Access (UI gating)</a></li><li><a href="#geo-location-tracking">Geo / Location Tracking</a></li></ul></li><li><a href="#image-processing">Image Processing</a><ul><li><a href="#frontend-resizing-mobile">Frontend Resizing (Mobile)</a></li><li><a href="#backend-resizing-server">Backend Resizing (Server)</a></li></ul></li><li><a href="#infrastructure">Infrastructure</a></li><li><a href="#backups-external-monitoring">Backups &amp;amp; External Monitoring</a></li><li><a href="#admin-dashboard">Admin Dashboard</a><ul><li><a href="#app-store-server-api-integration">App Store Server API Integration</a></li></ul></li><li><a href="#vulnerability-monitoring">Vulnerability Monitoring</a><ul><li><a href="#features">Features</a></li><li><a href="#admin-api-endpoints">Admin API Endpoints</a></li><li><a href="#database-schema">Database Schema</a></li><li><a href="#scan-schedule">Scan Schedule</a></li><li><a href="#responding-to-vulnerabilities">Responding to Vulnerabilities</a></li><li><a href="#implementation-files">Implementation Files</a></li></ul></li><li><a href="#environment-variables-1">Environment Variables</a></li><li><a href="#security-notes">Security Notes</a><ul><li><a href="#fail2ban-rate-limiting">Fail2ban &amp;amp; Rate Limiting</a></li></ul></li><li><a href="#local-code-backup">Local Code Backup</a><ul><li><a href="#safe-to-exclude-recreatable-transient">Safe to exclude (recreatable / transient)</a></li><li><a href="#glob-patterns-catch-all-for-syncovery-filters">Glob patterns (catch-all for Syncovery filters)</a></li><li><a href="#do-not-exclude">⚠️ DO NOT exclude</a></li></ul></li></ul>
+    <ul class="toc"><li><a href="#development-environment-notice">Development Environment Notice</a></li><li><a href="#project-overview">Project Overview</a><ul><li><a href="#create-features-mobile-create-hub">Create features (mobile &amp;quot;Create&amp;quot; hub)</a></li></ul></li><li><a href="#commands">Commands</a><ul><li><a href="#backend">Backend</a></li><li><a href="#frontend">Frontend</a></li><li><a href="#root">Root</a></li><li><a href="#backend-api-surface-mounted-in-backendsrcindexts">Backend API surface (mounted in backend/src/index.ts)</a></li></ul></li><li><a href="#architecture-notes">Architecture Notes</a></li><li><a href="#deployment">Deployment</a></li><li><a href="#database">Database</a></li><li><a href="#environment-variables">Environment Variables</a></li><li><a href="#git-workflow">Git workflow</a></li></ul>
   </aside>
   <main class="content">
-<h1 id="claudemd-6-15-2026-v-130" tabindex="-1"><a class="header-anchor" href="#claudemd-6-15-2026-v-130" aria-hidden="true">#</a> CLAUDE.md 6-15-2026  v 1.3.0</h1>
+<h1 id="claudemd-animationstation" tabindex="-1"><a class="header-anchor" href="#claudemd-animationstation" aria-hidden="true">#</a> CLAUDE.md — AnimationStation</h1>
 <p>This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.</p>
 <h2 id="development-environment-notice" tabindex="-1"><a class="header-anchor" href="#development-environment-notice" aria-hidden="true">#</a> Development Environment Notice</h2>
 <p><strong>This is a test and development environment.</strong> There is no need to preserve existing users, tokens, or data when making schema changes or migrations. Feel free to drop and recreate the database as needed.</p>
 <hr>
-<h2 id="deployment-checklist" tabindex="-1"><a class="header-anchor" href="#deployment-checklist" aria-hidden="true">#</a> ⚠️ DEPLOYMENT CHECKLIST</h2>
-<p>There are <strong>two</strong> Lightsail servers, each with its own compose file. Pick the one
-that matches the branch you're deploying — using the wrong <code>-f</code> file targets the
-wrong stack and the wrong nginx config (<code>nginx.conf</code> vs <code>nginx.dev.conf</code>).</p>
+<h2 id="project-overview" tabindex="-1"><a class="header-anchor" href="#project-overview" aria-hidden="true">#</a> Project Overview</h2>
+<p><strong>AnimationStation</strong> (animationstation.ai) is a free-form AI image &amp; video creation app: users generate images from text, transform/compose their own images with a prompt, clean up messy photos into product-style shots, and animate images into short video clips. Generation runs on the xAI <strong>Grok Imagine</strong> API. Monorepo:</p>
+<ul>
+<li><code>backend/</code> — Node.js/Express REST API (TypeScript, Prisma/PostgreSQL, BullMQ/Redis, S3)</li>
+<li><code>frontend/</code> — React Native (Expo SDK 54) mobile app</li>
+<li><code>website/</code> — static marketing + account site, served by the backend at the site root</li>
+</ul>
+<h3 id="create-features-mobile-create-hub" tabindex="-1"><a class="header-anchor" href="#create-features-mobile-create-hub" aria-hidden="true">#</a> Create features (mobile &quot;Create&quot; hub)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Endpoint</th>
+<th>Screen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Text-to-Image (&quot;Design&quot;)</td>
+<td><code>POST /api/closet/generate</code></td>
+<td><code>DesignScreen</code></td>
+</tr>
+<tr>
+<td>Image Transform / multi-image compose</td>
+<td><code>POST /api/transform</code></td>
+<td><code>TransformScreen</code></td>
+</tr>
+<tr>
+<td>Clean Up a Photo</td>
+<td><code>POST /api/closet/cleanup</code></td>
+<td><code>CleanUpScreen</code></td>
+</tr>
+<tr>
+<td>Image-to-Video</td>
+<td><code>POST /api/video</code></td>
+<td><code>VideoScreen</code></td>
+</tr>
+</tbody>
+</table>
+<p>Every generated item is a <strong>Creation</strong> (Prisma model <code>Creation</code>, table <code>creations</code>, <code>kind: IMAGE | VIDEO</code>) or a <strong>ClosetItem</strong> (text-to-image designs, table <code>closet_items</code>). The unified gallery (<code>components/CreationsGrid.tsx</code>, &quot;My Creations&quot;) merges <code>GET /api/creations/history</code> + <code>GET /api/closet</code>.</p>
+<h2 id="commands" tabindex="-1"><a class="header-anchor" href="#commands" aria-hidden="true">#</a> Commands</h2>
+<h3 id="backend" tabindex="-1"><a class="header-anchor" href="#backend" aria-hidden="true">#</a> Backend</h3>
+<pre><code class="language-bash">cd backend
+npm run dev      # hot-reload dev server (ts-node-dev)
+npm run build    # compile to dist/
+npm test         # node --test unit suite (pure; needs dummy JWT/DB env vars — see CI)
+npm run lint     # eslint
+npx tsc --noEmit # typecheck
+npm run migrate  # prisma migrate dev
+</code></pre>
+<h3 id="frontend" tabindex="-1"><a class="header-anchor" href="#frontend" aria-hidden="true">#</a> Frontend</h3>
+<pre><code class="language-bash">cd frontend
+npx expo start   # dev server (Expo Go on SDK 54, or the dev client)
+npm test         # jest-expo unit tests
+npx tsc --noEmit # typecheck
+</code></pre>
+<blockquote>
+<p><strong>Expo SDK pin:</strong> the project targets <strong>Expo SDK 54</strong> (what the team's Expo Go supports). Expo-SDK-managed packages (expo*, react, react-native*, @types/react) are bumped ONLY via <code>npx expo install</code> during a deliberate SDK upgrade — Dependabot is configured to ignore them (<code>.github/dependabot.yml</code>).</p>
+</blockquote>
+<h3 id="root" tabindex="-1"><a class="header-anchor" href="#root" aria-hidden="true">#</a> Root</h3>
+<pre><code class="language-bash">npm run format        # prettier --write (repo-wide)
+npm run format:check  # what CI runs
+node scripts/build-docs.js  # regenerate docs/*.html from the md docs
+</code></pre>
+<h3 id="backend-api-surface-mounted-in-backendsrcindexts" tabindex="-1"><a class="header-anchor" href="#backend-api-surface-mounted-in-backendsrcindexts" aria-hidden="true">#</a> Backend API surface (mounted in <code>backend/src/index.ts</code>)</h3>
+<p><code>/api/auth</code> (signup/login/refresh/guest/claim), <code>/api/transform</code> (submit a transform), <code>/api/creations</code> (history / <code>:jobId</code> status / privacy / title / bulk-delete + <code>/creations/:jobId/comments</code>), <code>/api/upload</code>, <code>/api/profile</code>, <code>/api/friends</code>, <code>/api/feed</code>, <code>/api/likes</code>, <code>/api/looks</code> (saved looks), <code>/api/closet</code> (text-to-image designs + cleanup), <code>/api/video</code> (image-to-video), <code>/api/credits</code> (+ Apple IAP verify-receipt), <code>/api/webhooks/apple</code>, <code>/api/admin</code> (X-Admin-Key), <code>/api/notifications</code>, <code>/api/referral</code>, <code>/api/share</code> + <code>/t/:jobId</code> (public share pages), <code>/api/splash</code>, <code>/api/config</code>, <code>/api/sms</code>.</p>
+<h2 id="architecture-notes" tabindex="-1"><a class="header-anchor" href="#architecture-notes" aria-hidden="true">#</a> Architecture Notes</h2>
+<ul>
+<li><strong>Creation flow (transform):</strong> client uploads source/reference images (or references a closet item) → S3 → credit charge (conditional decrement in a transaction; refund on terminal failure) → BullMQ <code>transform</code> queue → <code>transformWorker</code> calls Grok Imagine → result stored in S3 → <code>Creation</code> row COMPLETE. Videos follow the same shape via the <code>video</code> queue and <code>videoWorker</code> (poll-based Grok video API; see <code>utils/videoPoll.ts</code>).</li>
+<li><strong>S3 prefixes</strong> (bucket private, presigned reads via <code>services/imageUrlService.ts</code>): <code>source-images/</code>, <code>ref-images/</code>, <code>results/</code>, <code>videos/</code>, <code>closet/</code>, <code>splash/</code>. The DB stores bare S3 keys, never URLs.</li>
+<li><strong>Guest mode:</strong> first app open mints an anonymous guest (<code>POST /auth/guest</code>, device-scoped reuse). Guests browse everything; social writes are blocked by <code>blockGuests</code>; their creations are forced private. <code>POST /auth/claim</code> upgrades the same row to a real account.</li>
+<li><strong>Credits &amp; tiers:</strong> <code>FREE/BASIC/PREMIUM</code> (<code>services/tierService.ts</code>); weekly included generations for subscribers, credits otherwise. Admin-tunable runtime settings live in the <code>app_settings</code> table (guest/signup/referral grants, video cost, soft-throttle config) via the admin dashboard <code>/admin</code>.</li>
+<li><strong>Soft throttle:</strong> bursts beyond a tier-scaled free quota get a short BullMQ delay + client countdown (<code>services/throttleService.ts</code>) — shared budget across image + video generations.</li>
+<li><strong>Moderation:</strong> Grok's content filters + a 3-warning refund grace on fully-blocked generations (<code>utils/moderationGrace.ts</code>, <code>services/moderationService.ts</code>); user reports + blocks (<code>/api/reports</code>, <code>/api/users/:id/block</code>) satisfy App Store Guideline 1.2. Every AI result carries an <code>AiGeneratedBadge</code> (Guideline 4.0).</li>
+<li><strong>AI consent:</strong> <code>User.aiProcessingConsentAt</code> gates every generation endpoint (403 <code>AI_CONSENT_REQUIRED</code>); the app surfaces <code>AiConsentModal</code> naming xAI (Guidelines 5.1.1(i)/5.1.2(i)).</li>
+<li><strong>Observability:</strong> Winston structured logs (+ optional CloudWatch shipping), Sentry (gated on <code>SENTRY_DSN</code>), Prometheus <code>/metrics</code>, deep <code>/health</code> (Postgres+Redis probes) vs shallow <code>/health/live</code> (Docker liveness).</li>
+<li><strong>Website:</strong> served by the backend (<code>express.static('../website')</code> after the API routes); bind-mounted in compose so site edits deploy with a <code>git pull</code> + container restart, no rebuild.</li>
+</ul>
+<h2 id="deployment" tabindex="-1"><a class="header-anchor" href="#deployment" aria-hidden="true">#</a> Deployment</h2>
+<p>Two Lightsail boxes, dev/prod split. Full runbook in <a href="deployment.html">DEPLOYMENT.md</a>.</p>
 <table>
 <thead>
 <tr>
 <th>Environment</th>
-<th>Branch</th>
+<th>Host</th>
 <th>Server</th>
 <th>Compose file</th>
 </tr>
@@ -38,1256 +114,32 @@ wrong stack and the wrong nginx config (<code>nginx.conf</code> vs <code>nginx.d
 <tbody>
 <tr>
 <td><strong>Production</strong></td>
-<td><code>main</code></td>
-<td><code>api.tryon-mirror.ai</code></td>
+<td>animationstation.ai</td>
+<td>34.227.203.230</td>
 <td><code>docker-compose.prod.yml</code></td>
 </tr>
 <tr>
 <td><strong>Dev</strong></td>
-<td><code>develop</code></td>
-<td><code>api-dev.tryon-mirror.ai</code></td>
+<td>dev.animationstation.ai</td>
+<td>54.173.136.56</td>
 <td><code>docker-compose.dev.yml</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Production deploy — run ALL of these commands:</strong></p>
-<pre><code class="language-bash">ssh ubuntu@&lt;prod-lightsail-ip&gt;
-cd /opt/evofaceflow/TryOn
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy  # ⚠️ DON'T SKIP!
+<p>Deploys are <strong>manual</strong> (CI is tests-only — <code>.github/workflows/ci.yml</code>):</p>
+<pre><code class="language-bash">ssh ubuntu@&lt;box-ip&gt;          # key: LightsailDefaultKey-us-east-1
+cd /opt/animationstation &amp;&amp; git pull
+docker compose -f docker-compose.&lt;env&gt;.yml up -d --build
+docker compose -f docker-compose.&lt;env&gt;.yml exec backend npx prisma migrate deploy   # after any schema change
 </code></pre>
-<p><strong>Dev deploy — same steps, but <code>docker-compose.dev.yml</code>:</strong></p>
-<pre><code class="language-bash">ssh ubuntu@&lt;dev-lightsail-ip&gt;
-cd /opt/evofaceflow/TryOn
-git pull
-docker compose -f docker-compose.dev.yml up -d --build
-docker compose -f docker-compose.dev.yml exec backend npx prisma migrate deploy  # ⚠️ DON'T SKIP!
-</code></pre>
-<blockquote>
-<p><strong>🚨 The <code>prisma migrate deploy</code> step is REQUIRED after any schema changes or the backend will crash!</strong></p>
-</blockquote>
-<blockquote>
-<p><strong>🟢 Zero-gap ordering when the NEW code reads a NEW column (additive migrations).</strong>
-The plain <code>up -d --build</code> → <code>migrate deploy</code> order above has a window: the new
-container starts serving <em>before</em> the migration runs, so any request whose code
-path <code>SELECT</code>s a not-yet-added column <strong>500s until the migration lands</strong> (e.g.
-the <code>add_throttle_reset</code> migration adds <code>User.throttleResetAt</code>, which
-<code>computeQueueDelayMs</code> selects on <strong>every try-on AND video submit</strong> — so those
-two endpoints fail in the gap). Migration files are baked into the image at
-build time, so you can't run the new migration from the <em>old</em> container. The
-fix is to apply the migration with a <strong>throwaway container built from the new
-image</strong>, while the old container keeps serving (an additive <em>nullable</em> column
-is invisible to the old code), then swap:</p>
-<pre><code class="language-bash">cd /opt/evofaceflow/TryOn
-git pull
-docker compose -f docker-compose.prod.yml build backend                       # build new image (contains the migration)
-docker compose -f docker-compose.prod.yml run --rm backend npx prisma migrate deploy  # apply via throwaway new-image container; old container still serving
-docker compose -f docker-compose.prod.yml up -d --build                        # now swap to the new code — column already exists
-</code></pre>
-<p>This only matters for <strong>additive</strong> migrations (new nullable column / table) the
-new code reads immediately. <strong>Destructive</strong> migrations (dropping/renaming/adding
-a NOT-NULL column) are NOT safe to run while the old code is live — those need a
-brief maintenance window or a multi-step expand/contract migration. When in
-doubt, check whether the old running code can tolerate the schema mid-state.</p>
-</blockquote>
-<blockquote>
-<p><strong>nginx-only changes</strong> (editing <code>nginx/*.conf</code>, with no backend code or schema
-change) don't need a backend rebuild, but <code>nginx -s reload</code> alone will <strong>not</strong>
-pick them up after a <code>git pull</code>. The config is bind-mounted as a <em>single file</em>,
-so Docker pins the running container to that file's inode at start time. <code>git pull</code> replaces the file via rename (a new inode), leaving the container — and
-any <code>reload</code> — reading the stale original. You must <strong>force-recreate</strong> the
-nginx container so it remounts the current file (swap <code>dev</code>/<code>prod</code> to match the
-box you're on):</p>
-<pre><code class="language-bash"># Optional: validate the NEW file first via a throwaway container (the running
-# one is pinned to the old inode, so `nginx -t` there tests stale config).
-docker run --rm -v &quot;$PWD/nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro&quot; nginx:alpine nginx -t
-# Apply: recreate just nginx so it re-resolves the bind-mount to the new inode.
-docker compose -f docker-compose.dev.yml up -d --force-recreate nginx
-# Confirm the running container now has your change (grep for a known new line):
-docker compose -f docker-compose.dev.yml exec nginx grep -n verified /etc/nginx/nginx.conf
-</code></pre>
-<p>(<code>docker compose restart nginx</code> is <strong>not</strong> enough — it restarts the same
-container with the same pinned inode. You need a <em>new</em> container.)</p>
-</blockquote>
-<hr>
-<h2 id="project-overview" tabindex="-1"><a class="header-anchor" href="#project-overview" aria-hidden="true">#</a> Project Overview</h2>
-<p>TryOn Mirror is an AI-powered virtual clothing try-on mobile app, using tryon-mirror.ai for its domain (legacy domain: evofaceflow.com — see the Domain migration note above; the iOS bundle id and IAP SKUs permanently keep the <code>com.evofaceflow.tryon.*</code> prefix). It is a monorepo with two main packages:</p>
-<ul>
-<li><code>backend/</code> — Node.js/Express REST API with TypeScript</li>
-<li><code>frontend/</code> — React Native (Expo) mobile app</li>
-</ul>
-<p>Users upload personal body photos to their profile (full body front, medium/waist-up, close-up), then photograph articles of clothing or full outfits while shopping. The app calls the xAI Grok Imagine API to generate images of the user wearing those items, returned in the perspective(s) matching whichever body photos the user has on file.</p>
-<h2 id="commands" tabindex="-1"><a class="header-anchor" href="#commands" aria-hidden="true">#</a> Commands</h2>
-<h3 id="backend" tabindex="-1"><a class="header-anchor" href="#backend" aria-hidden="true">#</a> Backend</h3>
-<pre><code class="language-bash">cd backend
-npm run dev      # Development server with hot reload (ts-node-dev)
-npm run build    # Compile TypeScript to dist/
-npm start        # Run compiled production build
-npm run migrate  # Run Prisma migrations
-npm run seed     # Seed development data
-</code></pre>
-<h3 id="frontend-local-expo-dev-only-not-for-distribution" tabindex="-1"><a class="header-anchor" href="#frontend-local-expo-dev-only-not-for-distribution" aria-hidden="true">#</a> Frontend (local Expo dev only — not for distribution)</h3>
-<pre><code class="language-bash">cd frontend
-npm run start:dev          # ⭐ Dev server for the EAS dev-client (tunnel) — sets APP_VARIANT=development so the QR uses the tryon-dev:// scheme. USE THIS when an App Store build is also installed.
-npm run start:dev:lan      # Same, LAN (no tunnel)
-npx expo start -c          # Dev server with cache clear — open the dev client app to load
-npx expo start --tunnel    # ⚠️ Dev server with the PROD scheme (tryon://). If the App Store app is also installed, scanning this QR opens the STORE app, not the dev client (scheme collision) — use npm run start:dev instead.
-npm run android            # Local native build via Xcode/Android Studio (expo run:android)
-npm run ios                # Local native build via Xcode (expo run:ios)
-npm run web                # Web preview (limited — most native modules don't work on web)
-npm test                   # jest-expo unit tests (src/**/__tests__/*.test.ts)
-</code></pre>
-<blockquote>
-<p><strong>Expo Go does NOT work for this app.</strong> See the &quot;Local Development Setup&quot; section below — the app depends on native modules outside Expo Go's fixed module set, so every device test requires a dev client built via <code>expo run:*</code> or EAS Build.</p>
-</blockquote>
-<p>For TestFlight or App Store distribution, use <strong>EAS Build</strong> instead — see DEPLOYMENT.md §11. EAS is required for any build that includes native code that the user will install (the app uses <code>expo-iap</code>, <code>expo-secure-store</code>, etc. which all require a native build).</p>
-<h3 id="switching-between-local-dev-and-live-backend" tabindex="-1"><a class="header-anchor" href="#switching-between-local-dev-and-live-backend" aria-hidden="true">#</a> Switching Between Local, Dev, and Live Backend</h3>
-<p>The frontend can target the local backend, the dev server, or production. Configure this in <code>frontend/src/config/api.ts</code> via the three-way <code>ENV</code> switch:</p>
-<pre><code class="language-typescript">type ApiEnv = 'local' | 'dev' | 'prod';
-const ENV = 'prod' as ApiEnv;   // flip to 'dev' or 'local' for testing
-
-const LOCAL_URL = 'http://localhost:3000/api';
-const DEV_URL   = 'https://api-dev.tryon-mirror.ai/api';   // dev box also answers as api-dev.evofaceflow.com (legacy)
-const LIVE_URL  = 'https://api.tryon-mirror.ai/api';
-</code></pre>
-<blockquote>
-<p><strong>Domain migration (2026-06-12):</strong> the brand moved from <code>evofaceflow.com</code> / &quot;evoFaceFlow&quot; to <strong><code>tryon-mirror.ai</code> / &quot;TryOn Mirror&quot;</strong> (<code>.com</code>/<code>.net</code>/<code>.app</code> 301 to it). Both boxes answer on BOTH domains (certs + nginx <code>server_name</code> cover each pair). The cutover is <strong>additive</strong> — shipped 1.0.17 app builds hardcode <code>api.evofaceflow.com</code>, so the legacy domain stays registered and serving the API until the 1.1.0 build is live on the App Store and old installs die off. Legacy website pages 301 to the new apex, EXCEPT <code>evofaceflow.com/sms.html</code>, which keeps serving directly because the AWS toll-free SMS registration cites that URL. (That registration is now <strong>APPROVED + the number is ACTIVE</strong> as of 2026-06-13, so the carve-out can be lifted; it's kept serving as a safety margin against AWS re-verification.)</p>
-</blockquote>
-<blockquote>
-<p><strong>Committed code must always say <code>'prod'</code>.</strong> CI has a guard that fails the build otherwise (<a href=".github/workflows/ci.yml">.github/workflows/ci.yml</a>), because a committed <code>'dev'</code>/<code>'local'</code> would point an App Store build at the wrong backend. Flip it locally, flip it back before committing. (This guard caught a real near-miss before the 1.0.17 production build.)</p>
-</blockquote>
-<blockquote>
-<p><strong>🚨 Expo Go does NOT work for this app.</strong> The app depends on native modules that ship outside Expo Go's fixed module set (<code>expo-iap</code>, <code>expo-secure-store</code>, etc.). Launching in Expo Go fails at startup with <code>Cannot find native module 'ExpoIap'</code> and &quot;App entry not found&quot; on the device. Every device-testing flow below assumes a <strong>dev client build</strong> — either a simulator/emulator build via <code>expo run:*</code>, or an installed dev-client app via EAS Build. Once the dev client is installed, JS still hot-reloads from <code>npx expo start</code> like normal.</p>
-</blockquote>
-<p><strong>One-time: build a dev client</strong></p>
-<p>Pick the path that matches your machine and target device:</p>
-<ul>
-<li><strong>iOS Simulator (Mac only):</strong> <code>cd frontend &amp;&amp; npx expo run:ios</code> — builds and installs the dev client into the simulator. Requires Xcode.</li>
-<li><strong>Android Emulator (Mac/Windows/Linux):</strong> <code>cd frontend &amp;&amp; npx expo run:android</code> — builds and installs into the running emulator. Requires Android Studio.</li>
-<li><strong>Physical iPhone from Windows or without a Mac:</strong> use <strong>EAS Build</strong> with the development profile:<pre><code class="language-bash">cd frontend
-npm install -g eas-cli           # one-time
-eas login                        # one-time
-eas build:configure              # one-time, creates eas.json if missing
-eas build --profile development --platform ios
-</code></pre>
-When the build finishes, EAS gives you a QR/install link. Install the resulting dev-client app on your iPhone (TestFlight or internal distribution). Rebuild only when you add or upgrade a native module — JS changes do not require a rebuild.</li>
-<li><strong>Physical Android device:</strong> same flow with <code>--platform android</code>, or run <code>npx expo run:android</code> against the device with USB debugging enabled.</li>
-</ul>
-<p><strong>Local Development Setup (Simulator/Emulator):</strong></p>
-<ol>
-<li>Set <code>ENV = 'local'</code> in <code>frontend/src/config/api.ts</code></li>
-<li>Start backend: <code>cd backend &amp;&amp; npm run dev</code></li>
-<li>Start frontend: <code>cd frontend &amp;&amp; npx expo start</code></li>
-<li>Press <code>a</code> for Android emulator or <code>i</code> for iOS simulator (the dev client launches automatically once it's been built once via <code>expo run:*</code>)</li>
-</ol>
-<p><strong>Local Development Setup (Physical Device — iPhone/Android):</strong></p>
-<p>Requires the dev client to already be installed on the device (see one-time setup above). Then pick one approach for the backend:</p>
-<p><strong>Option A: Use Live or Dev Backend (Recommended for quick testing)</strong></p>
-<ol>
-<li>Set <code>ENV = 'prod'</code> (live) or <code>ENV = 'dev'</code> (dev server) in <code>frontend/src/config/api.ts</code></li>
-<li>Start the metro bundler: <code>cd frontend &amp;&amp; npm run start:dev</code> (sets <code>APP_VARIANT=development</code> so the QR's deep link uses <code>tryon-dev://</code> and reaches the dev client — see the scheme-collision note below)</li>
-<li><strong>Open the dev client app on your phone</strong> (NOT Expo Go) and scan the QR code, or tap the project under &quot;Recently opened&quot; inside the dev client</li>
-<li>Backend is already running on Lightsail — no local backend needed</li>
-</ol>
-<p><strong>Option B: Use Local Backend with ngrok (Full local stack)</strong></p>
-<ol>
-<li>Install ngrok: https://ngrok.com/download</li>
-<li>Start backend services: <code>docker-compose up -d</code> (or <code>cd backend &amp;&amp; npm run dev</code>)</li>
-<li>Expose backend with ngrok: <code>ngrok http 3000</code></li>
-<li>Copy the ngrok URL (e.g., <code>https://abc123.ngrok-free.app</code>)</li>
-<li>Update <code>frontend/src/config/api.ts</code>:<pre><code class="language-typescript">const LOCAL_URL = 'https://abc123.ngrok-free.app/api';  // Your ngrok URL (do NOT commit it)
-const ENV = 'local' as ApiEnv;
-</code></pre>
-</li>
-<li>Start the metro bundler: <code>cd frontend &amp;&amp; npm run start:dev</code></li>
-<li><strong>Open the dev client app on your phone</strong> (NOT Expo Go) and scan the QR code</li>
-<li>Admin Dashboard remains reachable at http://localhost:3000/admin from your dev machine</li>
-</ol>
-<blockquote>
-<p><strong>Note:</strong> The frontend already includes the <code>ngrok-skip-browser-warning</code> header to bypass ngrok's browser warning page.</p>
-</blockquote>
-<blockquote>
-<p><strong>🚨 Dev-client QR scheme collision (why scanning can open the App Store app).</strong> The EAS <code>development</code> build is an &quot;app variant&quot; (<a href="frontend/app.config.js">frontend/app.config.js</a>): when built with <code>APP_VARIANT=development</code> (set in <a href="frontend/eas.json">eas.json</a>) it gets its own identity — name <strong>TryOn Dev</strong>, bundle <code>com.evofaceflow.tryon.app.dev</code>, scheme <strong><code>tryon-dev://</code></strong> — so it can sit beside the App Store build (<code>com.evofaceflow.tryon.app</code>, scheme <code>tryon://</code>). But <code>expo start</code> builds the QR's deep link from the <em>resolved scheme</em>, and <code>APP_VARIANT</code> is <strong>not</strong> set in your shell when you run plain <code>npx expo start</code>, so the QR uses <code>tryon://</code> — which the <strong>App Store app</strong> claims, opening it (showing prod data) instead of the dev client. With the store app deleted, scanning that QR yields &quot;no usable data found&quot; (nothing claims <code>tryon://</code>); pasting the URL under the QR into the dev client's manual-entry field works because it bypasses scheme routing. <strong>Fix: always start the dev server with <code>npm run start:dev</code></strong> (= <code>cross-env APP_VARIANT=development expo start --tunnel</code>) so the QR uses <code>tryon-dev://</code> and reaches the dev client. The bare <code>npx expo start</code> path is only correct when no App Store build is installed.</p>
-</blockquote>
-<p><strong>Important:</strong> Always set <code>ENV = 'prod'</code> before committing — CI enforces it.</p>
-<h3 id="docker-backend-services-only" tabindex="-1"><a class="header-anchor" href="#docker-backend-services-only" aria-hidden="true">#</a> Docker (Backend Services Only)</h3>
-<p>Docker Compose runs the <strong>backend infrastructure only</strong> (PostgreSQL, Redis, and the Express API). The frontend must always be started separately with Expo.</p>
-<pre><code class="language-bash"># Start backend services (PostgreSQL + Redis + Backend API on port 3000)
-docker-compose up --build
-
-# Then in a separate terminal, start the frontend:
-cd frontend &amp;&amp; npx expo start
-
-# For production-like environment (includes nginx, fail2ban):
-docker-compose -f docker-compose.prod.yml up --build
-</code></pre>
-<p><strong>What Docker Compose includes:</strong></p>
-<ul>
-<li><code>postgres</code> — PostgreSQL 15 database on port 5432</li>
-<li><code>redis</code> — Redis 7 for BullMQ job queue on port 6379</li>
-<li><code>backend</code> — Express API on port 3000 with hot reload</li>
-</ul>
-<p><strong>What Docker Compose does NOT include:</strong></p>
-<ul>
-<li>Frontend (React Native/Expo) — always run separately</li>
-<li>ngrok tunnel — set up separately if needed for physical device testing</li>
-</ul>
-<h3 id="cicd" tabindex="-1"><a class="header-anchor" href="#cicd" aria-hidden="true">#</a> CI/CD</h3>
-<p><strong>Deploys are manual; CI is tests-only.</strong> <a href=".github/workflows/ci.yml">.github/workflows/ci.yml</a> runs on every push/PR to <code>develop</code>/<code>main</code>: backend <code>tsc</code> + tests (Node 20, matching the prod image — <code>node --test</code> via <a href="backend/scripts/run-tests.js">scripts/run-tests.js</a>; mostly pure unit tests, plus a <strong>supertest integration test</strong> <a href="backend/src/routes/video.upload.test.ts">src/routes/video.upload.test.ts</a> that exercises the real video-upload multer middleware + source selection), frontend <code>tsc</code> + jest-expo, a guard that fails if the committed <a href="frontend/src/config/api.ts">frontend/src/config/api.ts</a> targets anything but <code>prod</code>, and an informational <code>npm audit</code>. <a href=".github/dependabot.yml">.github/dependabot.yml</a> opens weekly grouped dependency PRs (bump expo-managed packages via <code>npx expo install</code>, not by merging those PRs blindly). <strong>No workflow deploys anything.</strong> Production changes happen only when you SSH into Lightsail and run <code>git pull</code> + <code>docker compose -f docker-compose.prod.yml up -d --build</code> (see the DEPLOYMENT CHECKLIST at the top of this file and DEPLOYMENT.md §13). This is deliberate: it prevents accidental pushes from reaching production, which is especially important during App Store review windows.</p>
-<h3 id="git-workflow" tabindex="-1"><a class="header-anchor" href="#git-workflow" aria-hidden="true">#</a> Git workflow</h3>
-<p>The branch-PR-merge workflow for making code changes lives in <a href="contributing.html">CONTRIBUTING.md</a>. When the user asks &quot;how do I commit / merge / branch / push&quot; type questions, refer them to the relevant section there rather than re-explaining inline.</p>
-<hr>
-<h2 id="logging" tabindex="-1"><a class="header-anchor" href="#logging" aria-hidden="true">#</a> Logging</h2>
-<p>The backend uses <strong>Winston</strong> for structured logging with daily file rotation.</p>
-<h3 id="log-levels" tabindex="-1"><a class="header-anchor" href="#log-levels" aria-hidden="true">#</a> Log Levels</h3>
-<ul>
-<li><code>error</code> - Application errors, exceptions, failed operations</li>
-<li><code>warn</code> - Warnings, deprecations, suspicious activity (e.g., suspicious login locations)</li>
-<li><code>info</code> - Key business events, state changes, successful operations</li>
-<li><code>http</code> - HTTP request/response logging</li>
-<li><code>debug</code> - Detailed debugging information (verbose in dev)</li>
-</ul>
-<h3 id="environment-variables" tabindex="-1"><a class="header-anchor" href="#environment-variables" aria-hidden="true">#</a> Environment Variables</h3>
-<pre><code class="language-bash">LOG_LEVEL=debug       # Set log level (default: debug in dev, info in prod)
-LOG_DIR=/var/log/tryon  # Log file directory (default: ./logs)
-LOG_TO_FILE=true      # Enable file logging in development
-</code></pre>
-<h3 id="log-files-production" tabindex="-1"><a class="header-anchor" href="#log-files-production" aria-hidden="true">#</a> Log Files (Production)</h3>
-<p>Located at <code>/var/log/tryon/</code> (Docker volume <code>backend_logs</code>):</p>
-<ul>
-<li><code>combined-YYYY-MM-DD.log</code> - All logs, rotated daily, 14-day retention</li>
-<li><code>error-YYYY-MM-DD.log</code> - Errors only, 30-day retention</li>
-<li><code>exceptions-YYYY-MM-DD.log</code> - Unhandled exceptions</li>
-<li><code>rejections-YYYY-MM-DD.log</code> - Unhandled promise rejections</li>
-</ul>
-<h3 id="viewing-logs" tabindex="-1"><a class="header-anchor" href="#viewing-logs" aria-hidden="true">#</a> Viewing Logs</h3>
-<p>After SSHing into Lightsail and <code>cd /opt/evofaceflow/TryOn</code>:</p>
-<pre><code class="language-bash"># All services together (most useful for live debugging) — backend + postgres
-# + redis + nginx in one stream. Each line is prefixed with the container name.
-docker compose -f docker-compose.prod.yml logs -f --tail=200
-
-# Just the backend Express app
-docker compose -f docker-compose.prod.yml logs -f backend --tail=200
-
-# Structured backend logs (JSON lines with correlationId, userId, service —
-# higher fidelity than `docker compose logs`; best when chasing a specific
-# request)
-docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/tryon/combined-$(date +%Y-%m-%d).log
-
-# Just errors (lower noise)
-docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/tryon/error-$(date +%Y-%m-%d).log
-
-# Filter live for one user / correlation ID
-docker compose -f docker-compose.prod.yml logs -f backend | grep --line-buffered &quot;&lt;userId&gt;&quot;
-
-# Or mount the log volume directly from the host (no `exec` needed)
-docker volume inspect www_backend_logs  # Find mount point
-tail -f /var/lib/docker/volumes/www_backend_logs/_data/combined-*.log
-</code></pre>
-<p>Hit <code>Ctrl+C</code> to stop tailing. Day-to-day, the first command (all services, last 200 lines) is the one you'll reach for most.</p>
-<h3 id="log-management-strategy" tabindex="-1"><a class="header-anchor" href="#log-management-strategy" aria-hidden="true">#</a> Log Management Strategy</h3>
-<ol>
-<li><strong>Daily rotation</strong> prevents single files from growing too large</li>
-<li><strong>14-day retention</strong> for combined logs (configurable)</li>
-<li><strong>30-day retention</strong> for error logs (useful for debugging recurring issues)</li>
-<li><strong>Gzip compression</strong> of rotated logs saves disk space</li>
-<li><strong>Correlation IDs</strong> in <code>x-correlation-id</code> header trace requests across services</li>
-</ol>
-<h3 id="whats-logged" tabindex="-1"><a class="header-anchor" href="#whats-logged" aria-hidden="true">#</a> What's Logged</h3>
-<ul>
-<li>HTTP requests/responses (method, path, status, duration, user ID)</li>
-<li>Authentication events (login, signup, failed attempts, token refresh)</li>
-<li>External API calls (Grok/xAI, ip-api, SMTP) with timing and status</li>
-<li>Job processing (try-on queue events)</li>
-<li>File uploads (S3 operations)</li>
-<li>Security events (rate limiting, suspicious locations)</li>
-<li>Database errors and slow queries (&gt;1s)</li>
-</ul>
-<hr>
-<h2 id="error-tracking-observability-sentry" tabindex="-1"><a class="header-anchor" href="#error-tracking-observability-sentry" aria-hidden="true">#</a> Error Tracking &amp; Observability (Sentry)</h2>
-<p>The backend integrates <strong>Sentry</strong> (<code>@sentry/node</code>) for exception/crash reporting — stack traces, breadcrumbs, release tagging, and alerting — on top of the Winston logs above. Winston answers &quot;what happened over time&quot;; Sentry answers &quot;what broke, where in the code, and how often.&quot;</p>
-<p><strong>The whole integration is gated on <code>SENTRY_DSN</code>.</strong> When that env var is unset (local dev, or any box not yet wired up), <code>Sentry.init()</code> is never called and every <code>captureException</code> / <code>setupExpressErrorHandler</code> call is a cheap no-op. Turning Sentry on in an environment is purely a matter of setting <code>SENTRY_DSN</code> in that box's <code>backend/.env</code> — <strong>no code change, no redeploy logic</strong>. (As of 2026-06-08, <code>SENTRY_DSN</code> is set on <strong>both prod and dev</strong>, so error capture is <strong>live</strong> on both boxes. Local dev still runs without it = disabled no-op.)</p>
-<p><strong>Files:</strong></p>
-<ul>
-<li><a href="backend/src/instrument.ts">backend/src/instrument.ts</a> — owns <code>Sentry.init()</code>. Imported as the <strong>very first line</strong> of <a href="backend/src/index.ts">index.ts</a> (before Express/http) so the SDK's auto-instrumentation can patch them at require time. Exports <code>sentryRuntime</code> (a secrets-free status snapshot for the dashboard).</li>
-<li><a href="backend/src/utils/scrub.ts">backend/src/utils/scrub.ts</a> — pure PII/secret scrubber wired in as Sentry's <code>beforeSend</code>. Redacts sensitive request headers (incl. <code>authorization</code>, <code>cookie</code>, <strong><code>x-admin-key</code></strong>), all cookies, sensitive request-body fields, and the user's email/IP/username (keeps <code>user.id</code> for correlation). Unit-tested in <code>scrub.test.ts</code> — run <code>npm test</code> in <code>backend/</code>.</li>
-<li><a href="backend/src/services/sentryService.ts">backend/src/services/sentryService.ts</a> — dashboard read-side: config status, &quot;recent unresolved issues&quot; via Sentry's REST API (optional), and a &quot;send test event&quot; helper.</li>
-</ul>
-<p><strong>What's captured:</strong></p>
-<ul>
-<li>Unhandled errors that reach the Express error pipeline (5xx) — via <code>Sentry.setupExpressErrorHandler(app)</code>, registered after routes and before our own error middleware.</li>
-<li>Unhandled promise rejections / uncaught exceptions — via the SDK's default integrations.</li>
-<li><strong>Terminal</strong> worker failures in the revenue/entitlement-critical queues: <code>tryonWorker</code> (excludes expected content-moderation blocks — those are policy, not errors) and <code>appleNotificationWorker</code> (final attempt only, so retries don't spam).</li>
-</ul>
-<p><strong>Privacy:</strong> <code>sendDefaultPii: false</code> plus the <code>beforeSend</code> scrubber. Keep <code>scrub.ts</code>'s <code>SENSITIVE_KEY</code> list in sync with anything new that counts as a secret. Tracing is <strong>off by default</strong> (<code>SENTRY_TRACES_SAMPLE_RATE=0</code>) to preserve the free-tier quota — errors are the goal.</p>
-<p><strong>Environment separation (production / development / local):</strong> every event carries a Sentry <code>environment</code> tag — prod box = <code>production</code> (explicit <code>SENTRY_ENVIRONMENT</code> in its <code>.env</code>), dev box = <code>development</code> (derived from <code>APP_URL</code> containing <code>api-dev</code>), and the local-dev <code>.env</code> sets <code>SENTRY_ENVIRONMENT=local</code> so laptop errors never mix into the dev box's view. The admin dashboard's recent-issues feed and its &quot;Open in Sentry&quot; link are <strong>scoped to the box's own environment</strong> (<code>fetchRecentIssues</code> passes <code>&amp;environment=</code> — before 2026-06-12 it didn't, so both dashboards showed the union of all environments). In the Sentry UI, use the environment selector (top bar) or the env-pinned dashboards <strong>TryOn Backend — 🟢 Production</strong> / <strong>🛠 Development</strong> to view one environment at a time.</p>
-<p><strong>Crons (scheduled-job monitoring):</strong> the four meaningful BullMQ scheduled jobs check in to Sentry Crons via <a href="backend/src/utils/cronMonitor.ts">utils/cronMonitor.ts</a> (<code>withCronMonitor</code> wraps each worker's processor): <code>vulnerability-scan</code> (daily 2:00), <code>guest-cleanup</code> (daily 3:00), <code>guest-abuse-monitor</code> (hourly), <code>s3-orphan-scan</code> (weekly Sun 3:00). Monitors are upserted on first check-in (no manual UI setup) and Sentry alerts when a run errors, overruns <code>maxRuntime</code>, or <strong>never starts</strong> — the failure mode logs can't catch. Check-ins are skipped outside the <code>production</code>/<code>development</code> environments so a laptop backend doesn't page &quot;missed run&quot; all day. The 5-minute queue-health check is deliberately not monitored (too chatty; it's itself a monitor). If a job's schedule changes, keep <code>withCronMonitor</code>'s crontab in sync with the BullMQ <code>repeat.pattern</code> beside it.</p>
-<p>See the Environment Variables section for <code>SENTRY_*</code>, and the Admin Dashboard's <strong>🩺 Diagnostics</strong> tab (below) for live status + a test button.</p>
-<p><strong>Mobile (React Native) Sentry</strong> mirrors this posture and is <strong>LIVE as of the 1.0.17 production builds (2026-06-10)</strong>. <code>@sentry/react-native</code> is initialized in <a href="frontend/App.tsx">frontend/App.tsx</a>, <strong>gated on <code>EXPO_PUBLIC_SENTRY_DSN</code></strong> — unset = no-op passthrough (so local dev clients without the env var stay dark). <code>sendDefaultPii: false</code> and errors-only (<code>tracesSampleRate</code> 0), matching the backend. The activation lives in <strong>EAS production env vars</strong> (project <code>@bruhnf/tryon</code>): <code>EXPO_PUBLIC_SENTRY_DSN</code> + <code>EXPO_PUBLIC_SENTRY_ENVIRONMENT=production</code> (plaintext) and <code>SENTRY_AUTH_TOKEN</code> (secret, write-scoped) for source-map/dSYM upload via the Expo config plugin. ⚠️ The plugin <strong>hard-fails the iOS archive</strong> if <code>SENTRY_AUTH_TOKEN</code> is missing or lacks upload permission (two builds were lost to this — escape hatch: <code>SENTRY_DISABLE_AUTO_UPLOAD=true</code>). The RN project is <code>bruhnfreemancom/react-native</code> (separate DSN from the backend's <code>node-express</code> project). Five monitoring dashboards live at https://bruhnfreemancom.sentry.io/dashboards/ (Mission Control, Mobile Crash Watch, Backend API Health, User Impact, Release Quality).</p>
-<hr>
-<h2 id="architecture" tabindex="-1"><a class="header-anchor" href="#architecture" aria-hidden="true">#</a> Architecture</h2>
-<h3 id="website-website" tabindex="-1"><a class="header-anchor" href="#website-website" aria-hidden="true">#</a> Website (<code>website/</code>)</h3>
-<p>Static landing page for TryOn Mirror with web authentication. Hosted via the nginx container (mounted as <code>/var/www/website</code> per <code>docker-compose.prod.yml</code>).</p>
-<ul>
-<li><strong>index.html</strong> — Main landing page promoting TryOn app</li>
-<li><strong>login.html</strong> — Web login page</li>
-<li><strong>signup.html</strong> — Web signup page</li>
-<li><strong>account.html</strong> + <strong>js/account.js</strong> — logged-in account page</li>
-<li><strong>tryons.html</strong> + <strong>js/tryons.js</strong> — logged-in &quot;My Try-Ons&quot; page (the user-facing web portal for try-on history, via <code>GET /api/tryon/history</code>). Each session card shows <strong>only two input thumbnails</strong> — the body photo and the clothing item — plus the optional caption, date, privacy toggle and delete. Tapping either thumbnail (or &quot;View all&quot;) opens a <strong>full-screen carousel</strong> that pages through <em>every</em> image in that session (both inputs, no badge, and the AI results, each with the ✨ AI-generated badge) with prev/next arrows, a counter, and keyboard (←/→/Esc) navigation.</li>
-<li><strong>sms.html</strong> — SMS opt-in page</li>
-<li><strong>privacy.html</strong> — <strong>Privacy Policy</strong> (linked from Settings, Signup consent, and PurchaseScreen disclosures). Required by App Store Review.</li>
-<li><strong>terms.html</strong> — <strong>Terms of Service</strong> (same link surfaces). Required by App Store Review.</li>
-<li><strong>css/style.css</strong> — Black/white minimal design</li>
-<li><strong>js/auth.js</strong> — Client-side authentication (calls backend API)</li>
-</ul>
-<p><strong>URLs:</strong></p>
-<ul>
-<li><code>https://tryon-mirror.ai</code> — Landing page</li>
-<li><code>https://tryon-mirror.ai/privacy.html</code> — Privacy Policy (referenced from <code>frontend/src/constants/legal.ts</code>)</li>
-<li><code>https://tryon-mirror.ai/terms.html</code> — Terms of Service (same)</li>
-<li><code>https://www.tryon-mirror.ai</code> — Redirects to non-www</li>
-<li><code>https://api.tryon-mirror.ai</code> — Backend API</li>
-<li><code>https://api.tryon-mirror.ai/admin</code> — Admin web dashboard (requires <code>ADMIN_API_KEY</code>)</li>
-</ul>
-<p><strong>Note:</strong> The website makes API calls to <code>api.tryon-mirror.ai</code>. Ensure <code>ALLOWED_ORIGINS</code> in backend <code>.env</code> includes <code>https://tryon-mirror.ai</code>. Website files (<code>privacy.html</code>, <code>terms.html</code>, etc.) are bind-mounted into the nginx container (<code>./website:/var/www/website:ro</code> in <code>docker-compose.prod.yml</code>), so a plain <code>git pull</code> on Lightsail surfaces them immediately — no container restart or rebuild needed for HTML-only changes.</p>
-<blockquote>
-<p><strong>⚠️ Gotcha — world-readable perms after <code>git pull</code>.</strong> The prod host's umask is <code>007</code>, so files <strong>created or modified</strong> by <code>git pull</code> land as <code>rw-rw----</code> (660, no world-read). The nginx worker runs as a non-root user inside the container and returns <strong>403</strong> for any website file it can't read — so a <em>new</em> page (e.g. <code>sms.html</code>) or a <em>changed</em> page (e.g. an edited <code>privacy.html</code>) 403s while untouched files keep serving. Fix after any website change: <code>chmod -R a+rX website</code> on the prod host (bind-mounted, takes effect immediately, no restart). Symptom: 403 on the new/changed page, other pages fine.</p>
-</blockquote>
-<h3 id="backend-backendsrc" tabindex="-1"><a class="header-anchor" href="#backend-backendsrc" aria-hidden="true">#</a> Backend (<code>backend/src/</code>)</h3>
-<p>Express app with JWT authentication and BullMQ job queue for async AI image generation.</p>
-<ul>
-<li><strong>Entry point</strong>: <code>index.ts</code> — mounts all middleware (Helmet, CORS, rate limiting) and routes</li>
-<li><strong>Routes</strong>: <code>routes/</code> — <code>auth</code> (signup / login / refresh / logout / forgot-password / reset-password / resend-verification, plus authenticated <code>POST /change-password</code> which requires the current password and rotates the bcrypt hash + revokes every refresh token for the user; plus the <strong>guest-mode</strong> pair <code>POST /guest</code> — mints an anonymous account — and authenticated <code>POST /claim</code> — converts the current guest into a real account; see Guest Mode in Key Business Rules), <code>upload</code>, <code>tryon</code> (submit / <code>GET /history</code> / <code>GET /:jobId</code> / <code>POST /bulk-delete</code> / <code>PATCH /:jobId/privacy</code> (blockGuests) / <code>PATCH /:jobId/title</code> — set or clear the optional caption, owner-only, requireAuth only since captioning isn't a publish action), <code>admin</code>, <code>friends</code>, <code>feed</code>, <code>profile</code> (includes <code>POST /me/ai-consent</code> and <code>DELETE /me/ai-consent</code> — see AI Processing Consent in Key Business Rules), <code>credits</code>, <code>notifications</code>, <code>likes</code>, <code>appleWebhook</code> (mounted at <code>/api/webhooks/apple</code>), <code>moderation</code> (mounted under <code>/api</code>, exposes <code>/reports</code>, <code>/users/:id/block</code>, <code>/users/me/blocks</code>), <code>comments</code> (mounted under <code>/api</code>, exposes <code>GET/POST /tryon/:jobId/comments</code> and <code>DELETE /comments/:commentId</code>), <code>closet</code> (mounted at <code>/api/closet</code> — Outfit Designer: <code>POST /generate</code> text-to-outfit via Grok Imagine, <code>GET /</code> list, <code>PATCH /:itemId</code> rename, <code>DELETE /:itemId</code>; requireAuth + blockGuests, 3/min rate limit on generate — see Outfit Designer &amp; Closet in Key Business Rules), <code>video</code> (mounted at <code>/api/video</code> — AI image-to-video: <code>POST /</code> submit (multipart <code>photo</code> OR <code>sourceJobId</code> OR <code>bodyPhoto</code>), <code>GET /</code> the caller's completed videos; requireAuth + blockGuests, 3/min rate limit — see AI Video in Key Business Rules)</li>
-<li><strong>Controllers</strong>: <code>controllers/</code> — one per route group</li>
-<li><strong>Services</strong>: <code>services/grokService.ts</code> — calls xAI Grok Imagine API for AI image generation</li>
-<li><strong>Services</strong>: <code>services/locationService.ts</code> — geo-IP lookup and suspicious-location detection</li>
-<li><strong>Services</strong>: <code>services/emailService.ts</code> — sends account verification and transactional emails</li>
-<li><strong>Queue</strong>: <code>queue/</code> — BullMQ workers consume try-on job payloads backed by Redis</li>
-<li><strong>Middleware</strong>: <code>middleware/</code> — JWT verification, subscription gating, upload validation</li>
-<li><strong>Prisma</strong>: <code>prisma/schema.prisma</code> — database schema; migrations in <code>prisma/migrations/</code></li>
-</ul>
-<p><strong>Try-on flow:</strong></p>
-<ol>
-<li>Client uploads 1 item of clothing or outfit photo → S3 via multer-s3</li>
-<li>Backend determines which user body photos exist (full body, medium — never close-up/profile)</li>
-<li>If neither full body nor medium exists → return 422 with <code>NO_BODY_PHOTOS</code> error code; frontend shows the upload prompt dialog</li>
-<li>Weekly + storage caps enforced (<code>TRYON_LIMIT_REACHED</code> if user has 500 stored sessions; <code>WEEKLY_LIMIT_REACHED</code> for subscribers without credits)</li>
-<li>Credit deduction tagged with <code>(job=&lt;jobId&gt;)</code> in the <code>CreditTransaction.description</code> so the worker can refund on terminal failure</li>
-<li><strong>Soft throttle</strong> runs (<code>services/throttleService.ts</code>) — see &quot;Soft per-user throttle&quot; under Key Business Rules. Computes a BullMQ <code>delay</code> and stores the effective start time on <code>TryOnJob.scheduledStartAt</code> so the client can render a &quot;starts in X:XX&quot; countdown.</li>
-<li>Job queued in Redis (BullMQ) with S3 keys for clothing photo + available user body photo keys</li>
-<li>Worker calls Grok Imagine API once per available body photo perspective</li>
-<li>Result images stored in S3; job result written back to DB</li>
-<li>Client polls or receives push notification on completion</li>
-<li><strong>Terminal failure path:</strong> after BullMQ exhausts retries (3 attempts with exponential backoff), the worker's <code>failed</code> handler marks the row <code>FAILED</code>, looks up the <code>(job=&lt;jobId&gt;)</code>-tagged <code>USAGE</code> CreditTransaction, and — if found — creates a matching <code>REFUND</code> transaction + increments <code>User.credits</code>. Idempotent on the REFUND tag so duplicate failure events don't double-refund. <strong>Every terminal failure (and every partial moderation block) also emails <code>ADMIN_EMAILS</code></strong> via <code>sendTryOnFailureAlert</code> (still email-only from the backend — the toll-free SMS number <code>+18337624449</code> is approved/active as of 2026-06-13 and usable for manual/ops texts, but no backend SMS sender is wired into the alert path yet).</li>
-<li><strong>Partial-results handling (moderation AND transient failures):</strong> per-perspective outcomes are classified by <a href="backend/src/utils/moderationGrace.ts">utils/moderationGrace.ts</a> (<code>classifyOutcomes</code>, unit-tested). If at least one perspective generates, the job <strong>COMPLETEs with the survivors</strong> (<code>perspectivesUsed</code> lists only what was delivered) and a user-facing note is stored in the COMPLETE job's <code>errorMessage</code> (rendered by <code>TryOnScreen</code>'s ResultView): (a) a <strong>moderation partial</strong> (Grok blocked one view) → no strike, no refund — a result was delivered and the surviving perspective passing is evidence of a filter false positive; (b) a <strong>transient partial</strong> (Grok 5xx/S3/download error still failing on the FINAL retry attempt) → <strong>credit refunded</strong> + note saying so. Earlier attempts still rethrow so BullMQ retries the whole job (persisted perspectives are skipped on retry). Total losses: ALL perspectives moderated → <code>CONTENT_MODERATED</code> failure with a strike, where the first <code>MODERATION_GRACE_WARNINGS</code> (3) strikes are refunded <strong>warnings</strong> (&quot;warning N of 3&quot;) and strike 4+ applies the ToS §5.4 no-refund policy; ALL lost with ≥1 transient error → ordinary terminal failure (refund, <strong>no</strong> strike — an error, not the filter, may explain the miss).</li>
-</ol>
-<p><strong>Body photo priority rule (enforced in service layer):</strong></p>
-<ul>
-<li>Primary output: full body photo perspective</li>
-<li>Fallback: medium/waist-up photo perspective</li>
-<li>Close-up/profile photo: NEVER used as input to Grok Imagine</li>
-</ul>
-<h3 id="frontend-frontendsrc" tabindex="-1"><a class="header-anchor" href="#frontend-frontendsrc" aria-hidden="true">#</a> Frontend (<code>frontend/src/</code>)</h3>
-<p>React Native app using Expo with React Navigation and Zustand for state.</p>
-<ul>
-<li><strong>Screens</strong>: <code>screens/</code>
-<ul>
-<li><code>LoginScreen</code> — email + password</li>
-<li><code>SignupScreen</code> — email + password only (1.0.17; no photo required to proceed). No username field: a claiming guest keeps their <code>user#######</code> handle and a direct signup gets one generated server-side — changeable later in EditProfile. Consent checkbox links to Privacy Policy and Terms of Service.</li>
-<li><code>OnboardingPhotoScreen</code> — soft prompt to upload body photos after signup; can skip</li>
-<li><code>HomeScreen</code> — scrollable feed of community try-on results. The author's optional caption (<code>TryOnJob.title</code>) renders under the result image, above the like/comment footer. <strong>VIDEO</strong> posts render the poster (source image) with a ▶ overlay → tap opens <code>VideoPlayerModal</code>. Three-dot menu on each card for Report/Block (own posts: Make Private/Share/Delete).</li>
-<li><code>TryOnScreen</code> — main feature; upload 1 clothing/outfit photo, view AI results. Has an optional <strong>caption</strong> field (<code>TryOnJob.title</code>) and a prominent <strong>&quot;Design Your Own Outfit&quot;</strong> card (gold-on-black, below the privacy toggle) linking to the Closet. The &quot;Photograph an outfit…&quot; helper text sits below the clothing photos.</li>
-<li><code>VideoScreen</code> — AI <strong>image-to-video</strong>: pick a source (a completed try-on, a camera-roll photo, or a profile body photo) + a motion prompt (&quot;wave and smile&quot;, &quot;do a spin&quot;), optional caption, privacy toggle; surfaces <code>AiConsentModal</code>; polls <code>GET /api/tryon/:jobId</code> and shows the result in an <code>expo-video</code> <code>VideoView</code>. The <strong>Video</strong> bottom tab + the 3-dot &quot;Animate a Photo (Video)&quot; item open it. See AI Video in Key Business Rules.</li>
-<li><code>ProfileScreen</code> — avatar, full body photo, medium photo, stats, results grid (VIDEO entries show their poster with a ▶ overlay → open <code>VideoPlayerModal</code>)</li>
-<li><code>PublicProfileScreen</code> — view another user's public profile and try-on history. Header three-dot menu for Report/Block. Shows &quot;you've blocked this user&quot; empty state when applicable.</li>
-<li><code>EditProfileScreen</code> — edit bio, username, body photos</li>
-<li><code>FriendsScreen</code> — Following / Followers tabs + search</li>
-<li><code>InboxScreen</code> — in-app notifications (FOLLOW / LIKE / COMMENT / COMMENT_REPLY / COMMENT_LIKE / TRYON_COMPLETE). LIKE / COMMENT / COMMENT_REPLY / COMMENT_LIKE taps open the relevant try-on's comment thread (deep-linking to the specific comment when <code>commentId</code> is set); FOLLOW taps open the actor's profile.</li>
-<li><code>TryOnCommentsScreen</code> — full-screen comment thread for a single TryOn. Reached from the comments icon on every Home feed card and from COMMENT / COMMENT_REPLY / COMMENT_LIKE / LIKE notifications. Supports single-level replies (Instagram-style) and per-comment likes. Comment authors can delete their own comments; TryOn owners can delete any comment on their own post (cascade-deletes its replies); other users can Report.</li>
-<li><code>SettingsScreen</code> — account (Email, Username, Tier, Credits, Change Password), subscription (Restore Purchases, Manage Subscription deep link), Privacy &amp; Data (Blocked Users, AI Processing Consent status + Revoke button when granted, Delete Body Photos, Export My Data, Delete Account), Announcements (&quot;Show Announcement at Launch&quot; switch for the currently published splash — see Splash / Announcement Screen under Key Business Rules), Legal (Privacy/Terms in WebBrowser), Admin (only visible to admin allowlist)</li>
-<li><code>ChangePasswordScreen</code> — modal launched from Settings → Account → Change Password. Requires current password as re-auth, enforces the same complexity rules as signup, and forces re-login on success (server invalidates all refresh tokens).</li>
-<li><code>BlockedUsersScreen</code> — list and unblock previously-blocked users (modal presentation so it stacks above Settings)</li>
-<li><code>AdminConsoleScreen</code> — admin-only screen, route only registered when <code>__DEV__ || user.isAdmin</code></li>
-<li><code>PurchaseScreen</code> — StoreKit-driven purchase flow. Fetches localized prices from Apple, presents tiers + credit packs, real Restore Purchases. Auto-renew disclosure rendered adjacent to each subscribe button (App Store Guideline 3.1.2(a)).</li>
-</ul>
-</li>
-<li><strong>Components</strong>: <code>components/</code> — shared UI:
-<ul>
-<li><code>CreditDisplay</code>, <code>HeaderMenu</code></li>
-<li><code>TryOnResultCard</code>, <code>TryOnDetailModal</code>, <code>FullScreenImageModal</code> — each renders <code>AiGeneratedBadge</code> over result images</li>
-<li><code>AiGeneratedBadge</code> — visible &quot;✨ AI-generated&quot; pill required by Guideline 4.0</li>
-<li><code>AiConsentModal</code> — explicit opt-in dialog naming xAI / Grok Imagine, listing what is sent / not sent, with links to our and xAI's privacy policies. Surfaced by <code>TryOnScreen.handleSubmit</code> <strong>and <code>VideoScreen</code></strong> whenever <code>user.aiProcessingConsentAt</code> is null; on agree it posts <code>/api/profile/me/ai-consent</code>, updates the user store, then calls back so the caller retries the submit. Required by App Store Guidelines 5.1.1(i) / 5.1.2(i).</li>
-<li><code>VideoPlayerModal</code> — full-screen looping <code>expo-video</code> player (with <code>AiGeneratedBadge</code>) for an AI video result. Opened from the HomeScreen feed card and the ProfileScreen grid when a job is <code>kind:VIDEO</code>. (<code>expo-video</code> is a native module — requires a dev-client/EAS rebuild, not just a JS reload.)</li>
-<li><code>ReportSheet</code> — bottom-sheet modal with 6 reason options (INAPPROPRIATE, HARASSMENT, IMPERSONATION, SPAM, COPYRIGHT, OTHER) + free-text details. Used by HomeScreen, PublicProfileScreen, and TryOnCommentsScreen.</li>
-<li><code>SplashAnnouncementModal</code> — backend-controlled launch announcement. Mounted once in <code>navigation/index.tsx</code> inside the NavigationContainer; fetches <code>GET /api/splash</code> on cold start and shows the published image full-screen behind an OK gate (&quot;Don't show this again&quot; appears from the second showing of the same splash). Local seen/dismiss state lives in SecureStore keyed by the splash id (<code>utils/splash.ts</code> — pure decision logic unit-tested). Renders nothing when no splash is published or on any fetch error — it must never block startup. See Splash / Announcement Screen under Key Business Rules.</li>
-</ul>
-</li>
-<li><strong>Services</strong>: <code>services/iap.ts</code> — wraps <code>expo-iap</code>. Manages connection lifecycle, fetches localized products, initiates StoreKit purchases with <code>appAccountToken: user.id</code>, posts signed JWS to backend <code>/api/credits/verify-receipt</code>, finishes transactions only after backend confirms.</li>
-<li><strong>State</strong>: <code>store/useUserStore.ts</code> — Zustand store holding authenticated user (including <code>isAdmin</code> flag from server). <code>store/useNotificationStore.ts</code> — unread count for inbox tab badge.</li>
-<li><strong>API config</strong>: <code>config/api.ts</code> — base URL switching between dev and production</li>
-<li><strong>Constants</strong>: <code>constants/legal.ts</code> — Privacy Policy URL, Terms of Service URL, support / privacy email addresses</li>
-<li><strong>Hooks</strong>: <code>hooks/useTryOn.ts</code>, <code>hooks/useBodyPhotos.ts</code></li>
-</ul>
-<p><strong>Navigation structure:</strong></p>
-<ul>
-<li><strong>Guest sessions are always signed in.</strong> On first open, <code>useUserStore.initialize()</code> mints an anonymous guest (<code>POST /auth/guest</code>) when <strong>no token is stored</strong>. The root navigator branches on <code>user.isGuest</code>: a guest gets the main tabs (browsable feed + a free try-on) with the Profile and Inbox tabs replaced by <code>GuestProfileScreen</code> / <code>GuestPromptScreen</code>, and the Login/Signup flow (<code>AuthNavigator</code>) presented as a <strong>modal</strong> named <code>Auth</code>. On successful login/conversion the store flips <code>isGuest</code> to false and the whole guest branch is swapped for the real-user screens (no manual modal dismissal). See Guest Mode in Key Business Rules.</li>
-<li><strong>Returning real user with a dead session → Login, not guest.</strong> A stored token belongs to either a <code>'real'</code> or <code>'guest'</code> session (persisted as <code>session_kind</code> in SecureStore alongside the tokens). If bootstrap (or a mid-session refresh failure) finds the token unusable (4xx / refresh failed), it routes a <strong>real</strong> session to the full-screen <code>AuthNavigator</code> (re-authenticate into the real account) by setting <code>sessionEnded</code>, while a <strong>guest</strong> or genuinely tokenless session falls back to a fresh guest. This prevents silently demoting a verified user to a credited guest. <code>setUser</code> clears <code>sessionEnded</code>; a true network/5xx error sets <code>bootstrapError</code> (retry screen) instead.</li>
-<li>Authenticated tabs (1.3.0): Home | Friends | Design | [Camera FAB — TryOn] | Video | Inbox | Profile (7 tabs). <strong>Design</strong> opens the Closet / Outfit Designer (<code>ClosetScreen</code>; guests → <code>GuestPromptScreen</code>). <strong>Video</strong> opens <code>VideoScreen</code> (AI image-to-video; guests → <code>GuestPromptScreen</code>). The <code>Closet</code> card route still exists for picker mode (TryOn → &quot;pick from closet&quot;) and the 3-dot menu; ClosetScreen hides its back chevron when it's the Design tab root (<code>navigation.canGoBack()</code>).</li>
-<li>Modal screens: Settings, EditProfile, AdminConsole (dev/admin-only), Purchase, BlockedUsers, Auth (guest only)</li>
-<li>Card screens: PublicProfile, TryOnComments (both reachable by guests — browsing is open)</li>
-</ul>
-<p><strong>UI style:</strong> Clean white/minimal design (see design screenshots). Black-and-white accent palette. Bottom tab bar with prominent centered camera FAB for quick try-on access. Typography: bold headers, light body text. Rounded pill-shaped toggle buttons for option selection.</p>
-<hr>
-<h2 id="database-schema-postgresql-via-prisma" tabindex="-1"><a class="header-anchor" href="#database-schema-postgresql-via-prisma" aria-hidden="true">#</a> Database Schema (PostgreSQL via Prisma)</h2>
-<h3 id="users" tabindex="-1"><a class="header-anchor" href="#users" aria-hidden="true">#</a> Users</h3>
-<pre><code>id                       String    @id @default(uuid())
-username                 String    @unique @db.Citext  // citext = case-INSENSITIVE uniqueness + lookups (&quot;Bruhn&quot; can't join when &quot;bruhn&quot; exists). App-level conflict checks also use mode:'insensitive'; creation paths map the P2002 check-then-create race to 409, not 500
-email                    String?   @unique @db.Citext  // null for guest accounts until they convert (Postgres allows multiple NULLs under a unique index). citext = case-insensitive uniqueness AND login/forgot-password lookups
-emailNormalized          String?   @unique @db.Citext  // anti-farming canonical form of email (lowercased, &quot;+tag&quot; stripped, Gmail dots removed — utils/emailNormalize.ts). Deduped at signup/claim so one inbox can't mint many accounts to farm welcome+referral credits. Display/mail still use verbatim `email`. Null for guests.
-passwordHash             String?                       // null for guest accounts
-isGuest                  Boolean   @default(false)     // anonymous guest session (see Guest Mode). Real tokens, but rejected from social writes by blockGuests; their try-ons are forced private
-deviceId                 String?                       // iOS identifierForVendor (or Android SSAID) of the device that created the guest. Lets POST /auth/guest reuse one guest per device instead of churning a new row each logout/reopen. Indexed; stays set after conversion (reuse lookup filters isGuest=true)
-verified                 Boolean   @default(false)
-verifyToken              String?
-verifyTokenExpiry        DateTime?
-passwordResetToken       String?
-passwordResetTokenExpiry DateTime?
-tier                     UserTier  @default(FREE)   // FREE | BASIC | PREMIUM
-credits                  Int       @default(0)
-tryOnCount               Int       @default(0)      // lifetime successful try-ons
-moderationBlockCount     Int       @default(0)      // lifetime try-on generations blocked by xAI content moderation (banned-content attempts); incremented by the worker on terminal CONTENT_MODERATED failure; drives the admin strike badge + repeat-offender alert
-lastModerationBlockAt    DateTime?                  // timestamp of the most recent content-moderation block
-lastFreeCreditGrantAt    DateTime?                  // set once at email verification; retained for audit only
-aiProcessingConsentAt    DateTime?                  // most recent explicit consent to send body+clothing photos to xAI/Grok; null = consent required (App Store 5.1.1(i)/5.1.2(i))
-throttleResetAt          DateTime?                  // soft try-on throttle ignores jobs before this time; stamped on credit purchase / subscription so a paying user starts with a clean burst (see Soft per-user throttle)
-firstName                String?
-lastName                 String?
-bio                      String?
-avatarUrl                String?   // S3 key — close-up; profile display only, never sent to Grok
-fullBodyUrl              String?   // S3 key — full-body front; primary Grok input
-mediumBodyUrl            String?   // S3 key — waist-up; fallback Grok input
-followingCount           Int       @default(0)
-followersCount           Int       @default(0)
-likesCount               Int       @default(0)
-address                  String?
-city                     String?
-state                    String?
-createdAt                DateTime  @default(now())
-updatedAt                DateTime  @updatedAt
-</code></pre>
-<h3 id="applepurchase" tabindex="-1"><a class="header-anchor" href="#applepurchase" aria-hidden="true">#</a> ApplePurchase</h3>
-<p>One row per StoreKit transaction. <code>originalTransactionId</code> ties renewals together so the active entitlement can be resolved.</p>
-<pre><code>id                    String    @id @default(uuid())
-userId                String
-transactionId         String    @unique  // unique per renewal
-originalTransactionId String              // stable across renewals
-productId             String              // e.g. com.evofaceflow.tryon.basic.monthly
-tier                  UserTier            // tier this purchase grants
-expiresAt             DateTime?           // null for non-subscription IAPs
-rawReceipt            String?             // signed JWS payload, kept for audit
-revokedAt             DateTime?           // set on REFUND / REVOKE
-autoRenewStatus       Boolean?            // latest auto-renew preference from Apple's signedRenewalInfo. true = will renew at expiresAt, false = pending cancellation (entitlement valid until expiresAt then drops to FREE), null = unknown / credit pack
-appleStatus           Int?                // Apple Status enum from App Store Server API (1=ACTIVE, 2=EXPIRED, 3=BILLING_RETRY, 4=GRACE_PERIOD, 5=REVOKED). Null until admin runs &quot;Refresh from Apple&quot;. Webhooks alone can't surface BILLING_RETRY or GRACE_PERIOD.
-lastSyncedFromAppleAt DateTime?           // timestamp of last successful Server API pull for this row (admin-triggered)
-createdAt             DateTime  @default(now())
-updatedAt             DateTime  @updatedAt
-</code></pre>
-<h3 id="like" tabindex="-1"><a class="header-anchor" href="#like" aria-hidden="true">#</a> Like</h3>
-<pre><code>id        String   @id @default(uuid())
-userId    String
-jobId     String   // TryOnJob being liked
-createdAt DateTime @default(now())
-@@unique([userId, jobId])
-</code></pre>
-<h3 id="notification" tabindex="-1"><a class="header-anchor" href="#notification" aria-hidden="true">#</a> Notification</h3>
-<p>In-app notifications shown on the Inbox screen. Distinct from Apple Server Notifications.</p>
-<pre><code>id        String           @id @default(uuid())
-userId    String           // recipient
-type      NotificationType // FOLLOW | LIKE | TRYON_COMPLETE | COMMENT | COMMENT_REPLY | COMMENT_LIKE
-actorId   String?          // who triggered it
-jobId     String?          // related TryOnJob, if any (set for LIKE / COMMENT / COMMENT_REPLY / COMMENT_LIKE / TRYON_COMPLETE)
-commentId String?          // set for COMMENT_REPLY (the parent comment that was replied to) and COMMENT_LIKE (the comment that was liked). Lets the inbox deep-link straight to that comment in the thread.
-read      Boolean          @default(false)
-createdAt DateTime         @default(now())
-</code></pre>
-<h3 id="refreshtoken" tabindex="-1"><a class="header-anchor" href="#refreshtoken" aria-hidden="true">#</a> RefreshToken</h3>
-<p>Only the SHA-256 <code>token</code> hash is stored (never the raw token). When
-<code>REFRESH_TOKEN_ROTATION</code> is on, a refresh <strong>tombstones</strong> the old row (sets
-<code>rotatedAt</code> + <code>replacedByToken</code>) instead of deleting it, so a crash-in-the-gap
-replay can be recovered rather than revoking the family — see the refresh-token
-rotation note under Security Notes.</p>
-<pre><code>id              String    @id @default(uuid())
-userId          String
-token           String    @unique   // SHA-256 hash of the refresh token
-expiresAt       DateTime
-createdAt       DateTime  @default(now())
-rotatedAt       DateTime?            // set when consumed by a rotation; null = active
-replacedByToken String?              // SHA-256 hash of the successor token minted at rotation
-</code></pre>
-<h3 id="tryonjobs" tabindex="-1"><a class="header-anchor" href="#tryonjobs" aria-hidden="true">#</a> TryOnJobs</h3>
-<pre><code>id                String    @id @default(uuid())
-userId            String
-status            JobStatus  // PENDING | PROCESSING | COMPLETE | FAILED
-isPrivate         Boolean   @default(false)
-kind              TryOnKind @default(IMAGE)  // IMAGE = clothing try-on; VIDEO = AI image-to-video clip (see AI Video). Videos reuse this table so feed/profile/looks/comments/likes/share/moderation/S3-cleanup all work unchanged.
-clothingPhoto1Url String?    // S3 key — NULLABLE: video jobs have no clothing item (their single input is bodyPhotoUrl). Always set for IMAGE try-ons.
-clothingPhoto2Url String?    // S3 key
-resultFullBodyUrl String?    // S3 key — result image for full body perspective (IMAGE only)
-resultMediumUrl   String?    // S3 key — result image for medium perspective (IMAGE only)
-bodyPhotoUrl      String?    // S3 key — IMAGE: body photo input (full preferred, medium fallback). VIDEO: the source image being animated, which also serves as the poster/thumbnail.
-videoUrl          String?    // S3 key (tryon-videos/) of the generated .mp4 — VIDEO only
-motionPrompt      String?    @db.VarChar(300)  // VIDEO only — the user's motion/animation prompt
-perspectivesUsed  String[]   // [&quot;full_body&quot;, &quot;medium&quot;] — records which inputs were used
-likesCount        Int        @default(0)  // denormalized for feed performance
-commentsCount     Int        @default(0)  // denormalized for feed performance
-creditsAtTime     Int?       // user's credit balance at submit time (pre-deduction)
-scheduledStartAt  DateTime?  // set when the soft throttle deferred this submission; null = run immediately. Used by the client to render a &quot;starts in X:XX&quot; countdown.
-title             String?    @db.VarChar(140)  // optional user-authored caption shown under the result image on the feed + web &quot;My Try-Ons&quot;. Trimmed / control-chars stripped / length-capped by sanitizeTryOnTitle; plain text, never rendered as HTML. Captured at submit time and editable via PATCH /api/tryon/:jobId/title.
-errorMessage      String?
-createdAt         DateTime  @default(now())
-updatedAt         DateTime  @updatedAt
-</code></pre>
-<h3 id="comment" tabindex="-1"><a class="header-anchor" href="#comment" aria-hidden="true">#</a> Comment</h3>
-<p>User-authored comment on a public TryOnJob. Stored in the <code>comments</code> table. <strong>Threading is single-level</strong> (Instagram-style): a top-level comment has <code>parentId = null</code>; a reply has <code>parentId</code> set to a top-level comment's id. Replies cannot themselves have replies — the API rejects <code>parentId</code> pointing to a non-top-level comment. Deleting a parent cascades to its replies via FK ON DELETE CASCADE; <code>TryOnJob.commentsCount</code> is decremented by 1 + replies on cascade. The frontend renders comments oldest-first below the TryOn image in <code>TryOnCommentsScreen</code>, with replies nested under their parent.</p>
-<pre><code>id        String   @id @default(uuid())
-jobId     String   // parent TryOnJob
-userId    String   // author
-body      String   // 1-500 chars, trimmed
-parentId  String?  // null = top-level; set = reply to a top-level comment
-createdAt DateTime @default(now())
-updatedAt DateTime @updatedAt
-</code></pre>
-<h3 id="commentlike" tabindex="-1"><a class="header-anchor" href="#commentlike" aria-hidden="true">#</a> CommentLike</h3>
-<p>Per-(user, comment) like. Backs the heart icon on each comment in <code>TryOnCommentsScreen</code>. Unique constraint enforces idempotency — a second POST is a no-op rather than a duplicate row. Notifies the comment author with type <code>COMMENT_LIKE</code> (skipped on self-like and on relike-after-unlike).</p>
-<pre><code>id        String   @id @default(uuid())
-userId    String
-commentId String
-createdAt DateTime @default(now())
-@@unique([userId, commentId])
-</code></pre>
-<h3 id="userlocations" tabindex="-1"><a class="header-anchor" href="#userlocations" aria-hidden="true">#</a> UserLocations</h3>
-<p>Stores up to the last 10 login/session locations per user. A trigger or service layer prunes older rows when count exceeds 10.</p>
-<pre><code>id                String   @id @default(uuid())
-userId            String
-ip                String
-country           String?
-region            String?
-city              String?
-latitude          Float?
-longitude         Float?
-timezone          String?
-trigger           String?  // &quot;login&quot; | &quot;token_refresh&quot; | &quot;manual&quot;
-suspiciousLocation Boolean @default(false)
-distanceFromLast  Float?   // km from previous location
-timestamp         DateTime @default(now())
-</code></pre>
-<h3 id="follows" tabindex="-1"><a class="header-anchor" href="#follows" aria-hidden="true">#</a> Follows</h3>
-<pre><code>followerId  String
-followingId String
-createdAt   DateTime @default(now())
-@@id([followerId, followingId])
-</code></pre>
-<h3 id="appsettings-admin-controlled" tabindex="-1"><a class="header-anchor" href="#appsettings-admin-controlled" aria-hidden="true">#</a> AppSettings (admin-controlled)</h3>
-<p>Key/value store for runtime-tunable values that can change without a redeploy. Known keys: <code>guestCreditGrant</code> (guest welcome-credit grant), <code>signupCreditGrant</code> (real-account welcome-bonus / &quot;join offer&quot; grant — default 10, 0 = discontinued; see Free credit policy), <code>referralCreditGrant</code> (referral reward to BOTH sides — default 5, 0 disables; see Engagement &amp; Growth Features), <code>referralMaxPerWindow</code> (anti-farming per-referrer cap — max REWARDED referrals one referrer can earn per rolling <code>REFERRAL_REWARD_WINDOW_DAYS</code>=30; default 20, 0 = unlimited; over the cap the referrer's payout is withheld but the invitee is still paid), <code>videoCreditCost</code> (credits charged per AI video — default 2, min 1; see AI Video), <code>throttleConfig</code> (the soft try-on queue config as a JSON blob — window + per-tier burst + delay ladder; read/written via <a href="backend/src/services/throttleService.ts">services/throttleService.ts</a>, default 15-min window / burst 6·8·10 / ladder 10·20·30·40s; see Soft per-user throttle) — all edited via Admin Dashboard → ⚙️ Settings and read through <a href="backend/src/services/appSettingsService.ts">services/appSettingsService.ts</a> (except <code>throttleConfig</code>, owned by <code>throttleService.ts</code>) — and the alert-debounce timestamps <code>guestAbuseLastAlertAt</code> + <code>referralAbuseLastAlertAt</code>.</p>
-<pre><code>key       String @id
-value     String
-updatedAt DateTime @updatedAt
-</code></pre>
-<h3 id="credittransaction" tabindex="-1"><a class="header-anchor" href="#credittransaction" aria-hidden="true">#</a> CreditTransaction</h3>
-<pre><code>id          String   @id @default(uuid())
-userId      String
-type        CreditTransactionType  // PURCHASE | GRANT | USAGE | REFUND
-amount      Int                    // positive for grants/purchases, negative for usage
-description String?
-createdAt   DateTime @default(now())
-</code></pre>
-<h3 id="report" tabindex="-1"><a class="header-anchor" href="#report" aria-hidden="true">#</a> Report</h3>
-<p>User-submitted content/user reports. Required by App Store Review Guideline 1.2.</p>
-<pre><code>id           String           @id @default(uuid())
-reporterId   String
-targetType   ReportTargetType // TRYON_JOB | USER | COMMENT
-targetId     String           // TryOnJob.id or User.id depending on targetType
-reason       ReportReason     // INAPPROPRIATE | HARASSMENT | IMPERSONATION | SPAM | COPYRIGHT | OTHER
-details      String?          // optional free-text from reporter
-status       ReportStatus     // OPEN | REVIEWING | RESOLVED_REMOVED | RESOLVED_NO_ACTION
-resolverNote String?          // admin note when resolving
-resolvedAt   DateTime?
-createdAt    DateTime         @default(now())
-</code></pre>
-<h3 id="userblock" tabindex="-1"><a class="header-anchor" href="#userblock" aria-hidden="true">#</a> UserBlock</h3>
-<p>Mutual-invisibility between two users. The blocked party also cannot see the blocker's content (prevents retaliation discovery).</p>
-<pre><code>blockerId String
-blockedId String
-createdAt DateTime @default(now())
-@@id([blockerId, blockedId])
-</code></pre>
-<hr>
-<h2 id="key-business-rules" tabindex="-1"><a class="header-anchor" href="#key-business-rules" aria-hidden="true">#</a> Key Business Rules</h2>
-<h3 id="body-photo-handling" tabindex="-1"><a class="header-anchor" href="#body-photo-handling" aria-hidden="true">#</a> Body Photo Handling</h3>
-<ul>
-<li><strong>avatarUrl</strong> (close-up): displayed as profile photo everywhere. Never sent to Grok Imagine.</li>
-<li><strong>fullBodyUrl</strong>: primary input to Grok Imagine. Priority 1 for output.</li>
-<li><strong>mediumBodyUrl</strong>: fallback input. Used when fullBodyUrl is absent.</li>
-<li>If neither fullBodyUrl nor mediumBodyUrl exist: block try-on and prompt user to upload.</li>
-<li>If only avatarUrl exists: block try-on and prompt user to upload a medium or full body photo.</li>
-<li>The number of result images returned matches the number of available body photo perspectives (max 2).</li>
-</ul>
-<h3 id="onboarding-photo-upload-consent" tabindex="-1"><a class="header-anchor" href="#onboarding-photo-upload-consent" aria-hidden="true">#</a> Onboarding / Photo Upload Consent</h3>
-<ul>
-<li>Sign-up requires only: valid email + strong password (1.0.17). <code>username</code> is optional in the signup/claim schemas — the app omits it (a claimed guest keeps their generated <code>user#######</code>; a direct signup gets one minted server-side via <code>generateUniqueUsername()</code>), and it stays renameable in Edit Profile. The website signup form is email+password too.</li>
-<li>Email verification is required before the user can use try-on features.</li>
-<li>After signup, an onboarding screen encourages uploading body photos. It is skippable.</li>
-<li>Photo upload screens (Onboarding, Profile, EditProfile) display a passive consent notice acknowledging that body photos are stored on cloud infrastructure and may be processed by AI to generate try-on results, and that users may delete them from Settings at any time. This notice covers the <em>storage</em> of photos.</li>
-<li>Body photo upload is also accessible at any time from Profile &gt; Manage Body Photos.</li>
-<li><strong>Sending photos to xAI is gated by a separate explicit consent step</strong> (see AI Processing Consent below). The passive upload notice is not, by itself, sufficient for Apple Guidelines 5.1.1(i) / 5.1.2(i) — the explicit per-user opt-in modal at try-on time is.</li>
-</ul>
-<h3 id="ai-processing-consent-app-store-guidelines-511i-512i" tabindex="-1"><a class="header-anchor" href="#ai-processing-consent-app-store-guidelines-511i-512i" aria-hidden="true">#</a> AI Processing Consent (App Store Guidelines 5.1.1(i) / 5.1.2(i))</h3>
-<p>Apple requires explicit per-user opt-in before any personal data is transmitted to a third-party AI service. This is <strong>independent</strong> of the Privacy Policy disclosure — Apple's rejection text says &quot;only including this information in the app's Terms of Service or Privacy Policy is not sufficient.&quot;</p>
-<ul>
-<li><code>User.aiProcessingConsentAt: DateTime?</code> records the timestamp of the user's most recent explicit consent. Null = no consent on file or revoked.</li>
-<li>The mobile app's <code>AiConsentModal</code> (<a href="frontend/src/components/AiConsentModal.tsx">frontend/src/components/AiConsentModal.tsx</a>) is surfaced from <code>TryOnScreen.handleSubmit</code> whenever <code>user.aiProcessingConsentAt</code> is null. It names xAI by full legal name (&quot;xAI, Inc.&quot;), lists exactly what is sent (full-body and/or waist-up photo + clothing photo), states what is NOT sent (close-up profile photo), links to both our Privacy Policy and xAI's Privacy Policy, and requires an affirmative <code>I Agree and Continue</code> tap.</li>
-<li>On agree, the client POSTs <code>/api/profile/me/ai-consent</code>, updates the user store, then retries the try-on submit.</li>
-<li>Revocation: <code>DELETE /api/profile/me/ai-consent</code>. Surfaced as &quot;Revoke AI Processing Consent&quot; in Settings → Privacy &amp; Data (only shown when consent is currently granted).</li>
-<li>Server-side enforcement: <code>tryonController.submitTryOn</code> refuses with <code>403 { error: 'AI_CONSENT_REQUIRED' }</code> when <code>aiProcessingConsentAt</code> is null. The check runs before any S3 upload or credit deduction. The frontend re-opens the consent modal on this error code so a stale client cache can recover.</li>
-<li><strong>Companion documentation:</strong> the in-app consent modal is the primary control, but Apple also requires the privacy policy and EULA to describe the AI processing in detail. <code>website/privacy.html</code> §5 covers what is sent, the no-AI-training commitment, equivalent-third-party-protection language, and revocation; <code>website/terms.html</code> §5 covers AI output ownership, prohibited uses (deepfakes, NCII, model-training, etc.), and the Apple-mandated minimum EULA clauses. Both must stay in sync with the modal's claims — if the consent dialog text changes, those documents need matching updates.</li>
-<li><strong>Camera-permission UX:</strong> <code>TryOnScreen.pickClothingPhoto</code> shows the source-choice action sheet (Take Photo / Choose from Library / Cancel) <strong>before</strong> requesting any iOS Camera permission. Camera permission is only requested when the user explicitly picks &quot;Take Photo&quot;. Denial routes to a helpful &quot;Camera Access Needed&quot; alert with Choose-from-Library / Open-Settings / Cancel buttons. This pattern follows Apple HIG (ask in context, when the user expresses intent) and was a contributor to the original reviewer's 5.1.1(i) confusion — they reached only the Camera permission's purpose string and concluded the app had no AI-data-sharing disclosure beyond that string. Don't revert to up-front permission requests.</li>
-</ul>
-<h3 id="guest-mode-browse-try-before-signup" tabindex="-1"><a class="header-anchor" href="#guest-mode-browse-try-before-signup" aria-hidden="true">#</a> Guest Mode (browse &amp; try before signup)</h3>
-<p>New users open the app straight into the browsable feed instead of a sign-in wall — they can scroll the feed, view public profiles, read comment threads, and run a couple of free try-ons before creating an account. This reduces signup friction and is favorable under App Store Guideline 5.1.1(v).</p>
-<ul>
-<li><strong>Identity:</strong> On first open, <code>useUserStore.initialize()</code> calls <code>POST /api/auth/guest</code> (<a href="backend/src/controllers/authController.ts">authController.createGuest</a>) when no token is stored. This creates a real <code>User</code> row with <code>isGuest=true</code>, a generated <code>user#######</code> username, <code>email=null</code>, <code>passwordHash=null</code>, <code>verified=true</code>, and <code>credits=&lt;guest welcome grant&gt;</code> (admin-configurable, default 2), and returns normal access+refresh tokens. The grant amount is read at runtime via <code>getGuestCreditGrant()</code> (<a href="backend/src/services/appSettingsService.ts">services/appSettingsService.ts</a>) from the <code>AppSettings</code> row keyed <code>guestCreditGrant</code>, editable in the Admin Dashboard → <strong>⚙️ Settings</strong> tab without a redeploy. <strong>Anti-farming: the welcome grant is only applied when the request carries a non-empty <code>deviceId</code></strong> — a null/empty deviceId (web, simulator, pre-rebuild dev client) still gets a working guest but <strong>0 credits</strong>, since those calls can't be deduped server-side and would otherwise mint a fresh grant every time. The <code>guest_create</code> metric/abuse-counter row is likewise only recorded when a grant was actually made.</li>
-<li><strong>Device-scoped reuse (no row churn):</strong> the client sends its <code>deviceId</code> (iOS identifierForVendor via <code>expo-application</code>, Android SSAID) on <code>POST /auth/guest</code>. If a guest already exists for that device (<code>isGuest=true</code>), the endpoint hands back a fresh session for that <strong>same</strong> row instead of minting a new one — so logout/reopen don't churn a new guest each time, and the welcome grant + the <code>guest_create</code> sign-up metric happen <strong>once per device</strong>. The reuse lookup filters <code>isGuest=true</code>, so a device whose guest already converted gets a fresh guest. IDFV resets only on a full uninstall-of-all-vendor-apps (≈ a genuinely new install). <code>getIosIdForVendorAsync</code> is a native module → requires a dev-client/EAS rebuild, not just a JS reload. The guest is a genuine authenticated user, so every existing <code>requireAuth</code> <strong>read</strong> endpoint (feed, profile, comments) works unchanged — the work was adding <em>restrictions</em> on writes, not opening up reads. <code>isGuest</code> is baked into the JWT access-token payload so middleware can gate without a DB hit.</li>
-<li><strong>Write gating:</strong> <code>blockGuests</code> (<a href="backend/src/middleware/auth.ts">middleware/auth.ts</a>) returns <code>403 { error: 'GUEST_SIGNUP_REQUIRED' }</code> for guest sessions. Applied to all social writes: likes, follow/unfollow, comment create/delete + comment likes, reports, block/unblock, notifications, and change-password. <strong>Not</strong> applied to feed, profile reads, <code>ai-consent</code>, upload, or try-on submit — a guest's free try-on must reach those. The mobile client gates the same actions proactively via <code>requireRealUser()</code> (<a href="frontend/src/utils/guestGate.ts">frontend/src/utils/guestGate.ts</a>) and the <code>api.ts</code> response interceptor catches <code>GUEST_SIGNUP_REQUIRED</code> centrally as a safety net.</li>
-<li><strong>Guest try-ons are forced private.</strong> <code>tryonController.submitTryOn</code> sets <code>isPrivate=true</code> when <code>req.user.isGuest</code>, so anonymous accounts never publish public UGC (keeps the Guideline 1.2 moderation surface small). The try-on still requires a body-photo upload + the AiConsentModal — surface those as honest steps, not hidden behind the &quot;free try-on&quot; CTA.</li>
-<li><strong>Logout drops to a 0-credit guest.</strong> Logging out of a real account mints a browsable guest session but passes <code>welcomeCredits:false</code> to <code>POST /auth/guest</code>, so the former real user is NOT handed a fresh 2-credit grant (that would be surprising and a trivial farm). The <code>welcomeCredits</code> flag can only <em>withhold</em> the fixed grant, never increase it, so it's not an abuse lever. First-open guests still get the full grant.</li>
-<li><strong>Conversion (claim):</strong> <code>POST /api/auth/claim</code> (<a href="backend/src/controllers/authController.ts">authController.claimGuest</a>, <code>requireAuth</code> only — NOT blockGuests) upgrades the SAME guest row in place: sets name/username/email/passwordHash, flips <code>isGuest=false</code>, <code>verified=false</code>, issues a verify token, sends the verification email, and deletes the guest's refresh tokens. The guest's try-ons, credits, and AI consent carry over. The client (<code>SignupScreen</code>) posts to <code>/auth/claim</code> instead of <code>/auth/signup</code> when <code>user.isGuest</code>. After the user verifies their email and logs in, <code>verifyEmail</code> adds the standard <code>+10</code> welcome bonus <strong>on top of</strong> any remaining guest credits (additive — no double-grant; the verify token is single-use).</li>
-<li><strong>Abuse / cost:</strong> the farming vector is wiping local state to mint a fresh guest grant. Note <code>expo-secure-store</code> is the iOS <strong>Keychain</strong>, which persists across app delete/reinstall by default — so a <em>casual</em> reinstall normally resumes the SAME guest (0 credits), not a new grant; only a full device erase / Keychain wipe yields a fresh guest. (Android SecureStore is cleared on uninstall, but the app is iOS-first.) Layered mitigations: small grant (2), re-upload-photo + re-consent friction each cycle, and a per-IP rate limit on <code>/auth/guest</code> (10/hour). iOS DeviceCheck is the real reinstall-proof prevention but is deliberately <strong>not</strong> built yet (native module + Apple key + can't test on simulator) — add it only if the monitor below shows real abuse.</li>
-<li><strong>Abuse monitoring (alerts, not prevention):</strong> every genuine new-visitor guest creation (welcomeCredits granted, not a logout-minted 0-credit guest and not a device-reused session) records its IP as a <code>UserLocation</code> row with <code>trigger='guest_create'</code> via <code>recordLoginLocation</code> (geo-resolved like login rows since 2026-06-11 — earlier rows stored the bare IP, which the admin dashboard rendered as &quot;Unknown&quot; location). <a href="backend/src/queue/guestAbuseMonitorWorker.ts">queue/guestAbuseMonitorWorker.ts</a> runs <strong>hourly</strong>, aggregates <code>guest_create</code> rows over a rolling window, and emails <code>ADMIN_EMAILS</code> (via <code>sendGuestAbuseAlert</code>, mirroring the S3-orphan alert) when sign-ups cross a global or per-IP threshold. Debounced via an <code>AppSetting</code> (<code>guestAbuseLastAlertAt</code>) so it won't re-alert within the cooldown. This is the &quot;tell me if it's happening&quot; layer since logs aren't watched daily.</li>
-<li><strong>Cleanup:</strong> unconverted guests older than <code>GUEST_RETENTION_DAYS</code> (30) are deleted daily at 3:00 AM by <a href="backend/src/queue/guestCleanupWorker.ts">queue/guestCleanupWorker.ts</a>, which reuses <a href="backend/src/services/accountDeletionService.ts">services/accountDeletionService.ts</a> <code>deleteUserAndAssets()</code> (extracted from <code>profileController.deleteAccount</code>) so the cascade + S3 cleanup stay in one place. (Cleanup keys on <code>createdAt</code>, so a long-lived same-device guest is also pruned at 30 days and re-minted fresh on next open.)</li>
-<li><strong>Tunables:</strong> the guest welcome-credit grant (admin-editable at runtime via Admin Dashboard → <strong>⚙️ Settings</strong>, stored in <code>AppSettings.guestCreditGrant</code>; default <code>DEFAULT_GUEST_CREDIT_GRANT</code> in <a href="backend/src/services/appSettingsService.ts">services/appSettingsService.ts</a>), <code>GUEST_RETENTION_DAYS</code> (guestCleanupWorker), the <code>/auth/guest</code> rate-limit bucket (index.ts), and the monitor's env vars <code>GUEST_ABUSE_WINDOW_HOURS</code> (24), <code>GUEST_ABUSE_GLOBAL_THRESHOLD</code> (100), <code>GUEST_ABUSE_PER_IP_THRESHOLD</code> (20), <code>GUEST_ABUSE_COOLDOWN_HOURS</code> (12) — raise the global threshold once you know your organic guest volume so a real launch spike doesn't page you.</li>
-</ul>
-<h3 id="outfit-designer-closet-text-to-outfit-try-on" tabindex="-1"><a class="header-anchor" href="#outfit-designer-closet-text-to-outfit-try-on" aria-hidden="true">#</a> Outfit Designer &amp; Closet (text-to-outfit → try-on)</h3>
-<p>Users describe an outfit in words; Grok Imagine generates it as a catalog-style clothing image; it's saved to the user's <strong>closet</strong> as virtual &quot;custom clothing&quot; and can be tried on like a photographed item.</p>
-<ul>
-<li><strong>Schema:</strong> <code>ClosetItem</code> (<code>closet_items</code>: id, userId, name, description, imageUrl, timestamps; cascade on user delete; cap <code>CLOSET_ITEM_LIMIT</code> = 100/user). Images live under the <strong><code>closet/</code> S3 prefix</strong> (4th TryOn prefix — included in the orphan scan, account deletion, admin user delete, and GDPR export).</li>
-<li><strong>Moderation surface (the E1/E2 concern) is wrapped server-side</strong> in <a href="backend/src/utils/outfitPrompt.ts">backend/src/utils/outfitPrompt.ts</a> (pure, unit-tested): the description is sanitized (control chars stripped, whitespace collapsed, 3–300 chars), screened against a conservative denylist of unambiguous violations (rejects pre-charge with <code>INVALID_DESCRIPTION</code>), then embedded inside a <strong>fixed catalog-product-shot template</strong> (<code>buildOutfitPrompt</code>) — raw user text is never the prompt; the template pins output to ordinary clothing, plain background, <strong>no people</strong>. xAI's filters are the next layer: a Grok moderation block throws <code>ContentModeratedError</code> → <code>recordModerationStrike</code> → same 3-warning refund grace as try-on (<code>MODERATION_GRACE_WARNINGS</code>), then ToS §5.4 no-refund.</li>
-<li><strong>Economics:</strong> each generation charges <strong>1 credit</strong> (conditional decrement in a transaction, <code>CreditTransaction</code> tagged <code>(closet=&lt;itemId&gt;)</code>); any failure after the charge refunds (refund failures are Sentry-paged, <code>area: closet-generate-refund</code>). Generations are NOT covered by the subscription weekly try-on allowance. Endpoint is synchronous (~10–30s; 90s Grok timeout, client uses a 90s per-request timeout) — acceptable at the 3/min/IP rate limit; queue it like try-on if usage grows.</li>
-<li><strong>Try-on from the closet:</strong> <code>POST /api/tryon</code> accepts a <code>closetItemId</code> multipart field <strong>instead of</strong> a photo. The closet image is <strong>server-side copied</strong> (<code>copyWithinS3</code>) into <code>clothing-photos/</code> so the job owns its key — deleting a closet item can never dangle a job's image reference, and all existing S3-cleanup paths work unchanged. The generated image is already 1024px JPEG (generation runs through <code>resizeImageForTryOn</code>).</li>
-<li><strong>&quot;Clean Up a Photo&quot; (1.2.0):</strong> <code>POST /api/closet/cleanup</code> (multipart <code>photo</code>) takes a <em>messy</em> clothing photo — a website screenshot full of text/prices/UI, a person wearing the item, a cluttered scene — and runs a single fixed-prompt Grok image-edit (<code>cleanupClothingImage</code> in <a href="backend/src/services/grokService.ts">grokService.ts</a>, <code>CLEANUP_PROMPT</code> strips background/people/text/logos → clean catalog product shot), saved as a closet item. Same money-safety as generate (1 credit, conditional charge, refund on failure w/ Sentry <code>area: closet-cleanup-refund</code>, moderation strike/grace), same 3/min rate limit. This is the mitigation for the recurring &quot;user uploads a screen-cap and the try-on looks wrong&quot; problem (see also the screenshot tip in <code>UploadTipsSheet</code>). Mobile: a &quot;Clean Up a Photo&quot; button in <code>ClosetScreen</code> (library pick → product shot).</li>
-<li><strong>Guests are blocked</strong> (<code>blockGuests</code> on all closet routes; the app gates the entry points with <code>requireRealUser</code>) — keeps the free-text generation surface behind signup.</li>
-<li><strong>Mobile:</strong> <code>ClosetScreen</code> (designer text box + saved-outfits grid; opened from the TryOn screen's closet link, or with <code>{ picker: true }</code> from the add-clothing sheet). Selection handoff to TryOnScreen goes through <code>store/useClosetStore</code> (consume-once, unit-tested). Closet images carry the <code>AiGeneratedBadge</code> (Guideline 4.0).</li>
-</ul>
-<h3 id="ai-video-image-to-video-130" tabindex="-1"><a class="header-anchor" href="#ai-video-image-to-video-130" aria-hidden="true">#</a> AI Video (image-to-video) — 1.3.0</h3>
-<p>Users animate a source image into a short clip via a motion prompt. Videos <strong>reuse the <code>TryOnJob</code> table</strong> (<code>kind=VIDEO</code>) so every existing surface (feed, profile, looks, comments, likes, share, moderation, S3 cleanup, presign) works unchanged.</p>
-<ul>
-<li><strong>Schema:</strong> <code>TryOnJob.kind</code> (<code>IMAGE</code>|<code>VIDEO</code>, enum <code>TryOnKind</code>), <code>videoUrl</code> (mp4 S3 key), <code>motionPrompt</code> (VARCHAR 300); <code>clothingPhoto1Url</code> made <strong>nullable</strong> (videos have no clothing). For a video row: <code>bodyPhotoUrl</code> = the primary source image (also the <strong>poster/thumbnail</strong>), <code>videoUrl</code> = the result mp4, and <code>clothingPhoto1Url</code> = the <strong>optional second/transition image</strong> (otherwise null). Migration <code>add_video_jobs</code>. New S3 prefix <strong><code>tryon-videos/</code></strong> (avoids the legacy <code>videos/</code> prefix; sources + the mp4 live here so the job owns its keys — included in bulk-delete cleanup).</li>
-<li><strong>AI service:</strong> xAI Grok Imagine video. <code>grokService.generateVideo(imageRef, motionPrompt, { referenceImageRefs? })</code> submits <code>POST /v1/videos/generations</code> (model <code>grok-imagine-video</code>; images inlined as data URIs like the try-on path) → <code>{ request_id }</code>, then <strong>polls</strong> <code>GET /v1/videos/{request_id}</code> until <code>status:&quot;done&quot;</code> → <code>video.url</code> (≤6 min). <strong>Two modes, MUTUALLY EXCLUSIVE</strong> (sending both <code>image</code> and <code>reference_images</code> is a 400 <code>invalid-argument</code>): with <strong>no</strong> second image → <strong>image-to-video</strong> (single <code>image</code>); with a second image (the &quot;transition&quot;) → <strong>reference-to-video</strong> — ALL images go in <code>reference_images</code> (no <code>image</code>) and the prompt describes the transition/blend. xAI has <strong>no</strong> literal first→last-frame interpolation; R2V uses the images as a visual guide, prompt-driven. <strong>Moderation detection is structural</strong> (<code>respect_moderation === false</code> with no usable video), decided by the pure, unit-tested <code>classifyVideoPoll</code> (<a href="backend/src/utils/videoPoll.ts">utils/videoPoll.ts</a>) — NEVER a substring match on the body (<code>respect_moderation</code> is a normal success field; an early substring bug discarded every good video).</li>
-<li><strong>Queue/worker:</strong> separate <code>video</code> BullMQ queue + <a href="backend/src/queue/videoWorker.ts">queue/videoWorker.ts</a> (mirrors tryonWorker: PROCESSING → generate+poll → download mp4 → <code>uploadToS3('tryon-videos', …)</code> → COMPLETE; <code>failed</code> handler → FAILED + refund (USAGE tagged <code>video=&lt;jobId&gt;</code>, refunds the actual charged amount) + moderation strike/grace + admin email). Registered in <code>index.ts</code>.</li>
-<li><strong>Endpoints:</strong> <a href="backend/src/routes/video.ts">routes/video.ts</a> — <code>POST /api/video</code> (requireAuth + <strong>blockGuests</strong>; <code>uploadVideoSources</code> multer <code>.fields</code> for <code>photo</code> + optional <code>photo2</code>). Each of the <strong>primary</strong> and the <strong>optional second/transition</strong> source is one of: <code>photo</code>/<code>photo2</code> (camera roll), <code>sourceJobId</code>/<code>sourceJobId2</code> (a completed try-on), or <code>bodyPhoto</code>/<code>bodyPhoto2</code>=<code>full</code>|<code>medium</code> (profile body photo) — resolved by a shared <code>resolveVideoSource</code> helper into <code>tryon-videos/</code> keys. Fields <code>motionPrompt</code>, <code>title</code>, <code>isPrivate</code>. <code>GET /api/video</code> = caller's completed videos. Status via the existing <code>GET /api/tryon/:jobId</code>. Same <strong>AI-consent gate</strong> + storage cap as try-on. Rate-limited 3/min.</li>
-<li><strong>Economics:</strong> <code>videoCreditCost</code> (admin setting, default <strong>2</strong>, min 1; no weekly allowance — videos always cost credits). Also echoed in the public <code>GET /api/config</code> so <code>VideoScreen</code>'s &quot;Create Video · N credits&quot; button shows the live value. Charged in a <code>FOR UPDATE</code>-locked conditional-decrement transaction; refunded on terminal failure.</li>
-<li><strong>Throttle (parity with try-on):</strong> <code>submitVideo</code> runs the same <strong>soft per-user throttle</strong> as try-on (<code>computeQueueDelayMs</code>) — bursts beyond the tier free quota get a short BullMQ delay + a <code>scheduledStartAt</code> countdown, and the per-IP cap is 3/min. Images + videos share one rolling-window budget, and a credit purchase resets it (<code>User.throttleResetAt</code>). See Soft per-user throttle under Key Business Rules.</li>
-<li><strong>Frontend:</strong> <code>VideoScreen</code> — <strong>two side-by-side source picker boxes</strong> (the 2nd optional → transition), a motion/transition prompt (label + placeholder adapt when a 2nd image is set), chips, caption, privacy, AiConsentModal, poll → <code>expo-video</code> <code>VideoView</code> result. <strong><code>expo-video</code> is a native module</strong> → a JS reload won't load it; a dev-client/EAS rebuild is required. Public videos render in the Home feed + profile grid as the poster with a ▶ overlay (<code>components/VideoPlayerModal</code> plays them full-screen). The ✨AI badge uses <code>placement=&quot;center&quot;</code> over video so it clears the native player controls. Share page <code>/t/:id</code> renders an inline <code>&lt;video&gt;</code> + OG video meta (stable <code>/api/share/:id/video</code> byte-proxy). &quot;Animate a Photo (Video)&quot; is in the 3-dot menu (<code>HeaderMenu</code> + <code>ProfileScreen</code> mirror).</li>
-</ul>
-<h3 id="splash-announcement-screen-backend-controlled" tabindex="-1"><a class="header-anchor" href="#splash-announcement-screen-backend-controlled" aria-hidden="true">#</a> Splash / Announcement Screen (backend-controlled)</h3>
-<p>An optional full-screen announcement (promotions, app logo, service-degradation notices) shown by the mobile app on launch. Entirely controlled by a single image file on the backend — <strong>no app rebuild and no backend redeploy to publish, replace, or remove it.</strong></p>
-<ul>
-<li><strong>Backing store:</strong> a SINGLETON image object in <strong>S3</strong> under the <code>splash/</code> prefix (e.g. <code>splash/announcement.jpg|png|webp</code>). Object present = splash active; absent = the app launches normally. Implemented in <a href="backend/src/services/splashService.ts">backend/src/services/splashService.ts</a> (S3-backed since 2026-06-17, replacing the old local <code>SPLASH_DIR</code> file so it's consistent across multiple app instances behind the load balancer — see DEPLOYMENT.md §17). The <code>splash/</code> prefix is intentionally OUTSIDE the orphan-scan prefixes, so the reconciliation scan never flags it.</li>
-<li><strong>Identity:</strong> each published file gets a stable <code>id</code> derived from its extension/size/mtime. Replacing the image changes the id, which is what makes a <em>new</em> splash show again to users who dismissed the previous one.</li>
-<li><strong>Public endpoints</strong> (unauthenticated — shown to guests too, image loaded by a plain <code>&lt;Image&gt;</code> with no auth header): <code>GET /api/splash</code> → <code>{ active, id, imageUrl, publishedAt }</code>; <code>GET /api/splash/image</code> → the bytes (ETag = id, 5-min cache).</li>
-<li><strong>Publishing:</strong> Admin Dashboard → ⚙️ Settings → &quot;Splash / Announcement Screen&quot; (upload/preview/remove, via <code>GET|POST|DELETE /api/admin/splash</code>). JPEG/PNG/WebP, max 10 MB; portrait ~1080×1920 fills a phone screen best. (The old &quot;drop a file in <code>backend/splash/</code>&quot; method is gone now that the splash lives in S3 — use the admin upload.)</li>
-<li><strong>Client behavior</strong> (<a href="frontend/src/components/SplashAnnouncementModal.tsx">SplashAnnouncementModal</a> + <a href="frontend/src/utils/splash.ts">utils/splash.ts</a>): first launch after a splash is published → user must tap OK; second launch onward → a &quot;Don't show this again&quot; checkbox appears; dismissal is per-splash-id and can be flipped back in Settings → Announcements. Seen/dismiss state is stored in SecureStore. Any fetch/image error skips the splash silently — it never blocks startup.</li>
-</ul>
-<h3 id="engagement-growth-features-120-enjoyment-batch" tabindex="-1"><a class="header-anchor" href="#engagement-growth-features-120-enjoyment-batch" aria-hidden="true">#</a> Engagement &amp; Growth Features (1.2.0 — &quot;enjoyment&quot; batch)</h3>
-<p>A batch of features added 2026-06-13 to deepen engagement and growth. App-side pieces ride the <strong>1.2.0</strong> build; the web/backend pieces work for everyone immediately.</p>
-<ul>
-<li><strong>Share a try-on (web/backend, no app-review dependency).</strong> Public shareable pages with rich link previews. <a href="backend/src/routes/share.ts">routes/share.ts</a>: <code>GET /api/share/:jobId</code> (JSON), <code>GET /api/share/:jobId/image</code> (stable byte-proxy via <code>s3Service.getS3ObjectBytes</code> so <code>og:image</code> survives presigned-URL expiry), and the server-rendered <code>GET /t/:jobId</code> page (OpenGraph/Twitter meta + &quot;Get the app&quot; CTA). Only <strong>COMPLETE &amp;&amp; !isPrivate</strong> jobs are shareable (same rule as the feed); private/missing → 404 (no existence leak). App: <code>utils/share.ts</code> (<code>shareTryOn</code>) + a share button on the HomeScreen feed card and in Saved Looks. <strong>nginx:</strong> a <code>location /t/ { proxy_pass backend }</code> block is in BOTH <code>nginx.dev.conf</code> (live on dev) and <code>nginx.conf</code> (on-disk; <strong>takes effect on prod only after the nginx container is force-recreated</strong> at the 1.2.0 cutover — without it the static-website catch-all serves <code>/t/&lt;id&gt;</code> as index.html with no OG meta). Serving share pages on the apex (<code>tryon-mirror.ai/t/&lt;id&gt;</code>) instead of the API host is a future enhancement.</li>
-<li><strong>Outfit Designer &quot;Surprise me&quot; + style/occasion chips</strong> (app, <a href="frontend/src/constants/outfitIdeas.ts">constants/outfitIdeas.ts</a> + ClosetScreen). Pure UX scaffolding over the free-text box; everything still flows through the server-side validate + fixed catalog-product-shot template, so <strong>no widening of the moderation surface</strong>.</li>
-<li><strong>Compare Looks</strong> (app, <a href="frontend/src/screens/CompareScreen.tsx">CompareScreen</a>). Pick two completed try-ons → split-screen view. Reuses <code>/tryon/history</code>; no backend change. Reached from the Profile menu.</li>
-<li><strong>Referral program (&quot;give N, get N&quot;)</strong> — admin-tunable growth loop. Schema: <code>User.referralCode</code> (unique, lazily generated) + <code>Referral</code> model (one row per referred user; <code>referredUserId</code> unique; <code>rewardedAt</code>/<code>creditsAwarded</code> for an idempotent, transactional, claim-before-pay reward). <a href="backend/src/services/referralService.ts">services/referralService.ts</a> + <a href="backend/src/utils/referralCode.ts">utils/referralCode.ts</a> (unit-tested). Reward (BOTH sides) fires at the referred user's <strong>email verification</strong> when <code>referralCreditGrant &gt; 0</code> (admin setting, default 5, 0 disables). Capture: optional <code>referralCode</code> on signup/claim. Endpoint <code>GET /api/referral/me</code> (code, share link, stats). App: <a href="frontend/src/screens/ReferralScreen.tsx">ReferralScreen</a> + Settings &quot;Invite Friends&quot; + optional signup code field. <strong>Anti-farming per-referrer cap:</strong> <code>processReferralReward</code> counts the referrer's already-rewarded referrals in a rolling <code>REFERRAL_REWARD_WINDOW_DAYS</code> (30) window; past <code>referralMaxPerWindow</code> (admin setting, default 20, 0=unlimited) the <strong>referrer's</strong> payout is withheld (the row is still marked rewarded with <code>creditsAwarded=0</code>) while the <strong>invitee is still paid</strong> their join bonus. Combined with email normalization (<code>User.emailNormalized</code>) at signup/claim — which stops one inbox from registering many aliased accounts — and an hourly referral-velocity alert in <a href="backend/src/queue/guestAbuseMonitorWorker.ts">guestAbuseMonitorWorker</a> (emails <code>ADMIN_EMAILS</code> via <code>sendReferralAbuseAlert</code> when rewarded-referral volume spikes globally or per-referrer; debounced via <code>referralAbuseLastAlertAt</code>).</li>
-<li><strong>Saved Looks</strong> — bookmark try-on results. Schema: <code>SavedLook { userId, jobId }</code> (<code>@@unique</code>, idempotent). <a href="backend/src/routes/looks.ts">routes/looks.ts</a>: <code>GET /api/looks</code>, <code>POST/DELETE /api/looks/:jobId</code>. <strong>Visibility is re-checked at READ time</strong> (commit 8b894b2): <code>GET /api/looks</code> returns only COMPLETE jobs the viewer may still see (own, OR public &amp; not blocked), and <strong>nulls non-owner input photos</strong> (body/clothing) — the feed only ever surfaces <em>results</em>, so a saved look must not leak the original's inputs even after the owner makes it private or blocks the viewer. POST also block-aware. App: <a href="frontend/src/screens/SavedLooksScreen.tsx">SavedLooksScreen</a> + Profile/feed dropdown menus. <strong>Saved-state UI:</strong> the bookmark turns <strong>yellow</strong> (<code>Colors.gold</code>) when saved — on the feed card (toggle, optimistic; feed + <code>/tryon/history</code> return a <code>saved</code> flag), in Saved Looks, and as a <strong>&quot;Save Look&quot;</strong> button next to &quot;Save All&quot; in the profile detail modal (<code>TryOnDetailModal</code>).</li>
-<li><strong>Own-post feed menu (1.2.0):</strong> the 3-dot menu on the user's <em>own</em> feed card now offers <strong>Make Private</strong> (removes it from the public feed), <strong>Share</strong>, and <strong>Delete</strong> (was previously a dead &quot;Cancel&quot;-only sheet); other users' cards keep Report/Block (Guideline 1.2).</li>
-<li><strong>Try-on captions (<code>TryOnJob.title</code>).</strong> Users can name/caption a try-on. Captured at submit (an optional text field on <code>TryOnScreen</code>, ≤140 chars) and editable later via <code>PATCH /api/tryon/:jobId/title</code>. Server-side <code>sanitizeTryOnTitle()</code> (<a href="backend/src/controllers/tryonController.ts">tryonController.ts</a>, exported + unit-testable: must be a string, strips control chars via <code>\p{Cc}</code>, trims, caps at <code>TRYON_TITLE_MAX_LENGTH</code>=140, empty→null). The caption renders under the result image on the <code>HomeScreen</code> feed card, on the web &quot;My Try-Ons&quot; cards, and — when present — leads the OG/Twitter title + <code>&lt;h1&gt;</code> on the public <code>/t/:jobId</code> share page (HTML-escaped). Plain text only; never interpolated as raw HTML.</li>
-<li><strong>Public client config.</strong> <code>GET /api/config</code> (unauthenticated, <code>Cache-Control: no-store</code> so admin changes show on the next launch) → <code>{ signupCreditGrant, signupCreditsOffer, videoCreditCost }</code>; <code>store/useConfigStore.ts</code> fetches it on launch to drive the dynamic join-offer copy (see Free credit policy) <strong>and the per-video cost shown on the VideoScreen &quot;Create Video · N credits&quot; button</strong> (admin-tunable via <code>/api/admin/settings/video-cost</code>; the server stays authoritative at submit time).</li>
-<li><strong>Data export (GDPR) schemaVersion 2:</strong> <code>profileController</code> data export now includes the user's <code>savedLooks</code> and <code>referrals</code> alongside the existing data (8b894b2).</li>
-</ul>
-<h3 id="subscription-credits" tabindex="-1"><a class="header-anchor" href="#subscription-credits" aria-hidden="true">#</a> Subscription &amp; Credits</h3>
-<ul>
-<li><strong>Tiered subscription model</strong>: Each user has a <code>tier</code> of <code>FREE</code>, <code>BASIC</code>, or <code>PREMIUM</code> (see <code>UserTier</code> enum). There is <strong>no</strong> <code>isSubscribed</code> flag — check <code>tier !== 'FREE'</code> to gate subscriber-only features.</li>
-<li><strong>Tier configuration</strong> lives in <code>backend/src/services/tierService.ts</code> (<code>TIER_CONFIG</code>). Current values:
-<ul>
-<li><code>FREE</code>: 0 included try-ons, $0.60/credit</li>
-<li><code>BASIC</code>: 12 try-ons per rolling 7-day window, $0.50/credit</li>
-<li><code>PREMIUM</code>: 24 try-ons per rolling 7-day window, $0.25/credit</li>
-</ul>
-</li>
-<li>The weekly window is <strong>rolling</strong>, not a calendar week — <code>tryonController</code> and the <code>/balance</code> endpoint count non-failed jobs whose <code>createdAt</code> is within the last 7 days. This avoids midnight-Sunday reset exploits.</li>
-<li>When a tiered user exhausts their weekly included try-ons, additional try-ons spend credits.</li>
-<li>Credit balance is displayed in the top-left corner of the app and tapping it opens <code>PurchaseScreen</code>.</li>
-<li>Credit transactions are tracked in the <code>CreditTransaction</code> model (<code>PURCHASE</code>, <code>GRANT</code>, <code>USAGE</code>, <code>REFUND</code>).</li>
-<li>Lifetime try-on count per user is tracked in <code>User.tryOnCount</code> (incremented on successful job completion).</li>
-</ul>
-<h4 id="free-credit-policy-welcome-bonus-admin-configurable-join-offer" tabindex="-1"><a class="header-anchor" href="#free-credit-policy-welcome-bonus-admin-configurable-join-offer" aria-hidden="true">#</a> Free credit policy (welcome bonus — admin-configurable &quot;join offer&quot;)</h4>
-<ul>
-<li>Each user receives the <strong>welcome-bonus credit grant ONCE</strong> at email verification (default <strong>10</strong>). There is no recurring grant.</li>
-<li><strong>The amount is admin-configurable at runtime</strong>, exactly like the guest grant: stored in <code>AppSettings.signupCreditGrant</code>, read via <code>getSignupCreditGrant()</code> (<a href="backend/src/services/appSettingsService.ts">appSettingsService.ts</a>, default <code>DEFAULT_SIGNUP_CREDIT_GRANT=10</code>, bounded 0–1000), edited in Admin Dashboard → <strong>⚙️ Settings → &quot;Welcome Bonus Credits (join offer)&quot;</strong> (<code>GET /api/admin/settings</code> + <code>PATCH /api/admin/settings/signup-credits</code>). This lets the &quot;free credits when you join&quot; promotion be raised for a limited-time campaign, lowered, or <strong>set to 0 to discontinue</strong> — with no redeploy and no app rebuild.</li>
-<li>Implemented in <code>authController.verifyEmail</code> — reads the live grant once, then (only when &gt; 0) atomically increments <code>User.credits</code> and writes a <code>CreditTransaction</code> of type <code>GRANT</code> with description &quot;Welcome bonus — email verified&quot;. At <strong>0</strong> the email still verifies but no credit/transaction is granted.</li>
-<li><strong>Public offer endpoint:</strong> <code>GET /api/config</code> (unauthenticated, like <code>/api/splash</code>) returns <code>{ signupCreditGrant, signupCreditsOffer }</code>. The app fetches it on launch (<code>store/useConfigStore.ts</code>) and renders the offer copy dynamically — &quot;Limited time offer: N free credits when you join&quot; on the signup/guest-prompt surfaces (<code>GuestPromptScreen</code>, <code>GuestProfileScreen</code>, <code>HomeScreen</code> guest banner, <code>PurchaseScreen</code>, <code>AboutScreen</code>) — and <strong>hides the offer entirely when 0</strong>. Defaults to the standing offer (10) until the fetch resolves so first render is honest.</li>
-<li>⚠️ <strong>Shipped-build caveat:</strong> the dynamic copy only takes effect in builds that carry <code>useConfigStore</code> (1.2.0+). Builds ≤1.1.0 (incl. the 1.1.0 TestFlight build) have the old hardcoded &quot;10 Free Credits&quot; copy. So <strong>do not set the grant to a value other than 10 while a ≤1.1.0 build is the live App Store version</strong> — the live app would advertise 10 but grant a different number (false advertising / Apple metadata-accuracy risk). Safe sequence: ship 1.2.0, let it propagate, <em>then</em> run promotions / discontinue.</li>
-<li><code>User.lastFreeCreditGrantAt</code> is set at verification time. The field is retained for audit but no longer drives any logic.</li>
-<li>Once a user exhausts their credits, they must purchase more or subscribe.</li>
-</ul>
-<h4 id="legacy-dev-only-endpoints" tabindex="-1"><a class="header-anchor" href="#legacy-dev-only-endpoints" aria-hidden="true">#</a> Legacy (dev-only) endpoints</h4>
-<p>The following endpoints exist but are gated to <strong>dev only</strong> and return <strong>HTTP 410 Gone</strong> in production with a message pointing users to the StoreKit flow:</p>
-<ul>
-<li><code>POST /api/credits/subscribe</code> — direct tier mutation (use <code>/verify-receipt</code> instead)</li>
-<li><code>POST /api/credits/purchase</code> — direct credit grant (use <code>/verify-receipt</code> instead)</li>
-<li><code>POST /api/credits/unsubscribe</code> — direct downgrade to FREE (users cancel via iOS Settings; webhook fires EXPIRED)</li>
-</ul>
-<p>Production uses <strong>only</strong> the <code>/api/credits/verify-receipt</code> path plus App Store Server Notifications. Granting entitlement via these legacy endpoints in production violates App Store Review Guideline 3.1.1.</p>
-<h3 id="soft-per-user-throttle-queue-pacing-in-seconds" tabindex="-1"><a class="header-anchor" href="#soft-per-user-throttle-queue-pacing-in-seconds" aria-hidden="true">#</a> Soft per-user throttle (queue pacing in seconds)</h3>
-<p>A <em>soft</em> layer sitting above the existing per-IP rate limit (<code>tryonPostLimiter</code>: 5 POST/min; video: 3/min) and the weekly/credit gates. Where those refuse the request with a 429, this layer accepts it but defers execution by setting a BullMQ <code>delay</code>. Implemented in <code>backend/src/services/throttleService.ts</code>. It is deliberately <strong>light</strong>: total volume is already capped by credits / the weekly allowance, so this only <em>smooths bursts</em> (a &quot;department-store shopper&quot; trying on many outfits should sail through her whole burst) and backstops a runaway client. <strong>Applies to BOTH try-on (IMAGE) and AI Video</strong> submissions — they share one rolling-window budget (both are <code>tryon_jobs</code> rows; the count isn't kind-filtered), so a user's combined image+video generations pace together.</p>
-<p><strong>Algorithm:</strong> rolling window (default 15 min), per-user, counts non-<code>FAILED</code> jobs. The user's free burst is tier-scaled; beyond it, each subsequent submission steps down a short delay ladder. <strong>The config is admin-tunable at runtime</strong> (see below), so the table reflects the current default:</p>
-<table>
-<thead>
-<tr>
-<th>Submission # in window</th>
-<th>FREE</th>
-<th>BASIC</th>
-<th>PREMIUM</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>≤ burst (6 / 8 / 10)</td>
-<td>0</td>
-<td>0</td>
-<td>0</td>
-</tr>
-<tr>
-<td>burst + 1</td>
-<td>10s</td>
-<td>10s</td>
-<td>10s</td>
-</tr>
-<tr>
-<td>burst + 2</td>
-<td>20s</td>
-<td>20s</td>
-<td>20s</td>
-</tr>
-<tr>
-<td>burst + 3</td>
-<td>30s</td>
-<td>30s</td>
-<td>30s</td>
-</tr>
-<tr>
-<td>burst + 4 and beyond</td>
-<td>40s (cap)</td>
-<td>40s</td>
-<td>40s</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Admin-tunable config (no redeploy).</strong> The window, per-tier burst, and delay ladder are stored as a single JSON blob in <code>AppSettings</code> under <code>throttleConfig</code>, read via <code>getThrottleConfig()</code> / written via <code>setThrottleConfig()</code> (validates + clamps, throws → 400). Edited in Admin Dashboard → <strong>⚙️ Settings → &quot;Try-On Throttle (Soft Queue)&quot;</strong> (<code>GET /api/admin/settings</code> + <code>PATCH /api/admin/settings/throttle</code>). A missing/corrupt row transparently falls back to <code>DEFAULT_THROTTLE_CONFIG</code>, so a bad value can never brick submission. <strong>Hard ceiling: no single ladder rung may exceed 60s</strong> (<code>MAX_LADDER_MS</code>) — a user must never wait more than a minute. <code>delayForOrdinal</code> is the pure, config-driven ladder math (unit-tested).</p>
-<p><strong>Reset on purchase.</strong> Buying credits or subscribing stamps <code>User.throttleResetAt = now</code> via <code>resetUserThrottle()</code>; <code>computeQueueDelayMs</code> ignores jobs before that timestamp, so a user who just paid starts with a clean burst and is <strong>never stuck in the queue with credits they can't spend</strong>. Wired into the verify-receipt consumable + subscription paths and the webhook <code>grantCreditsIfNew</code> (all fire-and-forget; a reset failure never breaks the purchase).</p>
-<p><strong>Wire-up:</strong> <code>tryonController.submitTryOn</code> <strong>and <code>videoController.submitVideo</code></strong> both call <code>computeQueueDelayMs(userId, tier)</code> after the credit/weekly gates pass. The result is:</p>
-<ul>
-<li>Persisted on <code>TryOnJob.scheduledStartAt</code> (null when delay = 0)</li>
-<li>Passed as the <code>delay</code> option to <code>enqueueTryOn</code> / <code>enqueueVideo</code></li>
-<li>Returned in the 202 response as <code>{ scheduledStartAt, queueDelayMs }</code></li>
-</ul>
-<p>Both <code>TryOnScreen</code> and <code>VideoScreen</code> render the one-shot &quot;You're in the queue&quot; alert + the live <code>M:SS</code> countdown from <code>scheduledStartAt</code>.</p>
-<p><strong>Client UX:</strong> <code>TryOnScreen.tsx</code> shows a one-shot <strong>&quot;You're in the queue&quot;</strong> Alert when <code>queueDelayMs &gt; 0</code> (worded as a <em>shared queue with other members</em>, never as a &quot;limit&quot; / &quot;too fast&quot;; non-PREMIUM users also see &quot;Subscribers get faster queues and shorter waits&quot;), then the <code>ResultView</code> renders a live <code>M:SS</code> countdown that ticks every second until <code>scheduledStartAt</code> elapses, at which point it falls through to the normal &quot;Generating…&quot; view.</p>
-<p><strong>Notes:</strong></p>
-<ul>
-<li>The BullMQ retry backoff is independent — <code>delay</code> only defers the initial run; retries still use the configured exponential backoff.</li>
-<li>Failed jobs are excluded from the count to match the weekly-limit semantics (a failed-and-refunded job didn't consume Grok cost, so it shouldn't penalize the user's pacing budget).</li>
-<li>App killed during countdown: the job lives in Redis/Postgres and runs anyway; the user finds it in Profile history. No data loss.</li>
-</ul>
-<h3 id="apple-in-app-purchases" tabindex="-1"><a class="header-anchor" href="#apple-in-app-purchases" aria-hidden="true">#</a> Apple In-App Purchases</h3>
-<ul>
-<li>Two ingestion paths run in parallel for redundancy. <strong>Both are idempotent on <code>transactionId</code></strong>:
-<ol>
-<li><strong>Fast path (client → backend):</strong> <code>POST /api/credits/verify-receipt</code> — the mobile app posts the StoreKit JWS immediately after a purchase succeeds. Backend verifies the JWS via Apple's CA chain, checks <code>appAccountToken === userId</code>, and applies the entitlement. Used so credits / tier appear instantly in the UI. <strong>Verification is dual-environment</strong> (<code>verifyAndDecodeTransactionAnyEnv</code> in <a href="backend/src/services/appleNotificationService.ts">appleNotificationService.ts</a>): the configured environment is tried first, and an <code>INVALID_ENVIRONMENT</code> failure retries against the opposite one — because <strong>TestFlight testers and App Review both produce SANDBOX receipts against the production backend</strong> (a Production-only verifier breaks App Review's IAP testing and was the Jim Morris lost-credits incident, 2026-06-11). Sandbox-verified grants are tagged <code>(sandbox)</code> in the CreditTransaction description. Verification failures log the <code>VerificationException</code> <strong>status name</strong> (the exception's <code>message</code> is empty — see <a href="backend/src/utils/appleVerifyStatus.ts">utils/appleVerifyStatus.ts</a>) plus a PII-free shape of the posted JWS, and fire a Sentry event (<code>area: iap-verify-receipt</code>).</li>
-<li><strong>Authoritative path (Apple → backend):</strong> <strong>App Store Server Notifications V2</strong> webhook at <code>POST /api/webhooks/apple</code>. Used for renewals, cancellations, refunds, and as a safety net if verify-receipt fails. See <code>backend/src/routes/appleWebhook.ts</code> and <code>backend/src/queue/appleNotificationWorker.ts</code>.</li>
-</ol>
-</li>
-<li>StoreKit transactions are persisted in the <code>ApplePurchase</code> model (<code>transactionId</code> unique per renewal, <code>originalTransactionId</code> stable across the subscription lifetime, <code>productId</code>, <code>tier</code>, <code>expiresAt</code>, <code>revokedAt</code>).</li>
-<li>The product catalog (<code>backend/src/config/appleIap.ts</code>) is a discriminated union: products are either <code>{ type: 'subscription', tier }</code> or <code>{ type: 'credits', credits: N, tierVariant }</code>. Subscription notifications update <code>User.tier</code>; consumable notifications grant credits via a <code>CreditTransaction</code>.</li>
-<li><strong>Tier-priced credit packs.</strong> Each credit-pack size has 3 SKU variants (<code>.free</code>, <code>.basic</code>, <code>.premium</code>) with different App Store Connect prices but identical credit grants. The client offers only the variant matching <code>user.tier</code>. If verify-receipt sees a tier-variant mismatch (race during a tier change, or a tampered client), it logs a warning and <strong>still grants credits</strong> — Apple already charged the user, so honest users aren't penalized.</li>
-<li>Product IDs (must match App Store Connect). Every SKU carries a <code>.v&lt;N&gt;</code> suffix matching the app version at which it was <em>last reissued</em> — currently <code>.v14</code>. The suffix is <strong>not</strong> bumped on every app release; it only changes when an IAP gets stuck in App Store Connect (&quot;Needs Developer Attention&quot;) and must be reissued. App Store Connect treats deleted product IDs as permanently burned, so reissues update both <a href="backend/src/config/appleIap.ts">backend/src/config/appleIap.ts</a> and <a href="frontend/app.json">frontend/app.json</a> in lockstep with the new suffix. See those files for the authoritative mapping.
-<ul>
-<li><code>com.evofaceflow.tryon.app.basic.monthly.v14</code> → BASIC tier subscription</li>
-<li><code>com.evofaceflow.tryon.app.premium.monthly.v14</code> → PREMIUM tier subscription</li>
-<li><code>com.evofaceflow.tryon.app.credits.{10,25,50,100}.{free,basic,premium}.v14</code> → 12 consumable credit packs (4 sizes × 3 tier variants).</li>
-</ul>
-</li>
-<li>The mobile app sets <code>appAccountToken</code> (= our <code>User.id</code> as UUID) on every StoreKit purchase so notifications can be mapped back to a user. The verify-receipt endpoint requires this match. Fallback identification (webhook only) is by <code>originalTransactionId</code> against existing <code>ApplePurchase</code> rows.</li>
-<li>Frontend uses <code>expo-iap</code> via <code>frontend/src/services/iap.ts</code>. The service handles connection lifecycle, fetches localized prices (<code>displayPrice</code>) from the App Store at runtime — <strong>never hardcode prices</strong> (Guideline 3.1.1(a)).</li>
-<li>Restore Purchases is fully StoreKit-driven: the client calls <code>expo-iap</code>'s <code>getAvailablePurchases()</code> and re-posts each receipt to <code>/verify-receipt</code>. Both surfaces (PurchaseScreen and Settings) use this flow. There is no server-side restore endpoint — <code>verify-receipt</code> plus App Store Server Notifications are the only entitlement paths.</li>
-<li>iOS bundle identifier: <code>com.evofaceflow.tryon.app</code> (see <code>frontend/app.json</code>).</li>
-<li><strong>Apple root CA certificates</strong> must be present in the backend at <code>backend/certs/apple/*.cer</code> (or wherever <code>APPLE_ROOT_CERTS_DIR</code> points). Download from https://www.apple.com/certificateauthority/ — at minimum <code>AppleRootCA-G3.cer</code>. Without these the JWS verifier cannot validate notifications. The Dockerfile <code>COPY certs ./certs</code> step bakes them into the production image.</li>
-</ul>
-<h3 id="content-moderation-app-store-guideline-12" tabindex="-1"><a class="header-anchor" href="#content-moderation-app-store-guideline-12" aria-hidden="true">#</a> Content Moderation (App Store Guideline 1.2)</h3>
-<p>The app supports user-generated content (public try-on feed) and so must provide reporting, blocking, and content filtering.</p>
-<ul>
-<li><strong>Report:</strong> Three-dot menu on every feed card (HomeScreen), on PublicProfileScreen, and on each comment in TryOnCommentsScreen. Opens <code>ReportSheet</code> with 6 reason options. Submits to <code>POST /api/reports</code>. Supported <code>targetType</code> values: <code>TRYON_JOB</code>, <code>USER</code>, <code>COMMENT</code>. Reports are listed in admin moderation endpoints (<code>GET /api/admin/moderation/reports</code>) and resolved with <code>PATCH /api/admin/moderation/reports/:id</code>. <code>removeContent: true</code> flips <code>TryOnJob.isPrivate = true</code> for <code>TRYON_JOB</code> targets and hard-deletes the comment (and decrements <code>TryOnJob.commentsCount</code>) for <code>COMMENT</code> targets.</li>
-<li><strong>Block:</strong> Same three-dot menus expose Block. <code>POST /api/users/:userId/block</code> creates a <code>UserBlock</code> row; mutual filtering is applied to feed, public-profile, search, and comment-thread queries via <code>getInvisibleUserIds()</code> in <code>backend/src/utils/blocks.ts</code>. In comment threads this means a blocked user's comments and replies are hidden from the blocker in both directions, and attempting to comment on / reply to / like across a block returns <code>404</code>. Blocking also deletes any existing follow links between the two users.</li>
-<li><strong>Unblock:</strong> Settings → Privacy &amp; Data → Blocked Users (<code>BlockedUsersScreen</code>) lists current blocks and allows unblocking via <code>DELETE /api/users/:userId/block</code>.</li>
-<li><strong>Filtering objectionable material from posting:</strong> combination of (a) ToS prohibition, (b) xAI Grok's built-in content filters on AI-generated images, (c) user reports, (d) admin removal. There is no automated image moderation — adding AWS Rekognition or similar would harden this further.</li>
-<li><strong>Per-user moderation-strike tracking (banned-content attempts).</strong> When Grok blocks <strong>every perspective</strong> of a try-on (the <code>CONTENT_MODERATED</code> terminal path in <code>tryonWorker</code> — a partial block now completes the job with the surviving perspectives and records <strong>no</strong> strike), the worker calls <code>recordModerationStrike()</code> (<a href="backend/src/services/moderationService.ts">services/moderationService.ts</a>), which increments <code>User.moderationBlockCount</code>, stamps <code>User.lastModerationBlockAt</code>, returns the new count, and — on every Nth strike (<code>MODERATION_STRIKE_ALERT_EVERY</code>, default 3; pure helper <code>shouldAlertOnStrike</code> in <a href="backend/src/utils/moderationStrike.ts">utils/moderationStrike.ts</a>, unit-tested) — emails <code>ADMIN_EMAILS</code> via <code>sendModerationStrikeAlert</code>. The returned count drives the <strong>grace window</strong>: strikes 1–3 (<code>MODERATION_GRACE_WARNINGS</code> in <code>tryonWorker.ts</code>) refund the credit with a &quot;warning N of 3&quot; message; strike 4+ applies the no-refund policy. Strike bookkeeping is self-contained (errors swallowed, null count = fall back to no-refund), so it never breaks the worker's failure path. The admin dashboard surfaces the count as a red <strong>⚠ N</strong> badge next to the username in the Users list and a <strong>Moderation Blocks</strong> field in the user-detail modal (both fed by <code>moderationBlockCount</code> / <code>lastModerationBlockAt</code> on the <code>/api/admin/users</code> + <code>/api/admin/user/:id</code> responses). Per-event detail isn't stored separately — a blocked attempt is already a <code>TryOnJob</code> row (status <code>FAILED</code> + the moderation <code>errorMessage</code>). <strong>Caveat:</strong> a single block can be a borderline-clothing false positive (observed live: a vegetable-print suit blocked on the medium perspective only); a <em>repeating</em> all-perspectives pattern is the strong signal — treat the badge as a flag for review, not an automatic ban.</li>
-</ul>
-<h3 id="ai-generated-content-disclosure-guideline-40" tabindex="-1"><a class="header-anchor" href="#ai-generated-content-disclosure-guideline-40" aria-hidden="true">#</a> AI-Generated Content Disclosure (Guideline 4.0)</h3>
-<p>Every visible try-on result image carries an <code>AiGeneratedBadge</code> overlay (&quot;✨ AI-generated&quot;). Surfaces:</p>
-<ul>
-<li><code>TryOnScreen</code> inline result image (the screen where the user first sees their generated try-on)</li>
-<li><code>TryOnResultCard</code> (used in profile history)</li>
-<li><code>HomeScreen</code> feed card result image</li>
-<li><code>TryOnDetailModal</code> carousel</li>
-<li><code>FullScreenImageModal</code> when caller passes <code>aiGenerated={true}</code> (HomeScreen passes false for clothing/body photo previews)</li>
-</ul>
-<p>Profile-screen 3-column thumbnails are intentionally not badged — they're micro-previews that immediately open the detail modal where the badge is shown.</p>
-<h3 id="admin-access-ui-gating" tabindex="-1"><a class="header-anchor" href="#admin-access-ui-gating" aria-hidden="true">#</a> Admin Access (UI gating)</h3>
-<ul>
-<li>Backend admin endpoints require the <code>X-Admin-Key</code> header matching <code>ADMIN_API_KEY</code>.</li>
-<li>The mobile app's <code>AdminConsoleScreen</code> is gated by <strong>two</strong> independent layers:
-<ol>
-<li>The Stack.Screen route is only registered when <code>__DEV__ || user.isAdmin</code>. Non-admin production users have no entry point at all.</li>
-<li>The Settings screen's &quot;Admin Console&quot; button is only shown when <code>user.isAdmin === true</code>.</li>
-</ol>
-</li>
-<li><code>user.isAdmin</code> is server-derived: <code>authController</code> and <code>profileController.getMyProfile</code> compute it via <code>isAdminEmail(email)</code> against the <code>ADMIN_EMAILS</code> env var (comma-separated allowlist).</li>
-</ul>
-<h4 id="network-level-admin-allowlist-prod-nginx-lockout-recovery" tabindex="-1"><a class="header-anchor" href="#network-level-admin-allowlist-prod-nginx-lockout-recovery" aria-hidden="true">#</a> Network-level admin allowlist (prod nginx) + lockout recovery</h4>
-<p>On <strong>production only</strong>, nginx IP-allowlists the admin surface as defense-in-depth on top of <code>X-Admin-Key</code>. Both <code>location = /admin</code> (the dashboard HTML) and <code>location /api/admin</code> (the admin API) carry <code>allow &lt;ip&gt;; deny all;</code> in <a href="nginx/nginx.conf">nginx/nginx.conf</a>. Any other IP gets a <code>403</code> before the request reaches the backend. <code>nginx.dev.conf</code> is intentionally left open, so the dev dashboard stays reachable from anywhere.</p>
-<blockquote>
-<p><strong>⚠️ The allowlisted IP is a residential/dynamic IP</strong> (no static IP or VPN available). If the ISP rotates it, the admin <strong>will get locked out</strong> of <code>/admin</code> and <code>/api/admin</code> with a <code>403</code> — the rest of the app keeps working normally for users; only the admin surface is affected.</p>
-</blockquote>
-<p><strong>Recovery when the admin IP changes (or you're locked out):</strong></p>
-<ol>
-<li>Find your new public IP: <code>curl -s https://api.ipify.org</code> from the admin machine.</li>
-<li>SSH into the prod box — <strong>SSH is unaffected</strong> (port 22, not behind nginx):<pre><code class="language-bash">ssh ubuntu@api.tryon-mirror.ai
-cd /opt/evofaceflow/TryOn
-</code></pre>
-</li>
-<li>Update <strong>both</strong> <code>allow</code> lines in <code>nginx/nginx.conf</code> to the new IP (edit in place on the server, or change it in the repo, commit, merge to <code>main</code>, and <code>git pull</code>). There are two: one in <code>location = /admin</code>, one in <code>location /api/admin</code> — keep them in sync.</li>
-<li><strong>Force-recreate</strong> nginx so it remounts the changed file — a plain <code>reload</code>/<code>restart</code> will NOT pick it up (the config is bind-mounted as a single file, pinned to the old inode):<pre><code class="language-bash">docker compose -f docker-compose.prod.yml up -d --force-recreate nginx
-docker compose -f docker-compose.prod.yml exec nginx grep -n &quot;allow &quot; /etc/nginx/nginx.conf   # confirm the new IP
-</code></pre>
-</li>
-<li>Verify from the new IP: <code>curl -s -o /dev/null -w &quot;%{http_code}\n&quot; https://api.tryon-mirror.ai/admin</code> → expect <code>200</code>.</li>
-</ol>
-<blockquote>
-<p><strong>Emergency open-up</strong> (if you need admin access NOW and can't determine your IP): comment out the two <code>deny all;</code> lines in <code>nginx/nginx.conf</code>, force-recreate nginx as above, do what you need, then restore the allowlist. The <code>X-Admin-Key</code> is still required in this window, so the surface isn't fully exposed — but don't leave it open.</p>
-</blockquote>
-<h3 id="geo-location-tracking" tabindex="-1"><a class="header-anchor" href="#geo-location-tracking" aria-hidden="true">#</a> Geo / Location Tracking</h3>
-<ul>
-<li>Location is recorded on every login and token refresh.</li>
-<li>The last 10 records per user are retained; older records are deleted automatically.</li>
-<li><code>distanceFromLast</code> is calculated server-side using the Haversine formula.</li>
-<li>A location is flagged <code>suspiciousLocation = true</code> if <code>distanceFromLast</code> &gt; 500 km within 2 hours.</li>
-<li>Suspicious logins trigger an email alert to the user.</li>
-<li>Location data is disclosed in the Privacy Policy. Users may request deletion via Settings.</li>
-</ul>
-<hr>
-<h2 id="image-processing" tabindex="-1"><a class="header-anchor" href="#image-processing" aria-hidden="true">#</a> Image Processing</h2>
-<p>All uploaded images (body photos, clothing photos) undergo a two-stage resizing process:</p>
-<h3 id="frontend-resizing-mobile" tabindex="-1"><a class="header-anchor" href="#frontend-resizing-mobile" aria-hidden="true">#</a> Frontend Resizing (Mobile)</h3>
-<ul>
-<li><strong>Location</strong>: <code>frontend/src/utils/imageUtils.ts</code> → <code>processImageForUpload()</code></li>
-<li><strong>Purpose</strong>: Convert HEIF/HEIC to JPEG, reduce upload bandwidth</li>
-<li><strong>Dimensions</strong>:
-<ul>
-<li>Avatar photos: 512×512 (square)</li>
-<li>Body photos: Up to 1536×2048 (max dimensions)</li>
-<li>Clothing photos: Up to 1536×2048 (max dimensions)</li>
-</ul>
-</li>
-<li><strong>Format</strong>: JPEG at 85% quality</li>
-<li><strong>Features</strong>: HEIF/HEIC to JPEG conversion (iOS compatibility)</li>
-</ul>
-<h3 id="backend-resizing-server" tabindex="-1"><a class="header-anchor" href="#backend-resizing-server" aria-hidden="true">#</a> Backend Resizing (Server)</h3>
-<ul>
-<li><strong>Location</strong>: <code>backend/src/utils/imageProcessor.ts</code></li>
-<li><strong>Purpose</strong>: Standardize dimensions for AI processing and storage</li>
-<li><strong>Dimensions</strong>:
-<ul>
-<li><strong>Body &amp; Clothing photos</strong>: Longest side scaled to <strong>1024px</strong>, aspect ratio preserved
-<ul>
-<li>Portrait 2:3 (e.g., 2000×3000) → 683×1024</li>
-<li>Portrait 3:4 (e.g., 3000×4000) → 768×1024</li>
-<li>Landscape 4:3 (e.g., 4000×3000) → 1024×768</li>
-<li>Square (e.g., 2000×2000) → 1024×1024</li>
-</ul>
-</li>
-<li><strong>Avatar photos</strong>: 512×512 (square, center crop)</li>
-</ul>
-</li>
-<li><strong>Format</strong>: JPEG at 90% quality (85% for avatars)</li>
-<li><strong>Features</strong>: Auto-rotation based on EXIF, HEIF/HEIC detection and rejection</li>
-</ul>
-<p><strong>Why two stages?</strong></p>
-<ol>
-<li>Frontend resize reduces network bandwidth (uploading ~3MP vs 12MP+ originals)</li>
-<li>Backend resize ensures consistent dimensions for the Grok Imagine API, regardless of upload source</li>
-</ol>
-<p><strong>B3 verdict (2026-06-10, empirical):</strong> keep both stages and the 1024px backend target. A controlled A/B on dev (same body photo, clothing input at 1504px vs 1024px, two generations each) found <strong>Grok Imagine outputs a fixed 864×1152 (~1.0 MP) canvas regardless of input resolution</strong>, and the higher-res input produced no visible quality gain — xAI's docs publish no input-resolution spec, so this measurement is the authority. Implications: (a) raising the backend target only inflates S3 + Grok payloads; (b) the frontend stage remains a pure bandwidth win; (c) the A3 low-res warning thresholds (longest side &lt; 1024, shortest &lt; 500 in <a href="frontend/src/utils/imageUtils.ts">imageUtils.ts</a>) are correctly calibrated — below them the pipeline is effectively upscaling into Grok's output canvas. Incoming-upload dimensions are now logged structured (<code>Upload image processed</code> in <a href="backend/src/utils/imageProcessor.ts">imageProcessor.ts</a>) so real-world stats accrue for future re-evaluation. (Micro-note: 3:4 inputs at 1024 arrive at Grok 768 wide vs its 864-wide output — a 1152px target would match exactly, but the A/B showed no visible benefit, so not worth the churn.)</p>
-<hr>
-<h2 id="infrastructure" tabindex="-1"><a class="header-anchor" href="#infrastructure" aria-hidden="true">#</a> Infrastructure</h2>
-<ul>
-<li><strong>Database</strong>: PostgreSQL 15 (Prisma ORM)</li>
-<li><strong>Queue</strong>: Redis 7 + BullMQ</li>
-<li><strong>Storage</strong>: AWS S3 (<code>evofaceflow-uploads</code>) — separate prefixes: <code>body-photos/</code>, <code>clothing-photos/</code>, <code>tryon-results/</code>, <code>closet/</code> (Outfit Designer creations), <code>tryon-videos/</code> (AI Video source images + .mp4 results). Bucket has Block Public Access enabled and <strong>no</strong> bucket policy granting <code>s3:GetObject</code> to <code>Principal: &quot;*&quot;</code>. All reads go through the backend. <strong>Bucket versioning is enabled</strong> with a lifecycle rule expiring noncurrent object versions after 30 days — provides a rolling 30-day undo window for accidental deletes / overwrites of user photos.</li>
-<li><strong>Reverse proxy</strong>: Nginx (production) with SSL via Let's Encrypt</li>
-<li><strong>Hosting</strong>: AWS Lightsail Ubuntu 22.04</li>
-<li><strong>Email</strong>: AWS SES (transactional) — verification emails, suspicious login alerts</li>
-<li><strong>Geo-IP</strong>: ip-api.com or MaxMind GeoLite2 (server-side, never exposed to client)</li>
-<li><strong>Intrusion Prevention</strong>: Fail2ban for automated IP banning</li>
-</ul>
-<h2 id="backups-external-monitoring" tabindex="-1"><a class="header-anchor" href="#backups-external-monitoring" aria-hidden="true">#</a> Backups &amp; External Monitoring</h2>
-<p>Production data is protected at three independent layers. Details and restore procedures live in <a href="deployment.html">DEPLOYMENT.md §10–12</a>.</p>
-<table>
-<thead>
-<tr>
-<th>Layer</th>
-<th>What it covers</th>
-<th>Restore via</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Lightsail automatic snapshots (daily)</td>
-<td>Whole-VM rollback</td>
-<td>Lightsail console → create new instance from snapshot</td>
-</tr>
-<tr>
-<td>S3 versioning + lifecycle on <code>evofaceflow-uploads</code></td>
-<td>Per-photo undo, 30-day window</td>
-<td>S3 console &quot;Show versions&quot;</td>
-</tr>
-<tr>
-<td>Nightly <code>pg_dump</code> → <code>s3://evofaceflow-backups/postgres/</code></td>
-<td>Database restore, 365-day retention (Glacier IR after 30 days)</td>
-<td><code>aws s3 cp</code> + <code>psql</code> — DEPLOYMENT.md §10.4</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Nightly Postgres dump details:</strong></p>
-<ul>
-<li>Script <code>/usr/local/bin/backup-postgres.sh</code> (on the Lightsail host, not in the repo) streams <code>pg_dump | gzip | aws s3 cp</code> so no unencrypted dump ever touches disk</li>
-<li>Config + AWS keys in <code>/etc/tryon-backup.env</code> (<code>chmod 600 root:root</code>, vars <code>export</code>ed)</li>
-<li>Runs daily at 02:00 UTC via root crontab; logs to <code>/var/log/tryon-backup.log</code> (logrotate, 8-week retention)</li>
-<li>Uploads use the IAM user <code>tryon-backup-uploader</code> with a write-only scoped policy — it cannot read, list, or delete completed backups, so a host compromise cannot exfiltrate or destroy historical dumps</li>
-<li>Bucket <code>evofaceflow-backups</code> has versioning enabled and a lifecycle policy: Glacier Instant Retrieval after 30 days, expire after 365 days</li>
-</ul>
-<p><strong>External monitoring:</strong></p>
-<ul>
-<li>UptimeRobot free tier monitors <code>https://api.tryon-mirror.ai/health</code> every 5 minutes from outside AWS. Alerts go to email after 2 consecutive failures (~10 minutes of downtime). This catches outages the application itself cannot report (network partition, VM down, nginx misconfig, DNS failure).</li>
-<li>The <code>/health</code> endpoint runs a <strong>deep</strong> check: it probes Postgres (<code>SELECT 1</code>) and Redis (<code>PING</code>) in parallel (2s timeout each) and returns <code>200 {status:&quot;ok&quot;}</code> only when both are up, or <code>503 {status:&quot;degraded&quot;}</code> with per-dependency status otherwise. A separate shallow, dependency-free <code>/health/live</code> backs the Docker liveness probe, so a transient dependency blip can't make Docker kill an otherwise-healthy backend. UptimeRobot watches <code>/health</code>, so it catches dependency outages, not just a dead Express process.</li>
-<li><strong>SSL certificate expiry alerting is currently passive</strong> — UptimeRobot's SSL monitoring is now paid, so expiry surfaces only when (a) certbot's renewal-failure email fires or (b) the cert actually expires and UptimeRobot's HTTPS check fails. A preemptive check via the existing vulnerability scanner is planned (the <code>SSL_CERTIFICATE</code> enum value in <code>VulnerabilityReport.scanType</code> is reserved for this).</li>
-</ul>
-<hr>
-<h2 id="admin-dashboard" tabindex="-1"><a class="header-anchor" href="#admin-dashboard" aria-hidden="true">#</a> Admin Dashboard</h2>
-<p>Access at <code>https://api.tryon-mirror.ai/admin</code> (requires <code>ADMIN_API_KEY</code>).</p>
-<p>Features:</p>
-<ul>
-<li><strong>Dashboard</strong>: User count, try-on jobs, subscribers, credits outstanding, plus guest-mode metrics — <strong>Guests Today</strong> (guest sign-ups since 00:00 UTC), <strong>Active Guests</strong> (unconverted <code>isGuest=true</code> rows), <strong>Guest→User (7d)</strong> conversion rate (share of the last 7 days' guest sign-ups now converted to real accounts), and a <strong>7-day guest-sign-up mini-trend</strong> (per-UTC-day bar chart). All derived in <code>GET /api/admin/stats</code> from <code>UserLocation</code> rows with <code>trigger='guest_create'</code> (the per-day series is returned as <code>guestSignups7dByDay</code>).</li>
-<li><strong>🩺 Diagnostics</strong> (<code>GET /api/admin/diagnostics</code>): a single triage pane for &quot;what's wrong right now&quot; — Postgres/Redis up-state + latency, process &amp; host memory/uptime, BullMQ queue depth + recent worker-failure tables, an <strong>integrations grid</strong> (green/red for Grok, S3, Apple Server API, email/SES, CloudWatch, Sentry — instantly answers &quot;why is feature X dead on this box?&quot;), <strong>config flags</strong> (NODE_ENV, APP_URL, APPLE_ENVIRONMENT, refresh-token rotation, log level) for spotting dev/prod env drift, <strong>24h try-on throughput</strong> with a highlighted <strong>stuck-in-PROCESSING &gt;30m</strong> counter (the clearest &quot;worker/Grok stalled&quot; signal), <strong>7-day credit economy</strong> (PURCHASE/GRANT/USAGE/REFUND sums + outstanding), and a <strong>Sentry</strong> card with config status, a <strong>Send test event</strong> button, and an inline recent-issues feed (when the Sentry REST-API vars are set).</li>
-<li><strong>Users</strong>: List all users, create test users, verify accounts, toggle subscriptions, adjust credits, and view per-user AI Processing Consent status (Granted with timestamp, or Not granted). User detail modal also shows the consent timestamp, plus a <strong>Try-On Sessions gallery</strong> — every session as a card with all of its photos side by side (body-photo input, clothing photo(s), full-body result, medium result; missing slots shown as placeholders), paginated 5 at a time via <code>GET /api/admin/user/:userId/jobs</code>, thumbnails click through to full size.</li>
-<li><strong>⚙️ Settings</strong>: runtime-tunable values that take effect without a redeploy. Currently the <strong>Guest Welcome Credits</strong> grant — the number of free credits a brand-new guest account gets the first time the app is opened on a device. Backed by <code>GET /api/admin/settings</code> + <code>PATCH /api/admin/settings/guest-credits</code>, persisted in <code>AppSettings.guestCreditGrant</code>, read by <code>createGuest</code> via <code>getGuestCreditGrant()</code>. Only affects newly created guests, not existing ones. Also hosts the welcome-bonus / referral / video-cost settings, the <strong>Try-On Throttle (Soft Queue)</strong> editor (window + per-tier burst + delay ladder; <code>PATCH /api/admin/settings/throttle</code> — see Soft per-user throttle), and the <strong>Splash / Announcement Screen</strong> manager — current status with inline preview, upload (publish/replace), and remove (see Splash / Announcement Screen under Key Business Rules).</li>
-<li><strong>Subscription status column</strong> (per user): derived from the latest non-revoked subscription <code>ApplePurchase</code> row. States are <code>Active · renews &lt;date&gt;</code>, <code>Pending cancel · ends &lt;date&gt;</code> (user toggled auto-renew off — entitlement still valid until that date), <code>Billing retry</code> (Apple is retrying a failed payment — likely to churn), <code>Grace period · ends &lt;date&gt;</code> (payment failed but entitlement preserved temporarily), <code>Expired</code>, <code>Revoked</code>, or <code>—</code> (no subscription on file). The user-detail modal additionally shows the productId, exact expiry timestamp, auto-renew flag, last-synced-from-Apple timestamp, and a <strong>Refresh from Apple</strong> button that pulls live state via <code>POST /api/admin/user/:userId/refresh-subscription</code> (see <a href="#app-store-server-api-integration">App Store Server API integration</a> below). Webhook-only fields (<code>autoRenewStatus</code>) populate on the next renewal/status webhook; <code>appleStatus</code> only populates after an admin refresh.</li>
-</ul>
-<h3 id="app-store-server-api-integration" tabindex="-1"><a class="header-anchor" href="#app-store-server-api-integration" aria-hidden="true">#</a> App Store Server API Integration</h3>
-<p>We use Apple's <a href="https://developer.apple.com/documentation/appstoreserverapi">App Store Server API</a> as a reconciliation layer alongside the primary webhook ingestion path. Webhooks are still the authoritative push channel for state changes; the Server API is pulled on-demand to:</p>
-<ul>
-<li>Resolve <code>Unknown</code> states for rows written before <code>autoRenewStatus</code> was added</li>
-<li>Detect webhook drift (notifications missed during backend downtime)</li>
-<li>Surface <code>BILLING_RETRY</code> and <code>GRACE_PERIOD</code> states that webhooks don't carry directly</li>
-<li>Provide an authoritative &quot;is this user still subscribed?&quot; answer when an admin needs one</li>
-</ul>
-<p><strong>Endpoint:</strong> <code>POST /api/admin/user/:userId/refresh-subscription</code> — admin-only. Calls Apple's <code>getAllSubscriptionStatuses(originalTransactionId)</code>, walks the response to find the matching transaction, decodes the signed JWS payloads (same verifier as webhooks), and writes <code>appleStatus</code>, <code>autoRenewStatus</code>, <code>expiresAt</code>, and <code>lastSyncedFromAppleAt</code> back to the <code>ApplePurchase</code> row. Returns the refreshed <code>subscriptionStatus</code> for in-place dashboard re-render.</p>
-<p><strong>Implementation:</strong> <a href="backend/src/services/appleServerApiService.ts">backend/src/services/appleServerApiService.ts</a> wraps <code>AppStoreServerAPIClient</code> from <code>@apple/app-store-server-library</code>. The client is a lazy singleton — if env vars are missing, <code>getClient()</code> throws <code>AppleServerApiNotConfiguredError</code> which the route translates to HTTP 503 so the missing-config case is distinguishable from a real Apple API failure.</p>
-<p><strong>Required env vars</strong> (all three or none — partial configuration throws on first use):</p>
-<ul>
-<li><code>APPLE_API_KEY_ID</code> — 10-character key identifier</li>
-<li><code>APPLE_API_KEY_ISSUER_ID</code> — UUID from App Store Connect → Users and Access → Integrations</li>
-<li><code>APPLE_API_KEY_PATH</code> — absolute or relative path to the downloaded <code>.p8</code> key file (gitignored alongside the root CAs in <code>backend/certs/</code>)</li>
-</ul>
-<p>Generate the key in App Store Connect → Users and Access → Integrations → <strong>In-App Purchase</strong> tab (NOT the regular App Store Connect API key — that's a different role). The .p8 can only be downloaded once at creation time; treat it like a secret.</p>
-<ul>
-<li><strong>Try-On Jobs</strong>: View recent jobs with status, perspectives used, result links</li>
-<li><strong>Security</strong>: Suspicious login stats, flagged locations, user location history</li>
-</ul>
-<p>Admin API endpoints (all require <code>X-Admin-Key</code> header):</p>
-<ul>
-<li><code>GET /api/admin/stats</code> — dashboard statistics</li>
-<li><code>GET /api/admin/settings</code> — read admin-tunable runtime settings (the guest welcome-credit grant AND the signup welcome-bonus grant, each with its default + max for the UI)</li>
-<li><code>PATCH /api/admin/settings/guest-credits</code> — set the guest welcome-credit grant (body: <code>{ value }</code>; non-negative integer ≤ 1000). Powers the <strong>⚙️ Settings</strong> dashboard tab and takes effect immediately for newly created guests.</li>
-<li><code>PATCH /api/admin/settings/signup-credits</code> — set the signup welcome-bonus (&quot;free credits when you join&quot;) grant (body: <code>{ value }</code>; non-negative integer ≤ 1000; <strong>0 discontinues the offer</strong>). Takes effect immediately for newly verified accounts. See Free credit policy.</li>
-<li><code>PATCH /api/admin/settings/referral-credits</code> — set the referral reward granted to BOTH sides per successful referral (body: <code>{ value }</code>; non-negative integer ≤ 1000; <strong>0 disables the reward</strong>). See Engagement &amp; Growth Features.</li>
-<li><code>PATCH /api/admin/settings/referral-max</code> — set the anti-farming per-referrer cap (body: <code>{ value }</code>; non-negative integer; <strong>0 = unlimited</strong>). Max REWARDED referrals one referrer earns per rolling 30-day window; over it the referrer's payout is withheld (the invitee is still paid). See Engagement &amp; Growth Features.</li>
-<li><code>PATCH /api/admin/settings/video-cost</code> — set the per-video credit cost (body: <code>{ value }</code>; integer <strong>≥ 1</strong>). See AI Video below.</li>
-<li><code>PATCH /api/admin/settings/throttle</code> — set the soft try-on queue config (body: the full <code>{ windowMs, burst: { FREE, BASIC, PREMIUM }, ladderMs: number[] }</code> object; validated + clamped, any rung capped at 60s). See Soft per-user throttle.</li>
-<li><code>GET /api/admin/users</code> — list users</li>
-<li><code>POST /api/admin/users</code> — create test user</li>
-<li><code>GET /api/admin/user/:id</code> — user details with location history</li>
-<li><code>DELETE /api/admin/user/:id</code> — delete user</li>
-<li><code>PATCH /api/admin/user/:id/verify</code> — toggle verification</li>
-<li><code>PATCH /api/admin/user/:id/subscription</code> — toggle subscription</li>
-<li><code>PATCH /api/admin/user/:id/credits</code> — adjust credits</li>
-<li><code>DELETE /api/admin/user/:userId/clear-locations</code> — wipe a user's stored <code>UserLocation</code> history (and its suspicious-location flags); surfaced as a &quot;Clear History&quot; button in the user-detail modal's Login Locations section</li>
-<li><code>POST /api/admin/user/:userId/refresh-subscription</code> — pull live subscription state from Apple's App Store Server API (see <a href="#app-store-server-api-integration">App Store Server API integration</a>)</li>
-<li><code>DELETE /api/admin/user/:userId/apple-purchase/:purchaseId</code> — delete one <code>ApplePurchase</code> row; resets tier to FREE if no subscription-tier purchases remain</li>
-<li><code>DELETE /api/admin/user/:userId/apple-purchases</code> — delete ALL <code>ApplePurchase</code> rows for a user and reset tier to FREE (clears stale sandbox/TestFlight test transactions, which accumulate one row per renewal)</li>
-<li><code>GET /api/admin/jobs</code> — list try-on jobs</li>
-<li><code>GET /api/admin/user/:userId/jobs</code> — one user's try-on sessions (presigned, paginated <code>?limit&amp;skip</code>); powers the user-detail modal's Try-On Sessions gallery</li>
-<li><code>DELETE /api/admin/job/:jobId</code> — delete a single job <strong>and its clothing/result images in S3</strong> (never <code>bodyPhotoUrl</code> — that's the user's profile body photo, shared across jobs)</li>
-<li><code>POST /api/admin/jobs/delete</code> — bulk delete jobs (same S3 cleanup as the single delete; before 2026-06-11 both endpoints left the S3 objects behind, which is where most storage orphans came from)</li>
-<li><code>GET /api/admin/splash</code> / <code>POST /api/admin/splash</code> (multipart <code>photo</code>) / <code>DELETE /api/admin/splash</code> — inspect, publish/replace, and remove the launch splash/announcement image (see Splash / Announcement Screen under Key Business Rules)</li>
-<li><code>GET /api/admin/s3/orphan-scan</code> — full key-level DB↔S3 reconciliation over the TryOn prefixes: any object not referenced by a User or TryOnJob row is orphaned (catches deleted users AND deleted jobs/replaced photos of live users; ignores objects &lt;1h old to dodge in-flight uploads). Read-only.</li>
-<li><code>DELETE /api/admin/s3/orphan-cleanup</code> — delete everything the orphan scan found (re-scans first)</li>
-<li><code>GET /api/admin/security/stats</code> — suspicious login statistics</li>
-<li><code>GET /api/admin/security/suspicious</code> — list suspicious logins</li>
-<li><code>GET /api/admin/moderation/reports</code> — list user-submitted reports (filter by <code>?status=OPEN|REVIEWING|RESOLVED_REMOVED|RESOLVED_NO_ACTION</code>)</li>
-<li><code>PATCH /api/admin/moderation/reports/:id</code> — resolve a report (body: <code>{ status, resolverNote, removeContent }</code>. <code>removeContent: true</code> flips <code>TryOnJob.isPrivate = true</code>.)</li>
-<li><code>GET /api/admin/diagnostics</code> — one-call operational snapshot powering the <strong>🩺 Diagnostics</strong> tab: process/system health, Postgres + Redis latency, BullMQ queue depth + recent worker failures, which integrations are configured on this box, 24h try-on throughput (incl. <strong>jobs stuck in PROCESSING &gt;30m</strong>), 7-day credit economy, and Sentry status. Every section is error-isolated so the endpoint stays useful even when a dependency is down. (See <a href="backend/src/services/diagnosticsService.ts">services/diagnosticsService.ts</a>.)</li>
-<li><code>GET /api/admin/sentry/status</code> — Sentry config snapshot (no secrets)</li>
-<li><code>GET /api/admin/sentry/issues</code> — most recent unresolved Sentry issues; <strong>503</strong> when the REST-API env vars aren't set, <strong>502</strong> on a Sentry API error</li>
-<li><code>POST /api/admin/sentry/test</code> — fire a synthetic event to verify Sentry delivery end-to-end; <strong>503</strong> when <code>SENTRY_DSN</code> is unset</li>
-</ul>
-<hr>
-<h2 id="vulnerability-monitoring" tabindex="-1"><a class="header-anchor" href="#vulnerability-monitoring" aria-hidden="true">#</a> Vulnerability Monitoring</h2>
-<p>The system includes automated vulnerability scanning to ensure security and identify required patches.</p>
-<h3 id="features" tabindex="-1"><a class="header-anchor" href="#features" aria-hidden="true">#</a> Features</h3>
-<ul>
-<li><strong>Scheduled Scans</strong>: Automatically runs daily at 2:00 AM</li>
-<li><strong>NPM Dependencies</strong>: Scans both backend and frontend npm packages using <code>npm audit</code></li>
-<li><strong>System Packages</strong>: Checks for Ubuntu/Debian package updates (apt-based systems)</li>
-<li><strong>Admin Dashboard</strong>: Displays vulnerability counts by severity (Critical, High, Moderate, Low)</li>
-<li><strong>Manual Triggers</strong>: Admins can trigger immediate scans from the dashboard</li>
-</ul>
-<h3 id="admin-api-endpoints" tabindex="-1"><a class="header-anchor" href="#admin-api-endpoints" aria-hidden="true">#</a> Admin API Endpoints</h3>
-<p>All vulnerability endpoints require <code>X-Admin-Key</code> header:</p>
-<ul>
-<li><code>GET /api/admin/vulnerabilities/summary</code> — get latest vulnerability summary</li>
-<li><code>GET /api/admin/vulnerabilities/reports</code> — paginated scan history (query: <code>scanType</code>, <code>limit</code>, <code>skip</code>)</li>
-<li><code>GET /api/admin/vulnerabilities/report/:id</code> — detailed report with full JSON output</li>
-<li><code>POST /api/admin/vulnerabilities/scan</code> — trigger async vulnerability scan (returns immediately)</li>
-<li><code>POST /api/admin/vulnerabilities/scan/immediate</code> — run synchronous scan (waits for completion)</li>
-<li><code>DELETE /api/admin/vulnerabilities/cleanup?days=30</code> — delete reports older than X days</li>
-</ul>
-<h3 id="database-schema" tabindex="-1"><a class="header-anchor" href="#database-schema" aria-hidden="true">#</a> Database Schema</h3>
-<pre><code class="language-prisma">enum ScanType {
-  NPM_BACKEND
-  NPM_FRONTEND
-  SYSTEM_PACKAGES
-  DOCKER_IMAGES
-  SSL_CERTIFICATE
-}
-
-model VulnerabilityReport {
-  id                 String   @id @default(uuid())
-  scanType           ScanType
-  totalVulnerabilities Int    @default(0)
-  criticalCount      Int      @default(0)
-  highCount          Int      @default(0)
-  moderateCount      Int      @default(0)
-  lowCount           Int      @default(0)
-  infoCount          Int      @default(0)
-  details            String?  // Full npm audit JSON
-  systemInfo         String?  // OS/Node/Docker versions
-  packagesChecked    Int?
-  fixAvailable       Boolean  @default(false)
-  scanDurationMs     Int?
-  errorMessage       String?
-  createdAt          DateTime @default(now())
-}
-</code></pre>
-<h3 id="scan-schedule" tabindex="-1"><a class="header-anchor" href="#scan-schedule" aria-hidden="true">#</a> Scan Schedule</h3>
-<ul>
-<li><strong>Automatic</strong>: Daily at 2:00 AM (configured in BullMQ)</li>
-<li><strong>Manual</strong>: Trigger from admin dashboard or API</li>
-<li><strong>Retention</strong>: Scan results stored indefinitely (can be cleaned up via API)</li>
-</ul>
-<h3 id="responding-to-vulnerabilities" tabindex="-1"><a class="header-anchor" href="#responding-to-vulnerabilities" aria-hidden="true">#</a> Responding to Vulnerabilities</h3>
-<ol>
-<li><strong>Review</strong>: Check admin dashboard &quot;Vulnerabilities&quot; tab</li>
-<li><strong>Assess</strong>: Click &quot;View&quot; on any report to see full details</li>
-<li><strong>Fix</strong>: Run <code>npm audit fix</code> in backend/frontend directories</li>
-<li><strong>System Updates</strong>: SSH to Lightsail and run <code>apt-get update &amp;&amp; apt-get upgrade</code></li>
-<li><strong>Verify</strong>: Trigger manual scan to confirm fixes</li>
-</ol>
-<h3 id="implementation-files" tabindex="-1"><a class="header-anchor" href="#implementation-files" aria-hidden="true">#</a> Implementation Files</h3>
-<ul>
-<li><code>backend/src/services/vulnerabilityService.ts</code> — core scanning logic</li>
-<li><code>backend/src/queue/vulnerabilityWorker.ts</code> — BullMQ worker and scheduler</li>
-<li><code>backend/src/routes/admin.ts</code> — API endpoints</li>
-<li><code>backend/public/admin.html</code> — dashboard UI (Vulnerabilities tab)</li>
-</ul>
-<hr>
-<h2 id="environment-variables-1" tabindex="-1"><a class="header-anchor" href="#environment-variables-1" aria-hidden="true">#</a> Environment Variables</h2>
-<p>Backend requires a <code>.env</code> file. Key variables:</p>
-<pre><code>DATABASE_URL          # PostgreSQL connection string (Prisma)
-JWT_SECRET            # generate: openssl rand -hex 32
-JWT_REFRESH_SECRET    # separate secret for refresh tokens
-REFRESH_TOKEN_ROTATION # &quot;true&quot; enables refresh-token rotation + reuse detection on /auth/refresh; default &quot;false&quot;. Now ON in BOTH dev and prod (2026-06-10). Safe for every shipped client because rotation is crash-tolerant server-side: a rotated token is tombstoned (not deleted) and a replay whose successor was never itself used is recovered with a fresh token instead of revoking the family (see Security Notes). Revert by setting &quot;false&quot; + redeploy.
-ADMIN_API_KEY         # protects /api/admin routes (X-Admin-Key header)
-ADMIN_EMAILS          # comma-separated allowlist for in-app Admin Console UI visibility
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_REGION
-AWS_S3_BUCKET
-REDIS_URL
-GROK_API_KEY          # xAI API key for Grok Imagine
-ALLOWED_ORIGINS       # comma-separated CORS whitelist
-SES_FROM_ADDRESS      # verified SES sender address
-GEOIP_API_KEY         # if using a paid geo-IP provider
-APPLE_BUNDLE_ID       # iOS bundle identifier (com.evofaceflow.tryon.app)
-APPLE_APP_APPLE_ID    # numeric App Store ID from App Store Connect
-APPLE_ENVIRONMENT     # &quot;Production&quot; or &quot;Sandbox&quot; — environment Apple sends from
-APPLE_ROOT_CERTS_DIR  # path to dir holding Apple root CA .cer files inside the container (defaults to ./certs/apple)
-APPLE_API_KEY_ID         # 10-char In-App Purchase key id (App Store Server API auth) — required only for admin &quot;Refresh from Apple&quot;
-APPLE_API_KEY_ISSUER_ID  # UUID issuer id from App Store Connect Users and Access → Integrations
-APPLE_API_KEY_PATH       # path to .p8 private key file for the In-App Purchase key
-CLOUDWATCH_LOG_GROUP     # set to ship Winston logs to CloudWatch (separate write-only IAM creds in CLOUDWATCH_AWS_*). Unset = no shipping.
-SENTRY_DSN               # GATES the whole Sentry integration. Unset = disabled no-op. Set per-environment in backend/.env.
-SENTRY_ENVIRONMENT       # &quot;production&quot; / &quot;development&quot; tag (NODE_ENV is &quot;production&quot; on both boxes; set this to tell them apart). Default derived from APP_URL.
-SENTRY_RELEASE           # optional; groups issues by deploy (git SHA). Falls back to tryon-backend@&lt;package version&gt;.
-SENTRY_TRACES_SAMPLE_RATE # 0.0–1.0 performance-tracing rate. Default 0 = errors only (preserves free-tier quota).
-SENTRY_AUTH_TOKEN        # optional; org auth token (project:read + event:read) for the dashboard's &quot;recent issues&quot; panel
-SENTRY_ORG_SLUG          # optional; org slug for the recent-issues panel + project deep link
-SENTRY_PROJECT_SLUG      # optional; project slug for the recent-issues panel + project deep link
-MODERATION_STRIKE_ALERT_EVERY # default 3 — email ADMIN_EMAILS on every Nth content-moderation strike a single user accrues (repeat banned-content attempts)
-WORKER_ENABLED         # &quot;false&quot; = this instance is API-only (serves traffic, does NOT run the BullMQ workers/schedulers); default/unset = workers run (single-box behavior). For multi-instance HA behind a load balancer — see DEPLOYMENT.md §17.
-SPLASH_DIR             # DEPRECATED — the splash now lives in S3 (splash/ prefix), not a local dir. Var is unused; safe to drop from .env / compose.
-</code></pre>
-<hr>
-<h2 id="security-notes" tabindex="-1"><a class="header-anchor" href="#security-notes" aria-hidden="true">#</a> Security Notes</h2>
-<ul>
-<li>Passwords hashed with bcrypt (cost factor ≥ 12).</li>
-<li>JWTs: short-lived access tokens (15 min) + long-lived refresh tokens (30 days) stored in HttpOnly cookies (web) or secure device storage (mobile).</li>
-<li><strong>Refresh-token rotation + reuse detection (ON in dev + prod as of 2026-06-10, gated by <code>REFRESH_TOKEN_ROTATION</code>).</strong> Each <code>/auth/refresh</code> mints a new refresh token and tombstones the old row (<code>rotatedAt</code> + <code>replacedByToken</code> on <a href="#refreshtoken">RefreshToken</a>). Replaying a token whose successor has itself advanced is treated as theft → the whole token family is revoked (<code>logSecurity('refresh_token_reuse')</code>). The one subtle case is a <strong>crash-in-the-gap</strong>: the client persists the rotated token only <em>after</em> the network response, so a force-close in that window leaves the device holding a consumed token. To avoid logging those users out, a replay whose successor was <strong>never itself used</strong> is recovered by minting a fresh token (<code>logSecurity('refresh_token_grace_recovery')</code>) rather than revoking. This is safe for every shipped client — even one that doesn't persist the rotated token keeps working via repeated grace recovery — and is a net gain over the old OFF default where a stolen refresh token stayed valid its full 30 days. Implemented in <a href="backend/src/controllers/authController.ts">authController.refreshToken</a>. The client persists the rotated token at <a href="frontend/src/config/api.ts">api.ts</a> (<code>data.refreshToken ?? refreshToken</code>); no client change was needed for the fix.</li>
-<li>The S3 bucket is <strong>private</strong> (Block Public Access enabled, no public bucket policy). The DB stores bare S3 keys (e.g. <code>body-photos/&lt;userId&gt;/&lt;file&gt;.jpg</code>) in <code>User.avatarUrl</code>, <code>User.fullBodyUrl</code>, <code>User.mediumBodyUrl</code>, <code>TryOnJob.clothingPhoto1Url</code>, <code>TryOnJob.clothingPhoto2Url</code>, <code>TryOnJob.bodyPhotoUrl</code>, <code>TryOnJob.resultFullBodyUrl</code>, and <code>TryOnJob.resultMediumUrl</code>. Controllers mint presigned GET URLs at response time via <code>presignUserPhotos</code>, <code>presignTryOnJob</code>, <code>presignTryOnJobs</code>, and <code>presignAvatarOnly</code> in <a href="backend/src/services/imageUrlService.ts">backend/src/services/imageUrlService.ts</a> (1-hour TTL). The helpers tolerate legacy rows that still hold full <code>https://...amazonaws.com/...</code> URLs by extracting the key.</li>
-<li>The Grok worker reads body and clothing inputs by S3 key via the AWS SDK — never via public URL — see <code>resolveS3Key()</code> in <a href="backend/src/services/grokService.ts">backend/src/services/grokService.ts</a>.</li>
-<li>When adding a new endpoint that returns image fields, route the response through the appropriate <code>presign*</code> helper before sending. Forgetting this on a new endpoint will produce 403s on the client once Block Public Access is on.</li>
-<li><strong>A PUBLIC try-on post intentionally surfaces its INPUT thumbnails</strong> (the body photo + clothing item that produced the result) alongside the AI result — that's the feed-card / profile-grid / shared-post design (the user chose to publish that try-on). The feed, <code>GET /api/tryon/:jobId</code>, and the public profile grid all return the inputs for public posts. <strong>PRIVATE jobs are never shown to non-owners at all</strong> (404 / excluded by the <code>isPrivate:false</code> where-clause), so they keep everything hidden. (History note: a 2026-06-16 pass briefly stripped these inputs for non-owners as a &quot;leak&quot; fix; that broke the intended feed thumbnails and was reverted 2026-06-17.)</li>
-<li><strong>Saved Looks is the one exception</strong>: <code>routes/looks.ts</code> deliberately strips non-owner input photos via the pure, unit-tested <code>stripNonOwnerJobInputs(job, isOwner)</code> (<a href="backend/src/utils/jobVisibility.ts">backend/src/utils/jobVisibility.ts</a>) — a saved look can outlive the original's public state, so only the owner gets its inputs back (results only for everyone else; a VIDEO's poster is kept). This is intentionally MORE conservative than the live feed.</li>
-<li>Body photo S3 keys are prefixed with the userId and are not guessable.</li>
-<li>Rate limiting applied to <code>/api/auth</code> and <code>/api/tryon</code> endpoints.</li>
-<li>GDPR/CCPA: users can export and delete all personal data including body photos and AI results.</li>
-<li><strong>Account deletion (App Store Guideline 5.1.1(v)):</strong> <code>profileController.deleteAccount</code> enumerates every S3 key the user owns (avatar, full-body, medium-body, all clothing photos, all result images) from <code>User</code> + <code>TryOnJob</code> rows, deletes the <code>User</code> row (Prisma cascades clean up Likes, Follows, Comments, CommentLikes, CreditTransactions, ApplePurchases, Notifications, RefreshTokens, UserLocations, TryOnJobs, Reports, UserBlocks), then fires async S3 deletes. DB-first ordering ensures the account is unreachable even if S3 partially fails; failures are logged for an orphan sweep.
-<ul>
-<li><strong>Actor-orphaned notification cleanup:</strong> notifications the deleted user GENERATED for others where the <em>type only makes sense with an actor</em> — <code>LIKE</code> / <code>FOLLOW</code> / <code>COMMENT_LIKE</code> — are deleted (not left to the <code>actor onDelete: SetNull</code> cascade, which would render them as an un-attributable &quot;Someone liked your try-on / followed you&quot; in the recipient's inbox). Done via <code>deleteActorOrphanedNotifications()</code> (<a href="backend/src/services/accountDeletionService.ts">accountDeletionService.ts</a>, exported <code>ACTOR_ORPHAN_NOTIFICATION_TYPES</code>, unit-tested) called BEFORE the row is removed, in <code>deleteUserAndAssets</code> (self + guest-cleanup) AND the admin delete-user route. Durable <code>COMMENT</code> / <code>COMMENT_REPLY</code> keep the SetNull tombstone (don't break threads). A one-time migration (<code>20260617000000_cleanup_orphaned_actor_notifications</code>) swept pre-existing orphans globally.</li>
-</ul>
-</li>
-<li>The close-up photo path (<code>avatarUrl</code>) is validated server-side and excluded from all Grok API calls.</li>
-</ul>
-<h3 id="fail2ban-rate-limiting" tabindex="-1"><a class="header-anchor" href="#fail2ban-rate-limiting" aria-hidden="true">#</a> Fail2ban &amp; Rate Limiting</h3>
-<p>Production deployment includes fail2ban for automated IP banning:</p>
-<ul>
-<li><strong>nginx-404</strong>: Bans IPs after 10+ 404 errors in 60 seconds (1 hour ban)</li>
-<li><strong>nginx-nophp</strong>: Bans IPs requesting <code>.php</code> files (24 hour ban) — we don't serve PHP</li>
-<li><strong>nginx-wordpress</strong>: Bans IPs requesting <code>wp-*</code> paths (24 hour ban) — we don't run WordPress</li>
-<li><strong>nginx-badbots</strong>: Bans IPs sending malicious requests (SQL injection, XSS attempts)</li>
-<li><strong>nginx-auth</strong>: Bans IPs with excessive failed auth attempts</li>
-</ul>
-<p>Nginx also blocks common vulnerability scan targets at the edge (returns 444 / connection dropped):</p>
-<ul>
-<li>All <code>.php</code>, <code>.asp</code>, <code>.aspx</code>, <code>.jsp</code>, <code>.cgi</code> requests</li>
-<li>WordPress paths (<code>wp-admin</code>, <code>wp-content</code>, <code>wp-includes</code>, <code>xmlrpc.php</code>)</li>
-<li>Sensitive files (<code>.env</code>, <code>.git</code>, <code>.htaccess</code>)</li>
-</ul>
-<p>Configuration files:</p>
-<ul>
-<li><code>fail2ban/jail.local</code> — jail definitions</li>
-<li><code>fail2ban/filter.d/*.conf</code> — filter regex patterns</li>
-<li><code>nginx/nginx.conf</code> — rate limit zones and blocking rules</li>
-</ul>
-<hr>
-<h2 id="local-code-backup" tabindex="-1"><a class="header-anchor" href="#local-code-backup" aria-hidden="true">#</a> Local Code Backup</h2>
-<p>The project is backed up to an external drive using Syncovery 8.70 (straight file copy). To save space, exclude folders that are transient, build artifacts, or recreatable from a single <code>npm install</code>. Excluding the items below shrinks the copy by ~585 MB while preserving everything needed to restore the project.</p>
-<h3 id="safe-to-exclude-recreatable-transient" tabindex="-1"><a class="header-anchor" href="#safe-to-exclude-recreatable-transient" aria-hidden="true">#</a> Safe to exclude (recreatable / transient)</h3>
-<table>
-<thead>
-<tr>
-<th>Path</th>
-<th>Size</th>
-<th>Why it's safe</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>backend/node_modules/</code></td>
-<td>327 MB</td>
-<td><code>cd backend &amp;&amp; npm install</code></td>
-</tr>
-<tr>
-<td><code>frontend/node_modules/</code></td>
-<td>259 MB</td>
-<td><code>cd frontend &amp;&amp; npm install</code></td>
-</tr>
-<tr>
-<td><code>backend/dist/</code></td>
-<td>&lt;1 MB</td>
-<td>Output of <code>npm run build</code></td>
-</tr>
-<tr>
-<td><code>backend/logs/</code></td>
-<td>&lt;1 MB</td>
-<td>Runtime logs (dev only)</td>
-</tr>
-<tr>
-<td><code>frontend/.expo/</code></td>
-<td>&lt;1 MB</td>
-<td>Expo dev cache (per-machine)</td>
-</tr>
-<tr>
-<td><code>frontend/android/</code></td>
-<td>&lt;1 MB</td>
-<td>Regenerated by <code>npx expo prebuild</code> / <code>expo run:android</code></td>
-</tr>
-<tr>
-<td><code>.expo/</code></td>
-<td>empty</td>
-<td>Expo project cache</td>
-</tr>
-<tr>
-<td><code>frontend/ios/</code></td>
-<td>n/a</td>
-<td>Same as android — regenerated by <code>expo run:ios</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="glob-patterns-catch-all-for-syncovery-filters" tabindex="-1"><a class="header-anchor" href="#glob-patterns-catch-all-for-syncovery-filters" aria-hidden="true">#</a> Glob patterns (catch-all for Syncovery filters)</h3>
-<pre><code>**/node_modules/**
-**/.expo/**
-**/dist/**
-**/build/**
-**/.next/**
-**/web-build/**
-**/.turbo/**
-**/.cache/**
-**/.parcel-cache/**
-**/coverage/**
-**/.nyc_output/**
-**/logs/**
-**/*.log
-**/.eslintcache
-**/*.tsbuildinfo
-**/.DS_Store
-Thumbs.db
-</code></pre>
-<h3 id="do-not-exclude" tabindex="-1"><a class="header-anchor" href="#do-not-exclude" aria-hidden="true">#</a> ⚠️ DO NOT exclude</h3>
-<ul>
-<li><strong><code>.git/</code></strong> (~6 MB) — branch history, commits, remotes. Excluding it loses all git state.</li>
-<li><strong><code>backend/.env</code></strong> and <strong><code>frontend/.env</code></strong> — gitignored, so the backup is the <em>only</em> copy of secrets (DB URL, JWT secrets, AWS keys, Grok key, Apple config). <strong>Critical to keep.</strong></li>
-<li><strong><code>backend/certs/</code></strong> — Apple root CA <code>.cer</code> files (re-downloadable from apple.com) and the App Store Server API <code>.p8</code> private key (NOT re-downloadable — App Store Connect lets you download a key file exactly once). Backend won't boot without the root CAs; admin &quot;Refresh from Apple&quot; won't work without the .p8.</li>
-<li><strong><code>backend/secrets/</code></strong> — currently empty, but anything dropped here later must be backed up.</li>
-<li><strong><code>backend/prisma/</code></strong> — schema + migrations are source of truth, not generated.</li>
-<li><strong><code>package-lock.json</code></strong> files (both packages) — needed for reproducible installs.</li>
-</ul>
+<p>Both boxes are shared with another app whose nginx container owns :80/:443 and proxies <code>animationstation.ai</code> / <code>dev.animationstation.ai</code> → <code>animationstation-api:3000</code> over the external <code>apps</code> docker network. This stack runs <strong>no proxy of its own</strong>. TLS certs are issued by the host's certbot.</p>
+<p>The committed <code>frontend/src/config/api.ts</code> <code>ENV</code> must stay <code>'prod'</code> — CI enforces it.</p>
+<h2 id="database" tabindex="-1"><a class="header-anchor" href="#database" aria-hidden="true">#</a> Database</h2>
+<p>PostgreSQL 15 via Prisma. Schema: <a href="backend/prisma/schema.prisma">backend/prisma/schema.prisma</a> (the authoritative reference — models <code>User</code>, <code>Creation</code>, <code>ClosetItem</code>, <code>Comment</code>, <code>CommentLike</code>, <code>Like</code>, <code>SavedLook</code>, <code>Follow</code>, <code>Notification</code>, <code>Report</code>, <code>UserBlock</code>, <code>Referral</code>, <code>ApplePurchase</code>, <code>CreditTransaction</code>, <code>RefreshToken</code>, <code>UserLocation</code>, <code>AppSetting</code>, <code>VulnerabilityReport</code>, <code>SmsOptIn</code>). Migrations were squashed to a single init migration when the app got its own identity (2026-07-01); the DB uses the <code>citext</code> extension for case-insensitive usernames/emails.</p>
+<h2 id="environment-variables" tabindex="-1"><a class="header-anchor" href="#environment-variables" aria-hidden="true">#</a> Environment Variables</h2>
+<p>See <a href="backend/.env.example">backend/.env.example</a> for the full annotated list: <code>DATABASE_URL</code>, <code>JWT_SECRET</code>/<code>JWT_REFRESH_SECRET</code>, <code>REFRESH_TOKEN_ROTATION</code>, <code>ADMIN_API_KEY</code>/<code>ADMIN_EMAILS</code>, AWS + <code>AWS_S3_BUCKET</code>, <code>REDIS_URL</code>, <code>GROK_API_KEY</code>, <code>ALLOWED_ORIGINS</code>, <code>APP_URL</code>, SMTP/SES sender config, Apple IAP config (<code>APPLE_BUNDLE_ID</code> = <code>ai.animationstation.app</code>, root certs dir, Server API key), <code>SENTRY_*</code>, <code>WORKER_ENABLED</code>.</p>
+<h2 id="git-workflow" tabindex="-1"><a class="header-anchor" href="#git-workflow" aria-hidden="true">#</a> Git workflow</h2>
+<p>See <a href="contributing.html">CONTRIBUTING.md</a>. A husky pre-push hook runs prettier + backend lint/types/tests + frontend types/tests; CI re-runs the same on GitHub. Note: <code>bullmq</code> pins <code>ioredis</code> to an exact version — keep <code>backend/package.json</code>'s ioredis in lockstep (save-exact) or the duplicated tree breaks tsc.</p>
 
   </main>
 </div>

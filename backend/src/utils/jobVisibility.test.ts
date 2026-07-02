@@ -4,17 +4,17 @@ import { stripNonOwnerJobInputs } from './jobVisibility';
 
 const imageJob = {
   kind: 'IMAGE' as const,
-  bodyPhotoUrl: 'body.jpg',
-  clothingPhoto1Url: 'cloth1.jpg',
-  clothingPhoto2Url: 'cloth2.jpg',
-  resultFullBodyUrl: 'result.jpg',
+  sourceImageUrl: 'body.jpg',
+  refImage1Url: 'cloth1.jpg',
+  refImage2Url: 'cloth2.jpg',
+  resultImageUrl: 'result.jpg',
 };
 
 const videoJob = {
   kind: 'VIDEO' as const,
-  bodyPhotoUrl: 'poster.jpg', // the public poster/thumbnail
-  clothingPhoto1Url: 'transition.jpg', // 2nd transition input — private
-  clothingPhoto2Url: null,
+  sourceImageUrl: 'poster.jpg', // the public poster/thumbnail
+  refImage1Url: 'transition.jpg', // 2nd transition input — private
+  refImage2Url: null,
   videoUrl: 'clip.mp4',
 };
 
@@ -28,18 +28,18 @@ test('owner keeps all inputs (VIDEO)', () => {
 
 test('non-owner IMAGE: body photo + both clothing inputs stripped, result kept', () => {
   const out = stripNonOwnerJobInputs(imageJob, false);
-  assert.equal(out.bodyPhotoUrl, null);
-  assert.equal(out.clothingPhoto1Url, null);
-  assert.equal(out.clothingPhoto2Url, null);
-  assert.equal(out.resultFullBodyUrl, 'result.jpg'); // results stay public
+  assert.equal(out.sourceImageUrl, null);
+  assert.equal(out.refImage1Url, null);
+  assert.equal(out.refImage2Url, null);
+  assert.equal(out.resultImageUrl, 'result.jpg'); // results stay public
 });
 
-test('non-owner VIDEO: poster (bodyPhotoUrl) + videoUrl kept, transition inputs stripped', () => {
+test('non-owner VIDEO: poster (sourceImageUrl) + videoUrl kept, transition inputs stripped', () => {
   const out = stripNonOwnerJobInputs(videoJob, false);
-  assert.equal(out.bodyPhotoUrl, 'poster.jpg'); // poster IS the public thumbnail
+  assert.equal(out.sourceImageUrl, 'poster.jpg'); // poster IS the public thumbnail
   assert.equal(out.videoUrl, 'clip.mp4'); // result stays public
-  assert.equal(out.clothingPhoto1Url, null); // 2nd transition image is private
-  assert.equal(out.clothingPhoto2Url, null);
+  assert.equal(out.refImage1Url, null); // 2nd transition image is private
+  assert.equal(out.refImage2Url, null);
 });
 
 test('does not mutate the input object', () => {

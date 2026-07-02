@@ -8,7 +8,7 @@ router.use(requireAuth);
 // All like/unlike actions are social writes — guests must sign up first.
 router.use(blockGuests);
 
-// Like a try-on session
+// Like a creation session
 router.post('/:jobId', async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -17,12 +17,12 @@ router.post('/:jobId', async (req: Request, res: Response) => {
   const { jobId } = req.params;
   const userId = req.user.userId;
 
-  const job = await prisma.tryOnJob.findUnique({
+  const job = await prisma.creation.findUnique({
     where: { id: jobId },
     select: { id: true, userId: true, isPrivate: true, status: true },
   });
   if (!job) {
-    res.status(404).json({ error: 'Try-on session not found' });
+    res.status(404).json({ error: 'Creation session not found' });
     return;
   }
 
@@ -49,7 +49,7 @@ router.post('/:jobId', async (req: Request, res: Response) => {
   // Atomically: create like, bump job.likesCount, bump owner.likesCount, create notification
   await prisma.$transaction([
     prisma.like.create({ data: { userId, jobId } }),
-    prisma.tryOnJob.update({ where: { id: jobId }, data: { likesCount: { increment: 1 } } }),
+    prisma.creation.update({ where: { id: jobId }, data: { likesCount: { increment: 1 } } }),
     prisma.user.update({ where: { id: job.userId }, data: { likesCount: { increment: 1 } } }),
     prisma.notification.create({
       data: {
@@ -64,7 +64,7 @@ router.post('/:jobId', async (req: Request, res: Response) => {
   res.json({ liked: true });
 });
 
-// Unlike a try-on session
+// Unlike a creation session
 router.delete('/:jobId', async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -81,18 +81,18 @@ router.delete('/:jobId', async (req: Request, res: Response) => {
     return;
   }
 
-  const job = await prisma.tryOnJob.findUnique({
+  const job = await prisma.creation.findUnique({
     where: { id: jobId },
     select: { userId: true },
   });
   if (!job) {
-    res.status(404).json({ error: 'Try-on session not found' });
+    res.status(404).json({ error: 'Creation session not found' });
     return;
   }
 
   await prisma.$transaction([
     prisma.like.delete({ where: { userId_jobId: { userId, jobId } } }),
-    prisma.tryOnJob.update({ where: { id: jobId }, data: { likesCount: { decrement: 1 } } }),
+    prisma.creation.update({ where: { id: jobId }, data: { likesCount: { decrement: 1 } } }),
     prisma.user.update({ where: { id: job.userId }, data: { likesCount: { decrement: 1 } } }),
   ]);
 

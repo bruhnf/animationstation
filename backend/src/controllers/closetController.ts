@@ -10,7 +10,7 @@ import {
   downloadGeneratedImage,
   ContentModeratedError,
 } from '../services/grokService';
-import { resizeImageForTryOn } from '../utils/imageProcessor';
+import { resizeImageForGeneration } from '../utils/imageProcessor';
 import {
   validateOutfitDescription,
   buildOutfitPrompt,
@@ -30,12 +30,12 @@ const log = createChildLogger('ClosetController');
 export const CLOSET_ITEM_LIMIT = 100;
 
 // Every generation is one Grok Imagine call, so it costs 1 credit — closet
-// generations are NOT covered by the subscription weekly try-on allowance
-// (that allowance meters try-ons, which this is not).
+// generations are NOT covered by the subscription weekly creation allowance
+// (that allowance meters creations, which this is not).
 const GENERATION_CREDIT_COST = 1;
 
 // Thrown inside the charge transaction when the conditional decrement matches
-// no row (concurrent requests drained the balance). Mirrors tryonController.
+// no row (concurrent requests drained the balance). Mirrors creationsController.
 class InsufficientCreditsError extends Error {}
 
 /**
@@ -51,10 +51,10 @@ export function surpriseOutfit(_req: Request, res: Response): void {
 /**
  * POST /api/closet/generate — body: { description }
  *
- * Flow mirrors submitTryOn's money-safety rules:
+ * Flow mirrors submitTransform's money-safety rules:
  *   validate + cap checks (free) → charge 1 credit (transactional, conditional)
  *   → Grok call → store image + row. Any failure after the charge refunds;
- *   a moderation block applies the same strike + grace policy as try-on.
+ *   a moderation block applies the same strike + grace policy as creation.
  */
 export async function generateOutfit(req: Request, res: Response): Promise<void> {
   if (!req.user) {
@@ -149,9 +149,9 @@ export async function generateOutfit(req: Request, res: Response): Promise<void>
     const resultRef = await generateOutfitImage(prompt);
 
     // Normalize through the same pipeline as uploaded clothing photos (1024px
-    // long side, JPEG) so try-ons from the closet behave identically.
+    // long side, JPEG) so creations from the closet behave identically.
     const raw = await downloadGeneratedImage(resultRef);
-    const processed = await resizeImageForTryOn(raw);
+    const processed = await resizeImageForGeneration(raw);
     const key = await uploadToS3(
       'closet',
       userId,
@@ -174,7 +174,7 @@ export async function generateOutfit(req: Request, res: Response): Promise<void>
     res.status(201).json(await presignClosetItem(item));
   } catch (err) {
     if (err instanceof ContentModeratedError) {
-      // Same policy as try-on: record a strike; the first
+      // Same policy as creation: record a strike; the first
       // MODERATION_GRACE_WARNINGS strikes are refunded warnings, repeat
       // offenders stop being refunded (ToS §5.4). A null count (bookkeeping
       // failed) falls back to no-refund.
@@ -308,10 +308,10 @@ export async function cleanupOutfit(req: Request, res: Response): Promise<void> 
   try {
     // Normalize the upload (1024px long side, JPEG) before sending to Grok, and
     // again on the result, so the closet item matches generated items exactly.
-    const input = await resizeImageForTryOn(file.buffer);
+    const input = await resizeImageForGeneration(file.buffer);
     const resultRef = await cleanupClothingImage(input.buffer, input.mimeType, cleanedInstruction);
     const raw = await downloadGeneratedImage(resultRef);
-    const processed = await resizeImageForTryOn(raw);
+    const processed = await resizeImageForGeneration(raw);
     const key = await uploadToS3(
       'closet',
       userId,
@@ -424,7 +424,7 @@ export async function deleteClosetItem(req: Request, res: Response): Promise<voi
 
   await prisma.closetItem.delete({ where: { id: item.id } });
 
-  // Safe to delete the S3 object: try-ons COPY the image into clothing-photos/
+  // Safe to delete the S3 object: creations COPY the image into ref-images/
   // at submit time, so nothing else references closet keys. Fire-and-forget —
   // the weekly orphan scan backstops a miss.
   deleteFromS3(keyFromUrl(item.imageUrl)).catch((err) => {

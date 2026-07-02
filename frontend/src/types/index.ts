@@ -9,11 +9,11 @@ export interface User {
   email: string | null;
   verified: boolean;
   // True for an anonymous guest session minted on first app open. Guests can
-  // browse and run a free try-on, but social write actions prompt signup.
+  // browse and run a free creation, but social write actions prompt signup.
   isGuest?: boolean;
   tier: UserTier;
   credits: number;
-  tryOnCount: number;
+  creationCount: number;
   firstName?: string;
   lastName?: string;
   bio?: string;
@@ -30,26 +30,26 @@ export interface User {
   isAdmin?: boolean;
   // ISO timestamp of the user's most recent explicit consent to send body +
   // clothing photos to xAI's Grok Imagine API. Null = no consent on file or
-  // revoked; the try-on submit endpoint returns AI_CONSENT_REQUIRED and the
+  // revoked; the creation submit endpoint returns AI_CONSENT_REQUIRED and the
   // client surfaces the AiConsentModal before re-submitting.
   aiProcessingConsentAt?: string | null;
 }
 
-export interface TryOnJob {
+export interface Creation {
   id: string;
   userId: string;
   status: JobStatus;
   isPrivate?: boolean;
-  clothingPhoto1Url?: string;
-  clothingPhoto2Url?: string;
-  resultFullBodyUrl?: string;
-  resultMediumUrl?: string;
-  bodyPhotoUrl?: string;
+  refImage1Url?: string;
+  refImage2Url?: string;
+  resultImageUrl?: string;
+  resultImage2Url?: string;
+  sourceImageUrl?: string;
   perspectivesUsed: string[];
-  // IMAGE = clothing try-on; VIDEO = an AI-animated clip. Absent on old payloads
+  // IMAGE = clothing creation; VIDEO = an AI-animated clip. Absent on old payloads
   // (treated as IMAGE).
   kind?: 'IMAGE' | 'VIDEO';
-  // VIDEO only: presigned URL of the generated .mp4 (poster = bodyPhotoUrl).
+  // VIDEO only: presigned URL of the generated .mp4 (poster = sourceImageUrl).
   videoUrl?: string | null;
   // VIDEO only: the motion/animation prompt the user provided.
   motionPrompt?: string | null;
@@ -64,7 +64,7 @@ export interface TryOnJob {
   createdAt: string;
   // ISO timestamp set when the backend's soft throttle deferred this
   // submission. Null/absent = the worker will pick it up immediately. The
-  // TryOn screen uses this to render a "starts in X:XX" countdown while
+  // Transform screen uses this to render a "starts in X:XX" countdown while
   // the job sits in BullMQ's delayed set.
   scheduledStartAt?: string | null;
   user?: { username: string; firstName?: string; lastName?: string; avatarUrl?: string };
@@ -114,7 +114,7 @@ export interface PublicUser {
 export type NotificationType =
   | 'FOLLOW'
   | 'LIKE'
-  | 'TRYON_COMPLETE'
+  | 'CREATION_COMPLETE'
   | 'COMMENT'
   | 'COMMENT_REPLY'
   | 'COMMENT_LIKE';
@@ -140,7 +140,7 @@ export interface Notification {
   } | null;
   job?: {
     id: string;
-    resultFullBodyUrl?: string;
-    resultMediumUrl?: string;
+    resultImageUrl?: string;
+    resultImage2Url?: string;
   } | null;
 }

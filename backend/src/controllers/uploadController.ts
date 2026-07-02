@@ -5,7 +5,7 @@ import { uploadToS3, deleteFromS3, keyFromUrl } from '../services/s3Service';
 import { presignUserPhotos } from '../services/imageUrlService';
 import { getPresignedUrl } from '../services/s3Service';
 import { safeFilename } from '../middleware/uploadMiddleware';
-import { resizeImageForTryOn, resizeImageForAvatar } from '../utils/imageProcessor';
+import { resizeImageForGeneration, resizeImageForAvatar } from '../utils/imageProcessor';
 import { createChildLogger, logUpload } from '../services/logger';
 
 const log = createChildLogger('UploadController');
@@ -13,7 +13,7 @@ const log = createChildLogger('UploadController');
 type BodyPhotoField = 'avatarUrl' | 'fullBodyUrl' | 'mediumBodyUrl';
 
 // A body photo being deleted may still be referenced by the user's historical
-// try-on jobs as the "original input" display slide (TryOnJob.bodyPhotoUrl).
+// creation jobs as the "original input" display slide (Creation.sourceImageUrl).
 // Null those references in the same operation, BEFORE the S3 object goes away,
 // so clients never render a slide whose object is permanently gone (2026-06-11
 // incident: feed carousels showed an unfixable "Tap to reload" for weeks-old
@@ -21,15 +21,18 @@ type BodyPhotoField = 'avatarUrl' | 'fullBodyUrl' | 'mediumBodyUrl';
 // forms: bare S3 key (current rows) and legacy full-URL rows ending in the key.
 async function detachJobBodyPhotoRefs(userId: string, key: string): Promise<void> {
   try {
-    const detached = await prisma.tryOnJob.updateMany({
+    const detached = await prisma.creation.updateMany({
       where: {
         userId,
-        OR: [{ bodyPhotoUrl: key }, { bodyPhotoUrl: { endsWith: `/${key.replace(/^\/+/, '')}` } }],
+        OR: [
+          { sourceImageUrl: key },
+          { sourceImageUrl: { endsWith: `/${key.replace(/^\/+/, '')}` } },
+        ],
       },
-      data: { bodyPhotoUrl: null },
+      data: { sourceImageUrl: null },
     });
     if (detached.count > 0) {
-      log.info('Detached body-photo references from historical try-on jobs', {
+      log.info('Detached body-photo references from historical creation jobs', {
         userId,
         key,
         jobsDetached: detached.count,
@@ -67,7 +70,7 @@ async function handleBodyPhotoUpload(
     return;
   }
 
-  // Delete old photo from S3 if it exists. Historical try-on jobs may still
+  // Delete old photo from S3 if it exists. Historical creation jobs may still
   // reference it for display — detach those references first (full/medium
   // body photos are the only fields jobs reference; avatars never are).
   const oldUrl = user[field];
@@ -92,7 +95,7 @@ async function handleBodyPhotoUpload(
       processedBuffer = processed.buffer;
       mimeType = processed.mimeType;
     } else {
-      const processed = await resizeImageForTryOn(req.file.buffer);
+      const processed = await resizeImageForGeneration(req.file.buffer);
       processedBuffer = processed.buffer;
       mimeType = processed.mimeType;
     }
@@ -118,7 +121,7 @@ async function handleBodyPhotoUpload(
   // Always use .jpg extension since we convert to JPEG
   const baseFilename = safeFilename(req.file.originalname).replace(/\.[^/.]+$/, '');
   const filename = `${uuidv4()}-${baseFilename}.jpg`;
-  const key = await uploadToS3('body-photos', userId, filename, processedBuffer, mimeType);
+  const key = await uploadToS3('source-images', userId, filename, processedBuffer, mimeType);
 
   const updated = await prisma.user.update({
     where: { id: userId },

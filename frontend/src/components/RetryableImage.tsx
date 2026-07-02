@@ -25,7 +25,7 @@ interface RetryableImageProps {
 // transient first-load failure. A plain <Image> that misses its one load
 // attempt stays blank forever (it caches the failure on the instance and there's
 // no retry), which is exactly the "blank white box, but the same URL loads fine
-// in the modal/profile" bug seen on the TryOn result screen.
+// in the modal/profile" bug seen on the Transform result screen.
 //
 // On error we remount the native image view by bumping a key (NOT by adding a
 // cache-bust query param — that would invalidate the S3 presigned-URL

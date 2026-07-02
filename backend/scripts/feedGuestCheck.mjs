@@ -1,13 +1,13 @@
 // Browse the Discover feed AS A GUEST and report, per card, whether the input
-// thumbnails (bodyPhotoUrl / clothingPhoto1Url) are present alongside the AI
+// thumbnails (sourceImageUrl / refImage1Url) are present alongside the AI
 // result. Reproduces the "feed thumbnails missing on most cards" report: a
 // guest owns no feed posts, so any non-owner input-stripping shows up here.
 //
 // Usage:  node scripts/feedGuestCheck.mjs [baseApiUrl]
-//   default: https://api-dev.tryon-mirror.ai/api
-//   prod:    node scripts/feedGuestCheck.mjs https://api.tryon-mirror.ai/api
+//   default: https://dev.animationstation.ai/api
+//   prod:    node scripts/feedGuestCheck.mjs https://animationstation.ai/api
 
-const BASE = process.argv[2] || 'https://api-dev.tryon-mirror.ai/api';
+const BASE = process.argv[2] || 'https://dev.animationstation.ai/api';
 
 const guest = await fetch(`${BASE}/auth/guest`, {
   method: 'POST',
@@ -30,9 +30,9 @@ let missBody = 0;
 let missCloth = 0;
 for (const j of jobs) {
   const isVideo = j.kind === 'VIDEO';
-  const hasResult = !!(j.resultFullBodyUrl || j.resultMediumUrl || j.videoUrl);
-  const hasBody = !!j.bodyPhotoUrl;
-  const hasCloth = !!j.clothingPhoto1Url;
+  const hasResult = !!(j.resultImageUrl || j.resultImage2Url || j.videoUrl);
+  const hasBody = !!j.sourceImageUrl;
+  const hasCloth = !!j.refImage1Url;
   if (!hasBody) missBody++;
   if (!hasCloth && !isVideo) missCloth++;
   console.log(

@@ -38,7 +38,7 @@
  * Each key becomes its own PASS/FAIL row. A failing checkpoint does NOT abort
  * the run (we still log out cleanly) but does fail the overall result. Any
  * field on the profile payload can be checkpointed: credits, tier, verified,
- * username, tryOnCount, ... The checkpoint file is owned by the user; the
+ * username, creationCount, ... The checkpoint file is owned by the user; the
  * simulator never writes to it. Action-step parameters (the temporary name
  * used in the edit round trip, the credit pack size) live in the constants
  * below, not in the checkpoint file.
@@ -63,8 +63,8 @@ const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
 
 const API_BASES = {
   local: 'http://localhost:3000/api',
-  dev: 'https://api-dev.tryon-mirror.ai/api',
-  prod: 'https://api.tryon-mirror.ai/api',
+  dev: 'https://api-dev.creation-mirror.ai/api',
+  prod: 'https://api.creation-mirror.ai/api',
 };
 
 function getArg(flag) {

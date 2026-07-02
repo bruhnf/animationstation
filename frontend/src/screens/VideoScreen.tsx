@@ -24,7 +24,7 @@ import { useUserStore } from '../store/useUserStore';
 import { useConfigStore } from '../store/useConfigStore';
 import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { useVideoJobStore } from '../store/useVideoJobStore';
-import { TryOnJob, ClosetItem } from '../types';
+import { Creation, ClosetItem } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import CreditDisplay from '../components/CreditDisplay';
 import HeaderMenu from '../components/HeaderMenu';
@@ -49,15 +49,17 @@ const MOTION_IDEAS = [
 ];
 
 // The chosen source image to animate.
-type Source = { type: 'photo'; uri: string } | { type: 'tryon'; jobId: string; previewUrl: string };
+type Source =
+  | { type: 'photo'; uri: string }
+  | { type: 'transform'; jobId: string; previewUrl: string };
 
 // A pickable past creation for the "Use a Creation" picker — unified across both
 // generation collections so a video can start from ANY image the user has made:
-//   • tryon  → a transform-image job (sent to the server as sourceJobId)
+//   • creation  → a transform-image job (sent to the server as sourceJobId)
 //   • closet → a Design image (sent as a `photo` source; its remote URL is
 //     fetched + processed at submit time)
 type PickerItem =
-  | { key: string; previewUrl: string; source: 'tryon'; job: TryOnJob }
+  | { key: string; previewUrl: string; source: 'transform'; job: Creation }
   | { key: string; previewUrl: string; source: 'closet'; imageUrl: string };
 
 export default function VideoScreen() {
@@ -73,7 +75,7 @@ export default function VideoScreen() {
   // Optional second image to transition toward. When set, the prompt describes
   // the transition between the two.
   const [source2, setSource2] = useState<Source | null>(null);
-  // Target box for the async Try-On picker modal (1 = primary, 2 = transition).
+  // Target box for the async Creation picker modal (1 = primary, 2 = transition).
   // Other sources pass the slot directly through their callbacks — see the
   // stale-closure note on chooseSource.
   const [pickerSlot, setPickerSlot] = useState<1 | 2>(1);
@@ -81,9 +83,9 @@ export default function VideoScreen() {
   const [title, setTitle] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [activeJob, setActiveJob] = useState<TryOnJob | null>(null);
+  const [activeJob, setActiveJob] = useState<Creation | null>(null);
   const [aiConsentVisible, setAiConsentVisible] = useState(false);
-  const [tryOnPickerVisible, setTryOnPickerVisible] = useState(false);
+  const [creationPickerVisible, setCreationPickerVisible] = useState(false);
   const [pickerItems, setPickerItems] = useState<PickerItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   // True while we check the global store for an in-flight job on mount, so we
@@ -121,7 +123,7 @@ export default function VideoScreen() {
     }
     (async () => {
       try {
-        const { data } = await api.get<TryOnJob>(`/tryon/${existingJobId}`);
+        const { data } = await api.get<Creation>(`/creation/${existingJobId}`);
         if (!isMountedRef.current) return;
         setActiveJob(data);
         if (data.status === 'PENDING' || data.status === 'PROCESSING') {
@@ -190,7 +192,7 @@ export default function VideoScreen() {
         text: current ? 'Replace from Library' : 'Choose from Library',
         onPress: () => pickFromLibrary(slot),
       },
-      { text: 'Use a Creation', onPress: () => openTryOnPicker(slot) },
+      { text: 'Use a Creation', onPress: () => openTransformPicker(slot) },
     ];
     // Let the user clear an already-populated box (either one).
     if (current) {
@@ -221,25 +223,25 @@ export default function VideoScreen() {
     }
   }
 
-  async function openTryOnPicker(slot: 1 | 2) {
+  async function openTransformPicker(slot: 1 | 2) {
     try {
       // Merge BOTH generation collections so any image the user has made is a
-      // valid video source: transform-image jobs (/tryon/history, excluding
+      // valid video source: transform-image jobs (/creation/history, excluding
       // videos) + Design images (/closet). Newest-first.
       const [jobsRes, closetRes] = await Promise.allSettled([
-        api.get<{ jobs: TryOnJob[] }>('/tryon/history'),
+        api.get<{ jobs: Creation[] }>('/creations/history'),
         api.get<{ items: ClosetItem[] }>('/closet'),
       ]);
       const items: (PickerItem & { createdAt: string })[] = [];
       if (jobsRes.status === 'fulfilled') {
         for (const j of jobsRes.value.data.jobs || []) {
           if (j.kind === 'VIDEO') continue;
-          const previewUrl = j.resultFullBodyUrl || j.resultMediumUrl;
+          const previewUrl = j.resultImageUrl || j.resultImage2Url;
           if (!previewUrl) continue;
           items.push({
-            key: `tryon:${j.id}`,
+            key: `creation:${j.id}`,
             previewUrl,
-            source: 'tryon',
+            source: 'transform',
             job: j,
             createdAt: j.createdAt,
           });
@@ -264,20 +266,24 @@ export default function VideoScreen() {
       // The picker is a separate modal, so remember which box it targets.
       setPickerSlot(slot);
       setPickerItems(items.map(({ createdAt: _c, ...rest }) => rest));
-      setTryOnPickerVisible(true);
+      setCreationPickerVisible(true);
     } catch {
       Alert.alert('Error', 'Could not load your creations.');
     }
   }
 
   function pickItem(item: PickerItem) {
-    if (item.source === 'tryon') {
-      applySource(pickerSlot, { type: 'tryon', jobId: item.job.id, previewUrl: item.previewUrl });
+    if (item.source === 'transform') {
+      applySource(pickerSlot, {
+        type: 'transform',
+        jobId: item.job.id,
+        previewUrl: item.previewUrl,
+      });
     } else {
       // Design images have no job id; send as a photo (URL fetched at submit).
       applySource(pickerSlot, { type: 'photo', uri: item.imageUrl });
     }
-    setTryOnPickerVisible(false);
+    setCreationPickerVisible(false);
   }
 
   // Append one source's fields to the form data under the given field suffix
@@ -290,7 +296,7 @@ export default function VideoScreen() {
         compress: 0.85,
       });
       formData.append(`photo${suffix}`, processed as unknown as Blob);
-    } else if (s.type === 'tryon') {
+    } else if (s.type === 'transform') {
       formData.append(`sourceJobId${suffix}`, s.jobId);
     }
   }
@@ -356,10 +362,10 @@ export default function VideoScreen() {
         id: data.jobId,
         status: 'PENDING',
         scheduledStartAt: data.scheduledStartAt ?? null,
-      } as TryOnJob);
+      } as Creation);
       void refreshUser();
 
-      // Soft-throttle queue notice (parity with TryOnScreen) — framed as a shared
+      // Soft-throttle queue notice (parity with TransformScreen) — framed as a shared
       // queue, never a "limit". Subscribers get faster queues.
       if (data.queueDelayMs && data.queueDelayMs > 0) {
         const seconds = Math.max(1, Math.round(data.queueDelayMs / 1000));
@@ -401,7 +407,7 @@ export default function VideoScreen() {
     const tick = async () => {
       if (!isMountedRef.current) return;
       try {
-        const { data } = await api.get<TryOnJob>(`/tryon/${jobId}`);
+        const { data } = await api.get<Creation>(`/creations/${jobId}`);
         pollErrorsRef.current = 0;
         if (!isMountedRef.current) return;
         setActiveJob(data);
@@ -428,7 +434,7 @@ export default function VideoScreen() {
 
   function reset() {
     // Cancel any in-flight poll so a queued tick can't fire after reset and
-    // flash the old job back into the cleared form (matches TryOnScreen).
+    // flash the old job back into the cleared form (matches TransformScreen).
     if (pollTimerRef.current) {
       clearTimeout(pollTimerRef.current);
       pollTimerRef.current = null;
@@ -583,14 +589,14 @@ export default function VideoScreen() {
 
       {/* Creation source picker */}
       <Modal
-        visible={tryOnPickerVisible}
+        visible={creationPickerVisible}
         animationType="slide"
-        onRequestClose={() => setTryOnPickerVisible(false)}
+        onRequestClose={() => setCreationPickerVisible(false)}
       >
         <View style={[styles.container, { paddingTop: insets.top + Spacing.sm }]}>
           <View style={styles.pickerHeader}>
             <Text style={styles.pickerTitle}>Pick a creation</Text>
-            <TouchableOpacity onPress={() => setTryOnPickerVisible(false)} hitSlop={10}>
+            <TouchableOpacity onPress={() => setCreationPickerVisible(false)} hitSlop={10}>
               <Text style={styles.pickerClose}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -659,14 +665,14 @@ function SourceBox({
   );
 }
 
-function ResultView({ job, onReset }: { job: TryOnJob; onReset: () => void }) {
+function ResultView({ job, onReset }: { job: Creation; onReset: () => void }) {
   const failed = job.status === 'FAILED';
   const complete = job.status === 'COMPLETE' && !!job.videoUrl;
   const pending = job.status === 'PENDING' || job.status === 'PROCESSING';
   // Drives the "subscribers get faster queues" upsell — hidden for PREMIUM.
   const tier = useUserStore((s) => s.user?.tier);
 
-  // Soft-throttle countdown (parity with TryOnScreen): tick while a future
+  // Soft-throttle countdown (parity with TransformScreen): tick while a future
   // scheduledStartAt exists, then fall through to the normal "Generating…" view.
   const startAt = job.scheduledStartAt ? new Date(job.scheduledStartAt).getTime() : 0;
   const [now, setNow] = useState<number>(() => Date.now());

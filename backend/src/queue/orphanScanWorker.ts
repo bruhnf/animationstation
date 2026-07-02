@@ -1,5 +1,5 @@
 import { Queue, Worker } from 'bullmq';
-import { connection } from './tryonQueue';
+import { connection } from './transformQueue';
 import { scanS3Orphans } from '../routes/admin';
 import { sendS3OrphanAlert } from '../services/emailService';
 import { env } from '../config/env';

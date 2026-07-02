@@ -1,5 +1,5 @@
 /**
- * Repair tool for dangling TryOnJob image references (2026-06-11 incident:
+ * Repair tool for dangling Creation image references (2026-06-11 incident:
  * body-photo replace/delete removed S3 objects that historical jobs still
  * reference, surfacing as permanent "Tap to reload" in the app).
  *
@@ -29,7 +29,7 @@ import {
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 
-const BUCKET = process.env.AWS_S3_BUCKET ?? 'evofaceflow-uploads';
+const BUCKET = process.env.AWS_S3_BUCKET ?? 'animationstation-uploads-dev';
 const refsFile = process.argv[2];
 const apply = process.argv.includes('--apply');
 if (!refsFile) {
@@ -127,7 +127,7 @@ if (unrecoverable.length > 0) {
   for (const key of unrecoverable) {
     for (const r of byKey.get(key)) {
       console.log(
-        `UPDATE tryon_jobs SET "${r.field}" = NULL WHERE id = '${r.jobId}' AND "${r.field}" = '${r.value.replace(/'/g, "''")}';`,
+        `UPDATE creations SET "${r.field}" = NULL WHERE id = '${r.jobId}' AND "${r.field}" = '${r.value.replace(/'/g, "''")}';`,
       );
     }
   }

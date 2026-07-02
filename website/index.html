@@ -28,7 +28,7 @@
       </div>
       <div class="nav-user" id="navUser" style="display: none;">
         <span class="user-greeting">Hello, <span id="userName"></span></span>
-        <a href="/tryons.html" class="btn btn-secondary">My Creations</a>
+        <a href="/creations.html" class="btn btn-secondary">My Creations</a>
         <a href="/account.html" class="btn btn-secondary">Account</a>
         <button class="btn btn-secondary" onclick="logout()">Log Out</button>
       </div>
@@ -168,7 +168,7 @@
     // hero's primary CTA jumps straight into the user's creations.
     if (checkAuthState()) {
       var startBtn = document.getElementById('startCreatingBtn');
-      if (startBtn) startBtn.setAttribute('href', '/tryons.html');
+      if (startBtn) startBtn.setAttribute('href', '/creations.html');
     }
   </script>
 </body>

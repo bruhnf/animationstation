@@ -4,7 +4,7 @@ import prisma from '../lib/prisma';
 import { isAdminEmail } from '../utils/admin';
 import {
   presignUserPhotos,
-  presignTryOnJobs,
+  presignCreations,
   presignAvatarOnly,
   presignClosetItems,
 } from '../services/imageUrlService';
@@ -40,7 +40,7 @@ export async function getProfile(req: Request, res: Response): Promise<void> {
       bio: true,
       avatarUrl: true,
       // Body photos intentionally omitted from public profile responses
-      tryOnCount: true,
+      creationCount: true,
       followingCount: true,
       followersCount: true,
       likesCount: true,
@@ -88,29 +88,29 @@ export async function getProfile(req: Request, res: Response): Promise<void> {
   // no jobs so they can see who's blocked but not consume their content.
   const jobs = viewerHasBlocked
     ? []
-    : await prisma.tryOnJob.findMany({
+    : await prisma.creation.findMany({
         where: { userId: user.id, status: 'COMPLETE', isPrivate: false },
         orderBy: { createdAt: 'desc' },
         take: 30,
         select: {
           id: true,
           kind: true,
-          resultFullBodyUrl: true,
-          resultMediumUrl: true,
+          resultImageUrl: true,
+          resultImage2Url: true,
           videoUrl: true,
           // The public profile grid carousel shows each public post's inputs
           // (clothing + the body-photo perspective fed to Grok) next to the
           // result — same content the feed card surfaces. Private posts are
           // excluded by the where clause above.
-          clothingPhoto1Url: true,
-          bodyPhotoUrl: true,
+          refImage1Url: true,
+          sourceImageUrl: true,
           likesCount: true,
           createdAt: true,
         },
       });
 
   const presignedUser = await presignAvatarOnly(user);
-  const presignedJobs = await presignTryOnJobs(jobs);
+  const presignedJobs = await presignCreations(jobs);
   res.json({ ...presignedUser, jobs: presignedJobs, isFollowing, isSelf, viewerHasBlocked });
 }
 
@@ -157,7 +157,7 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
         mediumBodyUrl: true,
         tier: true,
         credits: true,
-        tryOnCount: true,
+        creationCount: true,
         followingCount: true,
         followersCount: true,
         city: true,
@@ -196,7 +196,7 @@ export async function getMyProfile(req: Request, res: Response): Promise<void> {
       mediumBodyUrl: true,
       tier: true,
       credits: true,
-      tryOnCount: true,
+      creationCount: true,
       followingCount: true,
       followersCount: true,
       likesCount: true,
@@ -219,7 +219,7 @@ export async function getMyProfile(req: Request, res: Response): Promise<void> {
 
 // App Store Review Guidelines 5.1.1(i) / 5.1.2(i) require explicit user
 // consent before transmitting personal data to a third-party AI service.
-// These endpoints record / revoke that consent. The /api/tryon submit path
+// These endpoints record / revoke that consent. The /api/transform submit path
 // rejects with AI_CONSENT_REQUIRED when aiProcessingConsentAt is null.
 export async function recordAiConsent(req: Request, res: Response): Promise<void> {
   if (!req.user) {
@@ -290,7 +290,7 @@ export async function exportData(req: Request, res: Response): Promise<void> {
 
   const [
     user,
-    tryOnJobs,
+    creations,
     locations,
     follows,
     followers,
@@ -312,7 +312,7 @@ export async function exportData(req: Request, res: Response): Promise<void> {
         verified: true,
         tier: true,
         credits: true,
-        tryOnCount: true,
+        creationCount: true,
         lastFreeCreditGrantAt: true,
         firstName: true,
         lastName: true,
@@ -331,18 +331,18 @@ export async function exportData(req: Request, res: Response): Promise<void> {
         updatedAt: true,
       },
     }),
-    prisma.tryOnJob.findMany({
+    prisma.creation.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         status: true,
         isPrivate: true,
-        clothingPhoto1Url: true,
-        clothingPhoto2Url: true,
-        resultFullBodyUrl: true,
-        resultMediumUrl: true,
-        bodyPhotoUrl: true,
+        refImage1Url: true,
+        refImage2Url: true,
+        resultImageUrl: true,
+        resultImage2Url: true,
+        sourceImageUrl: true,
         perspectivesUsed: true,
         likesCount: true,
         createdAt: true,
@@ -397,13 +397,13 @@ export async function exportData(req: Request, res: Response): Promise<void> {
   }
 
   const presignedUser = await presignUserPhotos(user);
-  const presignedJobs = await presignTryOnJobs(tryOnJobs);
+  const presignedJobs = await presignCreations(creations);
 
   const exportPayload = {
     exportedAt: new Date().toISOString(),
     schemaVersion: 2,
     user: presignedUser,
-    tryOnJobs: presignedJobs,
+    creations: presignedJobs,
     locations,
     follows: { following: follows, followers },
     creditTransactions,
@@ -418,7 +418,7 @@ export async function exportData(req: Request, res: Response): Promise<void> {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader(
     'Content-Disposition',
-    `attachment; filename="tryon-export-${user.username}-${new Date().toISOString().slice(0, 10)}.json"`,
+    `attachment; filename="animationstation-export-${user.username}-${new Date().toISOString().slice(0, 10)}.json"`,
   );
   res.json(exportPayload);
 }

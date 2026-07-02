@@ -36,7 +36,7 @@ router.get('/balance', async (req: Request, res: Response) => {
 
   const user = await prisma.user.findUnique({
     where: { id: req.user.userId },
-    select: { credits: true, tier: true, tryOnCount: true },
+    select: { credits: true, tier: true, creationCount: true },
   });
 
   if (!user) {
@@ -44,10 +44,10 @@ router.get('/balance', async (req: Request, res: Response) => {
     return;
   }
 
-  // Count non-failed try-on jobs in the rolling 7-day window
+  // Count non-failed creation jobs in the rolling 7-day window
   const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const weekJobCount = await prisma.tryOnJob.count({
+  const weekJobCount = await prisma.creation.count({
     where: {
       userId: req.user.userId,
       createdAt: { gte: weekStart },
@@ -60,7 +60,7 @@ router.get('/balance', async (req: Request, res: Response) => {
   res.json({
     credits: user.credits,
     tier: user.tier,
-    tryOnCount: user.tryOnCount,
+    creationCount: user.creationCount,
     weeklyUsed: weekJobCount,
     weeklyLimit: config.weeklyLimit,
     weeklyRemaining: Math.max(0, config.weeklyLimit - weekJobCount),

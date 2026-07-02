@@ -24,7 +24,7 @@ import { requireRealUser } from '../utils/guestGate';
 
 // Inline comment panel used by the full-screen feed's "pulled-back" state
 // (FeedPost). It owns the comment thread for one post — fetch, post, reply,
-// like, delete, report — the same contract as the full-screen TryOnCommentsScreen,
+// like, delete, report — the same contract as the full-screen CommentsScreen,
 // minus that screen's own job-image header + navigation chrome (the post content
 // sits above this panel in FeedPost). Kept self-contained so the feed's comment
 // UX doesn't depend on the standalone screen. Comment-count changes are bumped
@@ -87,7 +87,7 @@ export default function FeedComments({
 
   const loadComments = useCallback(async () => {
     try {
-      const { data } = await api.get<{ comments: Comment[] }>(`/tryon/${jobId}/comments`);
+      const { data } = await api.get<{ comments: Comment[] }>(`/creations/${jobId}/comments`);
       setComments(data.comments);
     } catch {
       // Leave the list empty on error; the user can still try to comment.
@@ -112,7 +112,7 @@ export default function FeedComments({
     if (!trimmed || posting) return;
     setPosting(true);
     try {
-      const { data: created } = await api.post<Comment>(`/tryon/${jobId}/comments`, {
+      const { data: created } = await api.post<Comment>(`/creations/${jobId}/comments`, {
         body: trimmed,
         parentId: replyTarget?.parentId,
       });

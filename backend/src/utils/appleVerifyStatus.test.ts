@@ -73,14 +73,14 @@ test('decodeJwsShape identifies a transaction-shaped payload', () => {
     fakeJws({
       transactionId: '2000001186342932',
       originalTransactionId: '2000001186342932',
-      bundleId: 'com.evofaceflow.tryon.app',
-      productId: 'com.evofaceflow.tryon.app.credits.10.free.v14',
+      bundleId: 'ai.animationstation.app',
+      productId: 'ai.animationstation.app.credits.10.free.v14',
       environment: 'Sandbox',
       type: 'Consumable',
     }),
   );
   assert.ok(shape);
-  assert.equal(shape.bundleId, 'com.evofaceflow.tryon.app');
+  assert.equal(shape.bundleId, 'ai.animationstation.app');
   assert.equal(shape.environment, 'Sandbox');
   assert.equal(shape.type, 'Consumable');
   assert.deepEqual(shape.fields, [

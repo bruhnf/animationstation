@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, blockGuests } from '../middleware/auth';
 import prisma from '../lib/prisma';
-import { presignAvatarOnly, presignTryOnJob } from '../services/imageUrlService';
+import { presignAvatarOnly, presignCreation } from '../services/imageUrlService';
 
 const router = Router();
 
@@ -31,7 +31,7 @@ router.get('/', async (req: Request, res: Response) => {
           select: { id: true, username: true, firstName: true, lastName: true, avatarUrl: true },
         },
         job: {
-          select: { id: true, resultFullBodyUrl: true, resultMediumUrl: true },
+          select: { id: true, resultImageUrl: true, resultImage2Url: true },
         },
       },
     }),
@@ -44,7 +44,7 @@ router.get('/', async (req: Request, res: Response) => {
     notifications.map(async (n) => ({
       ...n,
       actor: n.actor ? await presignAvatarOnly(n.actor) : n.actor,
-      job: n.job ? await presignTryOnJob(n.job) : n.job,
+      job: n.job ? await presignCreation(n.job) : n.job,
     })),
   );
 

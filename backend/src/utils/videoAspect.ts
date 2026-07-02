@@ -1,7 +1,7 @@
 // Grok Imagine video supports a fixed set of output aspect ratios. We must pass
 // the one that matches the SOURCE image, otherwise Grok renders the source into
 // a mismatched frame and the content comes back squished/distorted (the docs
-// default `aspect_ratio` to 16:9, which stretches our portrait try-on/body
+// default `aspect_ratio` to 16:9, which stretches our portrait creation/body
 // photos). This maps an arbitrary source width×height to the nearest supported
 // ratio. Pure (no I/O) so it's unit-tested.
 //

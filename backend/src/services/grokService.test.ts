@@ -32,27 +32,33 @@ test('detectImageFormat rejects non-image, short, and look-alike buffers', () =>
 });
 
 test('resolveS3Key returns bare keys unchanged (sans leading slash)', () => {
-  assert.equal(resolveS3Key('body-photos/u1/a.jpg', 'evofaceflow-uploads'), 'body-photos/u1/a.jpg');
   assert.equal(
-    resolveS3Key('/clothing-photos/u1/b.jpg', 'evofaceflow-uploads'),
-    'clothing-photos/u1/b.jpg',
+    resolveS3Key('source-images/u1/a.jpg', 'animationstation-uploads-dev'),
+    'source-images/u1/a.jpg',
+  );
+  assert.equal(
+    resolveS3Key('/ref-images/u1/b.jpg', 'animationstation-uploads-dev'),
+    'ref-images/u1/b.jpg',
   );
 });
 
 test('resolveS3Key extracts the key from our own (virtual-hosted) S3 URLs', () => {
   assert.equal(
     resolveS3Key(
-      'https://evofaceflow-uploads.s3.amazonaws.com/body-photos/u1/a.jpg?X-Amz-Signature=x',
-      'evofaceflow-uploads',
+      'https://animationstation-uploads-dev.s3.amazonaws.com/source-images/u1/a.jpg?X-Amz-Signature=x',
+      'animationstation-uploads-dev',
     ),
-    'body-photos/u1/a.jpg',
+    'source-images/u1/a.jpg',
   );
 });
 
 test('resolveS3Key returns null for foreign hosts (not treated as our key)', () => {
-  assert.equal(resolveS3Key('https://evil.example.com/x.jpg', 'evofaceflow-uploads'), null);
   assert.equal(
-    resolveS3Key('http://169.254.169.254/latest/meta-data/iam/', 'evofaceflow-uploads'),
+    resolveS3Key('https://evil.example.com/x.jpg', 'animationstation-uploads-dev'),
+    null,
+  );
+  assert.equal(
+    resolveS3Key('http://169.254.169.254/latest/meta-data/iam/', 'animationstation-uploads-dev'),
     null,
   );
 });

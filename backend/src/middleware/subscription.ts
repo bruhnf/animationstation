@@ -1,3 +1,3 @@
-// Max clothing items per try-on (applies to all users). Imported by
-// tryonController to validate the upload count before queueing the job.
+// Max clothing items per creation (applies to all users). Imported by
+// creationsController to validate the upload count before queueing the job.
 export const MAX_CLOTHING_ITEMS = 1;

@@ -5,7 +5,7 @@
 // Unlike the Outfit Designer, the motion prompt is NOT embedded in a fixed
 // template — it's passed to Grok's video model directly — so xAI's own content
 // moderation is the safety layer (the worker maps a moderation block to the
-// same strike/grace policy as a try-on). We still sanitize: trim, strip control
+// same strike/grace policy as a creation). We still sanitize: trim, strip control
 // characters, and enforce a sane length so junk/oversized input can't reach the
 // API or the DB column (VARCHAR 300).
 

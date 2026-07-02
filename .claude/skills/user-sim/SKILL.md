@@ -1,6 +1,6 @@
 ---
 name: user-sim
-description: Run the user-simulator journey test — simulates a user opening the app, logging in, checking checkpoints, editing their profile, buying credits, and logging out against a live or local TryOn backend. Use when asked to smoke-test auth, verify login/logout works, or check a backend after a deploy.
+description: Run the user-simulator journey test — simulates a user opening the app, logging in, checking checkpoints, editing their profile, buying credits, and logging out against a live or local AnimationStation backend. Use when asked to smoke-test auth, verify login/logout works, or check a backend after a deploy.
 argument-hint: "[local|dev|prod] (default: prod)"
 ---
 
@@ -64,7 +64,7 @@ node tests/userSimulator.mjs --env <env>
 - `tests/checkpoints.json` is **owned by the user** and contains only passive
   assertions — the simulator never writes to it, and Claude should only edit
   it when the user asks. Any field on the `/profile/me` payload can be
-  asserted (`credits`, `tier`, `verified`, `username`, `tryOnCount`, ...);
+  asserted (`credits`, `tier`, `verified`, `username`, `creationCount`, ...);
   comparison is strict equality. Action-step parameters (temp-name suffix,
   credit pack size) are constants at the top of `userSimulator.mjs`, not
   checkpoint keys.
@@ -90,7 +90,7 @@ The full buy-credits path only executes here. Setup:
 
 - **Step 1 fails / connection error** — backend or a dependency (Postgres,
   Redis) is down, or DNS/nginx is broken. Check
-  `https://api[-dev].tryon-mirror.ai/health` and the Lightsail box (or the
+  `https://api[-dev].creation-mirror.ai/health` and the Lightsail box (or the
   local dev server for `--env local`).
 - **Step 2 returns 401** — wrong credentials, or the test account doesn't
   exist on that environment (expected on dev). Don't retry repeatedly:

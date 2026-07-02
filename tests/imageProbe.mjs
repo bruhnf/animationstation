@@ -16,8 +16,8 @@ import { fileURLToPath } from 'node:url';
 const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
 const API_BASES = {
   local: 'http://localhost:3000/api',
-  dev: 'https://api-dev.tryon-mirror.ai/api',
-  prod: 'https://api.tryon-mirror.ai/api',
+  dev: 'https://api-dev.creation-mirror.ai/api',
+  prod: 'https://api.creation-mirror.ai/api',
 };
 
 function getArg(flag) {
@@ -50,7 +50,7 @@ const pages = parseInt(getArg('--pages') ?? '1', 10);
 const paths = [
   ...Array.from({ length: pages }, (_, i) => `/feed?page=${i + 1}`),
   '/profile/me',
-  '/tryon/history',
+  '/creations/history',
 ];
 for (const path of paths) {
   const r = await fetch(`${apiBase}${path}`, { headers: auth });
@@ -59,8 +59,8 @@ for (const path of paths) {
 }
 
 const URL_FIELDS = [
-  'avatarUrl', 'fullBodyUrl', 'mediumBodyUrl', 'bodyPhotoUrl',
-  'clothingPhoto1Url', 'clothingPhoto2Url', 'resultFullBodyUrl', 'resultMediumUrl',
+  'avatarUrl', 'fullBodyUrl', 'mediumBodyUrl', 'sourceImageUrl',
+  'refImage1Url', 'refImage2Url', 'resultImageUrl', 'resultImage2Url',
 ];
 const found = []; // { from, field, value }
 function walk(node, from) {

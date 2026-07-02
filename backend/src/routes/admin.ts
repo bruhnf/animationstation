@@ -9,8 +9,8 @@ import { getLatestReportSummary, runAllScans } from '../services/vulnerabilitySe
 import { triggerImmediateScan } from '../queue/vulnerabilityWorker';
 import {
   presignUserPhotos,
-  presignTryOnJob,
-  presignTryOnJobs,
+  presignCreation,
+  presignCreations,
   presignAvatarOnly,
 } from '../services/imageUrlService';
 import {
@@ -173,7 +173,7 @@ router.get('/users', async (_req: Request, res: Response) => {
       verified: true,
       tier: true,
       credits: true,
-      tryOnCount: true,
+      creationCount: true,
       moderationBlockCount: true,
       lastModerationBlockAt: true,
       aiProcessingConsentAt: true,
@@ -249,7 +249,7 @@ router.get('/user/:userId', async (req: Request, res: Response) => {
       verified: true,
       tier: true,
       credits: true,
-      tryOnCount: true,
+      creationCount: true,
       moderationBlockCount: true,
       lastModerationBlockAt: true,
       aiProcessingConsentAt: true,
@@ -295,23 +295,23 @@ router.get('/user/:userId', async (req: Request, res: Response) => {
   res.json({ ...presigned, subscriptionStatus, applePurchaseCount });
 });
 
-// All try-on sessions for one user, newest first — powers the dashboard's
-// per-user Try-On Sessions gallery (body photo + clothing + results per job).
+// All creation sessions for one user, newest first — powers the dashboard's
+// per-user Creation Sessions gallery (body photo + clothing + results per job).
 router.get('/user/:userId/jobs', async (req: Request, res: Response) => {
   const limit = Math.min(Math.max(1, parseInt((req.query.limit as string) ?? '10', 10)), 50);
   const skip = Math.max(0, parseInt((req.query.skip as string) ?? '0', 10));
 
   const [jobs, total] = await Promise.all([
-    prisma.tryOnJob.findMany({
+    prisma.creation.findMany({
       where: { userId: req.params.userId },
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
     }),
-    prisma.tryOnJob.count({ where: { userId: req.params.userId } }),
+    prisma.creation.count({ where: { userId: req.params.userId } }),
   ]);
 
-  res.json({ jobs: await presignTryOnJobs(jobs), total });
+  res.json({ jobs: await presignCreations(jobs), total });
 });
 
 router.get('/jobs', async (req: Request, res: Response) => {
@@ -320,7 +320,7 @@ router.get('/jobs', async (req: Request, res: Response) => {
   const search = ((req.query.search as string) ?? '').trim();
   const statusParam = req.query.status as string | undefined;
 
-  const where: Prisma.TryOnJobWhereInput = {};
+  const where: Prisma.CreationWhereInput = {};
   if (statusParam && ['PENDING', 'PROCESSING', 'COMPLETE', 'FAILED'].includes(statusParam)) {
     where.status = statusParam as JobStatus;
   }
@@ -332,36 +332,36 @@ router.get('/jobs', async (req: Request, res: Response) => {
   }
 
   const [jobs, total] = await Promise.all([
-    prisma.tryOnJob.findMany({
+    prisma.creation.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
       include: { user: { select: { username: true } } },
     }),
-    prisma.tryOnJob.count({ where }),
+    prisma.creation.count({ where }),
   ]);
 
-  res.json({ jobs: await presignTryOnJobs(jobs), total });
+  res.json({ jobs: await presignCreations(jobs), total });
 });
 
 router.delete('/user/:userId', async (req: Request, res: Response) => {
   const userId = req.params.userId;
 
-  // Gather S3 keys BEFORE deletion — Prisma cascade drops TryOnJob/ClosetItem
+  // Gather S3 keys BEFORE deletion — Prisma cascade drops Creation/ClosetItem
   // rows, which is where the clothing/result/closet keys live.
   const [user, jobs, closetItems] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { avatarUrl: true, fullBodyUrl: true, mediumBodyUrl: true },
     }),
-    prisma.tryOnJob.findMany({
+    prisma.creation.findMany({
       where: { userId },
       select: {
-        clothingPhoto1Url: true,
-        clothingPhoto2Url: true,
-        resultFullBodyUrl: true,
-        resultMediumUrl: true,
+        refImage1Url: true,
+        refImage2Url: true,
+        resultImageUrl: true,
+        resultImage2Url: true,
       },
     }),
     prisma.closetItem.findMany({ where: { userId }, select: { imageUrl: true } }),
@@ -548,8 +548,8 @@ router.get('/stats', async (_req: Request, res: Response) => {
     guestSignups7dRows,
   ] = await Promise.all([
     prisma.user.count(),
-    prisma.tryOnJob.count(),
-    prisma.tryOnJob.count({ where: { status: 'COMPLETE' } }),
+    prisma.creation.count(),
+    prisma.creation.count({ where: { status: 'COMPLETE' } }),
     prisma.user.count({ where: { tier: 'BASIC' } }),
     prisma.user.count({ where: { tier: 'PREMIUM' } }),
     prisma.user.aggregate({ _sum: { credits: true } }),
@@ -740,10 +740,10 @@ router.patch('/settings/welcome-splash', async (req: Request, res: Response) => 
   res.json({ welcomeSplashEnabled: saved });
 });
 
-// Update the soft try-on throttle config. Body: the full config object
+// Update the soft creation throttle config. Body: the full config object
 // { windowMs, burst: { FREE, BASIC, PREMIUM }, ladderMs: number[] }. Validated
 // + clamped by setThrottleConfig (throws → 400). Takes effect on the next
-// try-on submit; no redeploy. See services/throttleService.ts.
+// creation submit; no redeploy. See services/throttleService.ts.
 router.patch('/settings/throttle', async (req: Request, res: Response) => {
   try {
     const saved = await setThrottleConfig(req.body);
@@ -848,26 +848,21 @@ router.get('/security/suspicious', async (req: Request, res: Response) => {
 });
 
 // Collect the S3 keys that belong to a job and to nothing else: its clothing
-// photo(s) and result image(s). Deliberately NOT bodyPhotoUrl — that is the
+// photo(s) and result image(s). Deliberately NOT sourceImageUrl — that is the
 // user's profile body photo (the same S3 object User.fullBodyUrl/mediumBodyUrl
 // points at), shared across the user's jobs; deleting it would break their
 // profile and every other job that used it.
 function jobOwnedS3Keys(
   jobs: Array<{
-    clothingPhoto1Url: string | null;
-    clothingPhoto2Url: string | null;
-    resultFullBodyUrl: string | null;
-    resultMediumUrl: string | null;
+    refImage1Url: string | null;
+    refImage2Url: string | null;
+    resultImageUrl: string | null;
+    resultImage2Url: string | null;
   }>,
 ): Set<string> {
   const keys = new Set<string>();
   for (const j of jobs) {
-    for (const ref of [
-      j.clothingPhoto1Url,
-      j.clothingPhoto2Url,
-      j.resultFullBodyUrl,
-      j.resultMediumUrl,
-    ]) {
+    for (const ref of [j.refImage1Url, j.refImage2Url, j.resultImageUrl, j.resultImage2Url]) {
       const key = refToKey(ref);
       if (key) keys.add(key);
     }
@@ -878,20 +873,20 @@ function jobOwnedS3Keys(
 // Delete a single job (and its clothing/result images in S3 — previously the
 // S3 objects were left behind, which is where most storage orphans came from).
 router.delete('/job/:jobId', async (req: Request, res: Response) => {
-  const job = await prisma.tryOnJob.findUnique({
+  const job = await prisma.creation.findUnique({
     where: { id: req.params.jobId },
     select: {
-      clothingPhoto1Url: true,
-      clothingPhoto2Url: true,
-      resultFullBodyUrl: true,
-      resultMediumUrl: true,
+      refImage1Url: true,
+      refImage2Url: true,
+      resultImageUrl: true,
+      resultImage2Url: true,
     },
   });
   if (!job) {
     res.status(404).json({ error: 'Job not found' });
     return;
   }
-  await prisma.tryOnJob.delete({ where: { id: req.params.jobId } });
+  await prisma.creation.delete({ where: { id: req.params.jobId } });
   // Fire-and-forget S3 cleanup, same DB-first pattern as user deletion. Misses
   // are caught by the weekly orphan scan.
   for (const key of jobOwnedS3Keys([job])) {
@@ -909,17 +904,17 @@ router.post('/jobs/delete', async (req: Request, res: Response) => {
     return;
   }
 
-  const jobs = await prisma.tryOnJob.findMany({
+  const jobs = await prisma.creation.findMany({
     where: { id: { in: jobIds } },
     select: {
-      clothingPhoto1Url: true,
-      clothingPhoto2Url: true,
-      resultFullBodyUrl: true,
-      resultMediumUrl: true,
+      refImage1Url: true,
+      refImage2Url: true,
+      resultImageUrl: true,
+      resultImage2Url: true,
     },
   });
 
-  const result = await prisma.tryOnJob.deleteMany({
+  const result = await prisma.creation.deleteMany({
     where: { id: { in: jobIds } },
   });
 
@@ -1057,20 +1052,20 @@ router.get('/moderation/reports', async (req: Request, res: Response) => {
   // Hydrate the target so the admin sees who/what was reported.
   const hydrated = await Promise.all(
     reports.map(async (r) => {
-      if (r.targetType === 'TRYON_JOB') {
-        const job = await prisma.tryOnJob.findUnique({
+      if (r.targetType === 'CREATION') {
+        const job = await prisma.creation.findUnique({
           where: { id: r.targetId },
           select: {
             id: true,
             userId: true,
             isPrivate: true,
             status: true,
-            resultFullBodyUrl: true,
-            resultMediumUrl: true,
+            resultImageUrl: true,
+            resultImage2Url: true,
             user: { select: { id: true, username: true } },
           },
         });
-        return { ...r, target: job ? await presignTryOnJob(job) : job };
+        return { ...r, target: job ? await presignCreation(job) : job };
       }
       if (r.targetType === 'COMMENT') {
         const comment = await prisma.comment.findUnique({
@@ -1121,8 +1116,8 @@ router.patch('/moderation/reports/:id', async (req: Request, res: Response) => {
 
   // If admin chose to remove the offending content, do that atomically
   // alongside resolving the report.
-  if (removeContent && report.targetType === 'TRYON_JOB') {
-    await prisma.tryOnJob
+  if (removeContent && report.targetType === 'CREATION') {
+    await prisma.creation
       .update({
         where: { id: report.targetId },
         data: { isPrivate: true },
@@ -1138,7 +1133,7 @@ router.patch('/moderation/reports/:id', async (req: Request, res: Response) => {
       await prisma
         .$transaction([
           prisma.comment.delete({ where: { id: comment.id } }),
-          prisma.tryOnJob.update({
+          prisma.creation.update({
             where: { id: comment.jobId },
             data: { commentsCount: { decrement: 1 } },
           }),
@@ -1162,9 +1157,9 @@ router.patch('/moderation/reports/:id', async (req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 // S3 Orphan Scan
 // ---------------------------------------------------------------------------
-// Full key-level reconciliation: every object under the TryOn prefixes is
+// Full key-level reconciliation: every object under the app's S3 prefixes is
 // checked against the set of S3 keys the database actually references (user
-// body photos + every TryOnJob's clothing/result keys). Anything unreferenced
+// body photos + every Creation's clothing/result keys). Anything unreferenced
 // is orphaned — that catches BOTH deleted users (the original scan) and
 // deleted/replaced rows whose user still exists (e.g. jobs removed before job
 // deletion cleaned up S3). Objects uploaded in the last hour are skipped so a
@@ -1172,10 +1167,10 @@ router.patch('/moderation/reports/:id', async (req: Request, res: Response) => {
 // is read-only; call the cleanup endpoint to actually delete the orphans.
 //
 // Other prefixes in the bucket (e.g. legacy `avatars/`, `videos/` from the
-// earlier EvoFaceFlow app) are deliberately NOT scanned — they're not TryOn's
+// earlier previous app) are deliberately NOT scanned — they're not this app's
 // data to judge.
 
-const S3_PREFIXES = ['body-photos/', 'clothing-photos/', 'tryon-results/', 'closet/'] as const;
+const S3_PREFIXES = ['source-images/', 'ref-images/', 'results/', 'closet/'] as const;
 const ORPHAN_MIN_AGE_MS = 60 * 60 * 1000; // ignore objects younger than 1 hour
 
 // Same normalization as imageUrlService: rows may hold a bare key or (legacy)
@@ -1209,7 +1204,7 @@ export interface OrphanScanResult {
 
 // Shared scan logic — used by both the on-demand endpoint and the scheduled job.
 export async function scanS3Orphans(): Promise<OrphanScanResult> {
-  // 1. Collect all S3 objects across the TryOn prefixes.
+  // 1. Collect all S3 objects across the app's S3 prefixes.
   const allObjects: Awaited<ReturnType<typeof listS3ObjectsUnderPrefix>> = [];
   await Promise.all(
     S3_PREFIXES.map(async (prefix) => {
@@ -1222,13 +1217,13 @@ export async function scanS3Orphans(): Promise<OrphanScanResult> {
     prisma.user.findMany({
       select: { id: true, username: true, avatarUrl: true, fullBodyUrl: true, mediumBodyUrl: true },
     }),
-    prisma.tryOnJob.findMany({
+    prisma.creation.findMany({
       select: {
-        clothingPhoto1Url: true,
-        clothingPhoto2Url: true,
-        bodyPhotoUrl: true,
-        resultFullBodyUrl: true,
-        resultMediumUrl: true,
+        refImage1Url: true,
+        refImage2Url: true,
+        sourceImageUrl: true,
+        resultImageUrl: true,
+        resultImage2Url: true,
       },
     }),
     prisma.closetItem.findMany({ select: { imageUrl: true } }),
@@ -1244,11 +1239,11 @@ export async function scanS3Orphans(): Promise<OrphanScanResult> {
   }
   for (const j of jobs) {
     for (const ref of [
-      j.clothingPhoto1Url,
-      j.clothingPhoto2Url,
-      j.bodyPhotoUrl,
-      j.resultFullBodyUrl,
-      j.resultMediumUrl,
+      j.refImage1Url,
+      j.refImage2Url,
+      j.sourceImageUrl,
+      j.resultImageUrl,
+      j.resultImage2Url,
     ]) {
       const key = refToKey(ref);
       if (key) referencedKeys.add(key);
@@ -1326,7 +1321,7 @@ router.delete('/s3/orphan-cleanup', async (_req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 // One-call operational snapshot powering the dashboard's "Diagnostics" tab:
 // process health, dependency latency, BullMQ queue depth + recent worker
-// failures, which integrations are wired up on THIS box, 24h try-on throughput,
+// failures, which integrations are wired up on THIS box, 24h creation throughput,
 // 7d credit economy, and Sentry status.
 router.get('/diagnostics', async (_req: Request, res: Response) => {
   try {

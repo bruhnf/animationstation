@@ -18,7 +18,7 @@ import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import AboutScreen from '../screens/AboutScreen';
 import HomeScreen from '../screens/HomeScreen';
-import TryOnScreen from '../screens/TryOnScreen';
+import TransformScreen from '../screens/TransformScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import FriendsScreen from '../screens/FriendsScreen';
 import InboxScreen from '../screens/InboxScreen';
@@ -29,7 +29,7 @@ import PurchaseScreen from '../screens/PurchaseScreen';
 import PublicProfileScreen from '../screens/PublicProfileScreen';
 import BlockedUsersScreen from '../screens/BlockedUsersScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
-import TryOnCommentsScreen from '../screens/TryOnCommentsScreen';
+import CommentsScreen from '../screens/CommentsScreen';
 import GuestProfileScreen from '../screens/GuestProfileScreen';
 import ClosetScreen from '../screens/ClosetScreen';
 import VideoScreen from '../screens/VideoScreen';
@@ -78,7 +78,7 @@ export type RootStackParams = {
   Main: NavigatorScreenParams<MainTabParams> | undefined;
   // Creation feature screens — reached from the Create hub (and some deep-links).
   // Available to guests AND real users (guests use whatever credits they have).
-  TryOn: undefined;
+  Transform: undefined;
   Video: undefined;
   CleanUp: undefined;
   // Outfit Designer (text-to-outfit) — separate from the Closet grid.
@@ -93,15 +93,15 @@ export type RootStackParams = {
   // Optional commentId is used by inbox notifications (COMMENT_REPLY,
   // COMMENT_LIKE) to deep-link into the thread and auto-scroll/highlight a
   // specific comment after the screen loads.
-  TryOnComments: { jobId: string; commentId?: string };
+  Comments: { jobId: string; commentId?: string };
   // Outfit Designer / saved outfits. { picker: true } = opened from the
-  // TryOn screen to pick an item (tap hands the item back and pops).
+  // Transform screen to pick an item (tap hands the item back and pops).
   Closet: { picker?: boolean } | undefined;
-  // Compare Looks — pick two completed try-ons and view them side by side.
+  // Compare Looks — pick two completed creations and view them side by side.
   Compare: undefined;
   // Invite Friends — referral code, share link, and earnings.
   Referral: undefined;
-  // Saved Looks — the user's bookmarked try-on results.
+  // Saved Looks — the user's bookmarked creation results.
   SavedLooks: undefined;
 };
 
@@ -342,8 +342,8 @@ export default function AppNavigator() {
           options={{ presentation: 'card', headerShown: false }}
         />
         <Stack.Screen
-          name="TryOnComments"
-          component={TryOnCommentsScreen}
+          name="Comments"
+          component={CommentsScreen}
           options={{ presentation: 'card', headerShown: false }}
         />
         <Stack.Screen
@@ -356,8 +356,8 @@ export default function AppNavigator() {
             AND real users (guests spend whatever credits they have; the screens
             handle out-of-credits + sign-up nudges). */}
         <Stack.Screen
-          name="TryOn"
-          component={TryOnScreen}
+          name="Transform"
+          component={TransformScreen}
           options={{ presentation: 'card', headerShown: false }}
         />
         <Stack.Screen
@@ -383,7 +383,7 @@ export default function AppNavigator() {
 
         {!isGuest ? (
           // Compare Looks — real accounts only (operates on the user's own
-          // try-on history).
+          // creation history).
           <Stack.Screen
             name="Compare"
             component={CompareScreen}

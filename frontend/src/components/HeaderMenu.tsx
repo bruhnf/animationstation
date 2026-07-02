@@ -36,7 +36,7 @@ interface HeaderMenuProps {
   rightComponent?: React.ReactNode;
   showMenu?: boolean;
   // Renders a back chevron at the far left. Use on stack screens reached from
-  // the Create hub (TryOn, Video) so there's always a way out.
+  // the Create hub (Transform, Video) so there's always a way out.
   showBack?: boolean;
 }
 

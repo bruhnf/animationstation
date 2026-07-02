@@ -10,7 +10,7 @@ const router = Router();
 router.use(requireAuth);
 
 // Accepts an optional `photo` (primary) and `photo2` (transition) camera-roll
-// upload via multer .fields → req.files; try-on / body-photo sources arrive as
+// upload via multer .fields → req.files; creation / body-photo sources arrive as
 // body fields. The controller reads req.files.photo / req.files.photo2.
 router.post('/', uploadVideoSources, submitVideo);
 router.get('/', getVideoHistory);

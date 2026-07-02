@@ -1,41 +1,60 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AnimationStation — PRODUCTION stack (Lightsail box 34.227.203.230).
+# The box's shared nginx (from the co-hosted app's stack) owns :80/:443 and
+# terminates TLS for animationstation.ai; it reaches this backend by container
+# name over the external "apps" network. This stack runs ONLY its own
+# datastore + backend — no proxy containers of its own.
+#
+# Bring up:   docker compose -f docker-compose.prod.yml up -d --build
+# Migrate:    docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
+# ─────────────────────────────────────────────────────────────────────────────
 services:
   postgres:
     image: postgres:15-alpine
+    container_name: animationstation-db
     restart: always
-    ports:
-      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - animationstation_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - internal
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   redis:
     image: redis:7-alpine
+    container_name: animationstation-redis
     restart: always
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy noeviction
     volumes:
-      - redis_data:/data
+      - animationstation_redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - internal
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   backend:
     build:
       context: ./backend
       target: prod
+    container_name: animationstation-api
     restart: always
     env_file:
       - ./backend/.env
@@ -43,149 +62,45 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
-      LOG_DIR: /var/log/tryon
-      # Where the frontend package.json + package-lock.json are bind-mounted (see
-      # volumes below) so the vulnerability scanner can `npm audit` the frontend
-      # from inside the backend container — the ./backend build context has no
-      # ../frontend. See services/vulnerabilityService.ts.
-      FRONTEND_AUDIT_DIR: /app/frontend-audit
-      # Cap V8's old-space below the container limit so the heap is GC'd hard
-      # before Docker OOM-kills the process. Leaves ~128MB of the 1G ceiling for
-      # off-heap allocations (Sharp/libvips native buffers, stacks, code).
-      NODE_OPTIONS: --max-old-space-size=896
-      # Refresh-token rotation ON. The old "would log everyone out" risk is
-      # handled SERVER-side: a rotated token is tombstoned (not deleted), and a
-      # replay whose successor was never itself used is recovered with a fresh
-      # token instead of revoking the family (authController.refreshToken). This
-      # is safe for every shipped client — even one that doesn't persist the
-      # rotated token keeps working via repeated grace recovery — and validated
-      # on dev. Net gain over OFF (where a stolen token lived its full 30 days).
-      # Revert: set "false" + redeploy.
-      REFRESH_TOKEN_ROTATION: "true"
-      # Sentry (error tracking) is configured via ./backend/.env (env_file above),
-      # NOT here — listing the vars in this `environment:` block would override
-      # env_file with empty shell values. The whole integration is GATED on
-      # SENTRY_DSN: unset = disabled no-op (current prod state). Optional vars:
-      # SENTRY_ENVIRONMENT, SENTRY_RELEASE, SENTRY_TRACES_SAMPLE_RATE, and — for
-      # the dashboard's "recent issues" feed — SENTRY_AUTH_TOKEN, SENTRY_ORG_SLUG,
-      # SENTRY_PROJECT_SLUG. See CLAUDE.md → Observability.
+      LOG_DIR: /var/log/animationstation
+      NODE_OPTIONS: --max-old-space-size=768
     volumes:
-      - backend_logs:/var/log/tryon
-      # Frontend dependency manifests (read-only) for the vulnerability scanner's
-      # "Frontend (NPM)" audit — the ./backend build context has no ../frontend,
-      # so mount the two files the lockfile-only audit needs.
-      - ./frontend/package.json:/app/frontend-audit/package.json:ro
-      - ./frontend/package-lock.json:/app/frontend-audit/package-lock.json:ro
-      # Splash/announcement image dir (SPLASH_DIR). Bind-mounted so publishing,
-      # replacing, or removing the splash (admin dashboard upload, or a file
-      # drop into backend/splash/ on the host) takes effect immediately —
-      # no rebuild, no restart.
+      - backend_logs:/var/log/animationstation
       - ./backend/splash:/app/splash
-    # Add the host's primary group (gid 1000 = ubuntu) so the non-root container
-    # user (nodejs, uid 1001) can read the git-pull-owned manifests above even
-    # when umask 007 leaves them mode 660. Required for the frontend npm audit.
-    group_add:
-      - "1000"
+      # Marketing + account website, served by the backend at the site root.
+      # Bind-mounted (not baked into the image) so site edits deploy without a
+      # backend rebuild — just git pull and restart the container.
+      - ./website:/app/website:ro
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    # Liveness probe ONLY (/health/live is dependency-free). The deep /health
-    # probe returns 503 when Postgres/Redis are degraded — pointing Docker at it
-    # would kill an otherwise-healthy backend during a transient dep blip.
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health/live"]
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/health/live']
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
     networks:
       - internal
+      - apps # shared external proxy network — the box's nginx reaches this by container name
     deploy:
       resources:
         limits:
           memory: 1G
 
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./website:/var/www/website:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - internal
-      - external
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-
-  fail2ban:
-    image: crazymax/fail2ban:latest
-    restart: always
-    network_mode: host
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    volumes:
-      - ./fail2ban/jail.local:/etc/fail2ban/jail.local:ro
-      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
-      - nginx_logs:/var/log/nginx:ro
-      - fail2ban_data:/data
-    environment:
-      - TZ=UTC
-      - F2B_LOG_LEVEL=INFO
-    deploy:
-      resources:
-        limits:
-          memory: 64M
-
-  # Grafana Alloy — scrapes the backend's Prometheus /metrics (internal network,
-  # backend:3000) and remote_writes to Grafana Cloud. Separate container — does
-  # NOT touch/restart the backend (start with: up -d alloy). Credentials live in
-  # ./alloy/.env (gitignored): GRAFANA_CLOUD_RW_URL/USER/PASSWORD + ALLOY_ENV=prod.
-  alloy:
-    image: grafana/alloy:latest
-    restart: unless-stopped
-    command:
-      - run
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-      - /etc/alloy/config.alloy
-    volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - alloy_data:/var/lib/alloy/data
-    env_file:
-      - ./alloy/.env
-    depends_on:
-      - backend
-    networks:
-      - internal
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-
 volumes:
-  postgres_data:
-  redis_data:
-  nginx_logs:
-  fail2ban_data:
+  animationstation_postgres_data:
+  animationstation_redis_data:
   backend_logs:
-  alloy_data:
 
 networks:
   internal:
     driver: bridge
-  external:
-    driver: bridge
+  # Shared reverse-proxy network on the box (created once: docker network create apps).
+  # The co-hosted app's nginx container also joins it and proxies
+  # animationstation.ai → animationstation-api:3000.
+  apps:
+    external: true

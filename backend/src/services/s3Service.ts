@@ -18,12 +18,7 @@ const s3 = new S3Client({
 
 const BUCKET = env.aws.s3Bucket;
 
-export type S3Prefix =
-  | 'body-photos'
-  | 'clothing-photos'
-  | 'tryon-results'
-  | 'closet'
-  | 'tryon-videos';
+export type S3Prefix = 'source-images' | 'ref-images' | 'results' | 'closet' | 'videos';
 
 export async function uploadToS3(
   prefix: S3Prefix,
@@ -57,9 +52,9 @@ export async function putS3Object(key: string, buffer: Buffer, contentType: stri
 }
 
 // Server-side copy within the bucket (no bytes through this process). Used when
-// a closet item is used for a try-on: the job gets its OWN copy under
-// clothing-photos/, so deleting the closet item later can never dangle a
-// TryOnJob image reference.
+// a closet item is used for a creation: the job gets its OWN copy under
+// ref-images/, so deleting the closet item later can never dangle a
+// Creation image reference.
 export async function copyWithinS3(
   sourceKey: string,
   destPrefix: S3Prefix,
@@ -203,10 +198,10 @@ export async function listUserS3Keys(
   fullBodyUrl: string | null,
   mediumBodyUrl: string | null,
   jobs: Array<{
-    clothingPhoto1Url: string | null;
-    clothingPhoto2Url: string | null;
-    resultFullBodyUrl: string | null;
-    resultMediumUrl: string | null;
+    refImage1Url: string | null;
+    refImage2Url: string | null;
+    resultImageUrl: string | null;
+    resultImage2Url: string | null;
   }>,
   closetImageUrls: string[] = [],
 ): Promise<Set<string>> {
@@ -215,10 +210,10 @@ export async function listUserS3Keys(
   if (fullBodyUrl) keys.add(keyFromUrl(fullBodyUrl));
   if (mediumBodyUrl) keys.add(keyFromUrl(mediumBodyUrl));
   for (const j of jobs) {
-    if (j.clothingPhoto1Url) keys.add(keyFromUrl(j.clothingPhoto1Url));
-    if (j.clothingPhoto2Url) keys.add(keyFromUrl(j.clothingPhoto2Url));
-    if (j.resultFullBodyUrl) keys.add(keyFromUrl(j.resultFullBodyUrl));
-    if (j.resultMediumUrl) keys.add(keyFromUrl(j.resultMediumUrl));
+    if (j.refImage1Url) keys.add(keyFromUrl(j.refImage1Url));
+    if (j.refImage2Url) keys.add(keyFromUrl(j.refImage2Url));
+    if (j.resultImageUrl) keys.add(keyFromUrl(j.resultImageUrl));
+    if (j.resultImage2Url) keys.add(keyFromUrl(j.resultImage2Url));
   }
   for (const url of closetImageUrls) {
     keys.add(keyFromUrl(url));

@@ -25,7 +25,7 @@ describe('useClosetStore selection hand-off', () => {
     const consumed = useClosetStore.getState().consumePendingSelection();
     expect(consumed).toEqual(item);
 
-    // A second consume (e.g. the TryOn tab refocusing) must not re-apply it.
+    // A second consume (e.g. the Transform tab refocusing) must not re-apply it.
     expect(useClosetStore.getState().consumePendingSelection()).toBeNull();
   });
 

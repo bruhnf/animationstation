@@ -4,7 +4,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 
-// Minimum source dimensions before we warn that try-on quality may suffer.
+// Minimum source dimensions before we warn that creation quality may suffer.
 // The backend scales the longest side down to 1024px for the AI model, so a
 // source already below that gives the model less detail than it expects; a
 // very narrow short side usually means a cropped sliver or a screenshot strip.
@@ -63,7 +63,7 @@ export async function processImageForUpload(
   const { maxWidth = 2048, maxHeight = 2048, compress = 0.85 } = options ?? {};
 
   // ImageManipulator is unreliable with remote http(s) URIs on iOS (it can throw
-  // outright), which broke animating a try-on result via "Make Video" — the
+  // outright), which broke animating a creation result via "Make Video" — the
   // source there is a presigned S3 URL, not a local file. Download remote URIs
   // to a local cache file first; local file://content:// URIs pass straight
   // through unchanged. The temp file is cleaned up in `finally`.
@@ -151,7 +151,7 @@ export async function downloadImageToGallery(
     }
 
     // Generate filename
-    const name = filename ?? `TryOn_${Date.now()}.jpg`;
+    const name = filename ?? `Transform_${Date.now()}.jpg`;
     const fileUri = FileSystem.cacheDirectory + name;
 
     // Download the image
@@ -218,7 +218,7 @@ export async function downloadMultipleImages(
     for (const image of images) {
       const result = await downloadImageToGallery(
         image.url,
-        `TryOn_${image.label.replace(/\s/g, '')}_${Date.now()}.jpg`,
+        `Transform_${image.label.replace(/\s/g, '')}_${Date.now()}.jpg`,
       );
       if (result.success) savedCount++;
     }
@@ -252,7 +252,7 @@ export async function downloadMultipleImages(
  */
 export async function shareImage(imageUrl: string): Promise<void> {
   try {
-    const filename = `TryOn_${Date.now()}.jpg`;
+    const filename = `Transform_${Date.now()}.jpg`;
     const fileUri = FileSystem.cacheDirectory + filename;
 
     // Download to cache first
@@ -267,7 +267,7 @@ export async function shareImage(imageUrl: string): Promise<void> {
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(downloadResult.uri, {
         mimeType: 'image/jpeg',
-        dialogTitle: 'Share Try-On Result',
+        dialogTitle: 'Share Creation Result',
       });
     } else {
       Alert.alert('Error', 'Sharing is not available on this device');

@@ -30,7 +30,7 @@ interface AdminUser {
   verified: boolean;
   tier: AdminTier;
   credits: number;
-  tryOnCount?: number;
+  creationCount?: number;
   createdAt: string;
 }
 

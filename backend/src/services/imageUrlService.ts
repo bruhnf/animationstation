@@ -31,46 +31,40 @@ export async function presignUserPhotos<
   return { ...user, avatarUrl, fullBodyUrl, mediumBodyUrl };
 }
 
-export async function presignTryOnJob<
+export async function presignCreation<
   T extends {
-    clothingPhoto1Url?: string | null;
-    clothingPhoto2Url?: string | null;
-    bodyPhotoUrl?: string | null;
-    resultFullBodyUrl?: string | null;
-    resultMediumUrl?: string | null;
+    refImage1Url?: string | null;
+    refImage2Url?: string | null;
+    sourceImageUrl?: string | null;
+    resultImageUrl?: string | null;
+    resultImage2Url?: string | null;
     videoUrl?: string | null;
   },
 >(job: T): Promise<T> {
-  const [
-    clothingPhoto1Url,
-    clothingPhoto2Url,
-    bodyPhotoUrl,
-    resultFullBodyUrl,
-    resultMediumUrl,
-    videoUrl,
-  ] = await Promise.all([
-    presignMaybe(job.clothingPhoto1Url),
-    presignMaybe(job.clothingPhoto2Url),
-    presignMaybe(job.bodyPhotoUrl),
-    presignMaybe(job.resultFullBodyUrl),
-    presignMaybe(job.resultMediumUrl),
-    presignMaybe(job.videoUrl),
-  ]);
+  const [refImage1Url, refImage2Url, sourceImageUrl, resultImageUrl, resultImage2Url, videoUrl] =
+    await Promise.all([
+      presignMaybe(job.refImage1Url),
+      presignMaybe(job.refImage2Url),
+      presignMaybe(job.sourceImageUrl),
+      presignMaybe(job.resultImageUrl),
+      presignMaybe(job.resultImage2Url),
+      presignMaybe(job.videoUrl),
+    ]);
   return {
     ...job,
-    clothingPhoto1Url,
-    clothingPhoto2Url,
-    bodyPhotoUrl,
-    resultFullBodyUrl,
-    resultMediumUrl,
+    refImage1Url,
+    refImage2Url,
+    sourceImageUrl,
+    resultImageUrl,
+    resultImage2Url,
     ...(job.videoUrl !== undefined ? { videoUrl } : {}),
   };
 }
 
-export async function presignTryOnJobs<T extends Parameters<typeof presignTryOnJob>[0]>(
+export async function presignCreations<T extends Parameters<typeof presignCreation>[0]>(
   jobs: T[],
 ): Promise<T[]> {
-  return Promise.all(jobs.map((j) => presignTryOnJob(j)));
+  return Promise.all(jobs.map((j) => presignCreation(j)));
 }
 
 export async function presignAvatarOnly<T extends { avatarUrl?: string | null }>(

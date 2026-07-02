@@ -1,8 +1,8 @@
 {
-  "name": "tryon-monorepo",
+  "name": "animationstation",
   "private": true,
   "version": "0.0.0",
-  "description": "Root scripts for the TryOn monorepo. Backend and frontend each have their own package.json under their respective folders.",
+  "description": "Root scripts for the AnimationStation monorepo. Backend and frontend each have their own package.json under their respective folders.",
   "scripts": {
     "build:docs": "node scripts/build-docs.js",
     "format": "prettier --write \"backend/src/**/*.ts\" \"frontend/**/*.{ts,tsx}\" \"*.{js,json}\" \".github/**/*.yml\"",

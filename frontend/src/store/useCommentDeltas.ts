@@ -3,7 +3,7 @@ import { create } from 'zustand';
 /**
  * Tracks comment-count deltas that have happened in the current session but
  * haven't been reflected in cached feed data yet (typically because the
- * comment was posted on `TryOnCommentsScreen` after `HomeScreen` already
+ * comment was posted on `CommentsScreen` after `HomeScreen` already
  * fetched its feed).
  *
  * Pattern:

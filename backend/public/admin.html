@@ -284,16 +284,16 @@
     .col-resize-handle:hover, .col-resize-handle.dragging {
       background: rgba(255, 255, 255, 0.25);
     }
-    /* User-detail Try-On Sessions gallery */
+    /* User-detail Creation Sessions gallery */
     #userModal .modal { max-width: 880px; }
-    .tryon-session {
+    .creation-session {
       border: 1px solid #333;
       border-radius: 10px;
       padding: 12px;
       margin-bottom: 12px;
       background: #0f0f0f;
     }
-    .tryon-session-head {
+    .creation-session-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -303,9 +303,9 @@
       color: #888;
       font-size: 0.8rem;
     }
-    .tryon-photos { display: flex; gap: 10px; flex-wrap: wrap; }
-    .tryon-photo { width: 124px; }
-    .tryon-photo .ph-label {
+    .creation-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+    .creation-photo { width: 124px; }
+    .creation-photo .ph-label {
       color: #666;
       font-size: 0.68rem;
       text-transform: uppercase;
@@ -315,7 +315,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .tryon-photo img {
+    .creation-photo img {
       width: 124px;
       height: 165px;
       object-fit: cover;
@@ -325,7 +325,7 @@
       cursor: zoom-in;
       display: block;
     }
-    .tryon-photo .ph-missing {
+    .creation-photo .ph-missing {
       width: 124px;
       height: 165px;
       display: flex;
@@ -382,7 +382,7 @@
         <button class="active" onclick="showTab('stats')">Dashboard</button>
         <button onclick="showTab('diagnostics')">🩺 Diagnostics</button>
         <button onclick="showTab('users')">Users</button>
-        <button onclick="showTab('jobs')">Try-On Jobs</button>
+        <button onclick="showTab('jobs')">Creation Jobs</button>
         <button onclick="showTab('security')">Security</button>
         <button onclick="showTab('vulnerabilities')">Vulnerabilities</button>
         <button onclick="showTab('storage')">Storage</button>
@@ -398,7 +398,7 @@
           </div>
           <div class="stat-card">
             <div class="value" id="totalJobs">-</div>
-            <div class="label">Total Try-Ons</div>
+            <div class="label">Total Creations</div>
           </div>
           <div class="stat-card">
             <div class="value" id="completedJobs">-</div>
@@ -466,7 +466,7 @@
                 <th>Tier</th>
                 <th>Subscription</th>
                 <th>Credits</th>
-                <th>Try-Ons</th>
+                <th>Creations</th>
                 <th>AI Consent</th>
                 <th>Created</th>
                 <th>Actions</th>
@@ -480,7 +480,7 @@
       <!-- Jobs Tab -->
       <div id="jobs-tab" style="display: none;">
         <div class="section">
-          <h2>Recent Try-On Jobs</h2>
+          <h2>Recent Creation Jobs</h2>
           <!-- Search / filter / bulk-action bar -->
           <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center;">
             <input type="text" id="jobSearch" placeholder="Search username or job ID…"
@@ -669,8 +669,8 @@
           <button class="btn btn-danger" id="deleteOrphansBtn" style="display:none;" onclick="deleteOrphans()">Delete Orphans</button>
         </div>
         <p style="color: #888; margin-bottom: 20px;">
-          Full reconciliation of the TryOn S3 prefixes (body-photos, clothing-photos, tryon-results) against the database:
-          any object no User or TryOnJob row references is orphaned — leftovers of deleted users <em>and</em> of deleted jobs / replaced photos
+          Full reconciliation of the Creation S3 prefixes (source-images, ref-images, results) against the database:
+          any object no User or Creation row references is orphaned — leftovers of deleted users <em>and</em> of deleted jobs / replaced photos
           belonging to live accounts. Objects uploaded in the last hour are ignored (in-flight uploads).
           The weekly automated scan emails you if any are found. Run "Scan Now" to check immediately.
         </p>
@@ -705,7 +705,7 @@
           <p style="color: #888; margin-bottom: 20px;">
             Number of free credits granted to a brand-new guest account the first time someone
             opens the app on a device (before they sign up). Set to 0 to give guests no free
-            try-ons. Does not affect existing guests — only applies to newly created guest sessions.
+            creations. Does not affect existing guests — only applies to newly created guest sessions.
           </p>
           <div class="form-group" style="align-items: center;">
             <input type="number" id="guestCreditGrant" min="0" step="1" style="max-width: 160px;">
@@ -767,7 +767,7 @@
           <h2>Video Credit Cost</h2>
           <p style="color: #888; margin-bottom: 20px;">
             Credits charged to generate one AI video (image-to-video). Video costs more to
-            generate than a still image, so this defaults higher than a try-on's 1 credit.
+            generate than a still image, so this defaults higher than a creation's 1 credit.
             Minimum 1. Takes effect immediately.
           </p>
           <div class="form-group" style="align-items: center;">
@@ -779,10 +779,10 @@
         </div>
 
         <div class="section">
-          <h2>Try-On Throttle (Soft Queue)</h2>
+          <h2>Creation Throttle (Soft Queue)</h2>
           <p style="color: #888; margin-bottom: 12px;">
-            Paces rapid-fire try-on submissions so a burst doesn't spike AI cost — it never
-            rejects a try-on, it just places the extra ones in a short queue. Each user gets a
+            Paces rapid-fire creation submissions so a burst doesn't spike AI cost — it never
+            rejects a creation, it just places the extra ones in a short queue. Each user gets a
             <strong>free burst</strong> (no wait) within the rolling window; past that, each
             further submission steps down the <strong>delay ladder</strong>. Higher tiers get a
             bigger burst (faster queues for subscribers). Buying credits / subscribing instantly
@@ -1484,7 +1484,7 @@
               ${u.credits}
               <button class="btn btn-secondary" style="margin-left: 5px; padding: 2px 8px;" onclick="openCreditsModal('${u.id}', '${u.username}', ${u.credits})">±</button>
             </td>
-            <td style="text-align:right;font-family:monospace;" title="Lifetime successful try-ons">${u.tryOnCount ?? 0}</td>
+            <td style="text-align:right;font-family:monospace;" title="Lifetime successful creations">${u.creationCount ?? 0}</td>
             <td>
               ${u.aiProcessingConsentAt
                 ? `<span class="badge badge-success" title="${new Date(u.aiProcessingConsentAt).toLocaleString()}">Granted ${new Date(u.aiProcessingConsentAt).toLocaleDateString()}</span>`
@@ -1571,15 +1571,15 @@
           }[j.status] || 'badge-muted';
 
           let clothingLinks = '';
-          if (j.clothingPhoto1Url) {
-            clothingLinks += `<a href="${j.clothingPhoto1Url}" target="_blank" class="btn btn-primary" style="padding: 2px 8px;">Clothing</a> `;
+          if (j.refImage1Url) {
+            clothingLinks += `<a href="${j.refImage1Url}" target="_blank" class="btn btn-primary" style="padding: 2px 8px;">Clothing</a> `;
           }
           let resultLinks = '';
-          if (j.resultFullBodyUrl) {
-            resultLinks += `<a href="${j.resultFullBodyUrl}" target="_blank" class="btn btn-secondary" style="padding: 2px 8px;">Full</a> `;
+          if (j.resultImageUrl) {
+            resultLinks += `<a href="${j.resultImageUrl}" target="_blank" class="btn btn-secondary" style="padding: 2px 8px;">Full</a> `;
           }
-          if (j.resultMediumUrl) {
-            resultLinks += `<a href="${j.resultMediumUrl}" target="_blank" class="btn btn-secondary" style="padding: 2px 8px;">Medium</a> `;
+          if (j.resultImage2Url) {
+            resultLinks += `<a href="${j.resultImage2Url}" target="_blank" class="btn btn-secondary" style="padding: 2px 8px;">Medium</a> `;
           }
 
           const creditsDisplay = j.creditsAtTime != null ? j.creditsAtTime : '—';
@@ -1905,7 +1905,7 @@
           <div class="user-field"><span class="field-label">Tier:</span><span class="field-value">${user.tier}</span></div>
           <div class="user-field"><span class="field-label">Subscription:</span><span class="field-value" id="subscriptionDetail-${user.id}">${renderSubscriptionDetail(user.subscriptionStatus, user.id, user.applePurchaseCount)}</span></div>
           <div class="user-field"><span class="field-label">Credits:</span><span class="field-value">${user.credits}</span></div>
-          <div class="user-field"><span class="field-label">Lifetime Try-Ons:</span><span class="field-value">${user.tryOnCount ?? 0}</span></div>
+          <div class="user-field"><span class="field-label">Lifetime Creations:</span><span class="field-value">${user.creationCount ?? 0}</span></div>
           <div class="user-field"><span class="field-label">Moderation Blocks:</span><span class="field-value">${(user.moderationBlockCount ?? 0) > 0 ? `<span class="badge badge-danger">⚠ ${user.moderationBlockCount}</span> &nbsp;last ${user.lastModerationBlockAt ? new Date(user.lastModerationBlockAt).toLocaleString() : '—'}` : '0'}</span></div>
           <div class="user-field"><span class="field-label">AI Processing Consent:</span><span class="field-value">${user.aiProcessingConsentAt ? '✓ Granted ' + new Date(user.aiProcessingConsentAt).toLocaleString() : '✗ Not granted'}</span></div>
           <div class="user-field"><span class="field-label">Bio:</span><span class="field-value">${esc(user.bio || '(none)')}</span></div>
@@ -1921,9 +1921,9 @@
           <div class="user-field"><span class="field-label">Updated:</span><span class="field-value">${user.updatedAt ? new Date(user.updatedAt).toLocaleString() : '-'}</span></div>
           ${locationsHtml}
           <h3 style="color: #888; margin-top: 20px; margin-bottom: 10px; font-size: 0.9rem; text-transform: uppercase;">
-            Try-On Sessions <span id="userJobsCount" style="color:#555; text-transform:none;"></span>
+            Creation Sessions <span id="userJobsCount" style="color:#555; text-transform:none;"></span>
           </h3>
-          <div id="userJobsGallery"><p style="color:#666;">Loading try-on sessions…</p></div>
+          <div id="userJobsGallery"><p style="color:#666;">Loading creation sessions…</p></div>
           <div style="text-align:center; margin-top: 8px;">
             <button class="btn btn-secondary" id="userJobsMoreBtn" style="display:none;" onclick="loadUserJobs()">Show more</button>
           </div>
@@ -1938,23 +1938,23 @@
       }
     }
 
-    // ===== Per-user Try-On Sessions gallery (inside the user-detail modal) =====
+    // ===== Per-user Creation Sessions gallery (inside the user-detail modal) =====
     // Each session shows every photo involved: the body photo used as input,
     // the clothing photo(s), and the generated result(s).
     let userJobsState = { userId: null, skip: 0, total: 0 };
     const USER_JOBS_PAGE = 5;
 
-    function tryOnPhoto(label, url) {
+    function jobPhoto(label, url) {
       if (!url) {
-        return `<div class="tryon-photo"><div class="ph-label">${label}</div><div class="ph-missing">missing</div></div>`;
+        return `<div class="creation-photo"><div class="ph-label">${label}</div><div class="ph-missing">missing</div></div>`;
       }
       const u = esc(url);
-      return `<div class="tryon-photo"><div class="ph-label">${label}</div>
+      return `<div class="creation-photo"><div class="ph-label">${label}</div>
         <a href="${u}" target="_blank" title="Open full size"><img src="${u}" loading="lazy" alt="${label}"
            onerror="this.outerHTML='&lt;div class=&quot;ph-missing&quot;&gt;failed to load&lt;/div&gt;'"></a></div>`;
     }
 
-    function renderTryOnSession(j) {
+    function renderCreationSession(j) {
       const statusClass = {
         'COMPLETE': 'badge-success',
         'PROCESSING': 'badge-info',
@@ -1963,16 +1963,16 @@
       }[j.status] || 'badge-muted';
 
       const photos = [
-        tryOnPhoto('Body photo', j.bodyPhotoUrl),
-        tryOnPhoto('Clothing', j.clothingPhoto1Url),
-        j.clothingPhoto2Url ? tryOnPhoto('Clothing 2', j.clothingPhoto2Url) : '',
-        tryOnPhoto('Result · full body', j.resultFullBodyUrl),
-        tryOnPhoto('Result · medium', j.resultMediumUrl),
+        jobPhoto('Source image', j.sourceImageUrl),
+        jobPhoto('Reference 1', j.refImage1Url),
+        j.refImage2Url ? jobPhoto('Reference 2', j.refImage2Url) : '',
+        jobPhoto('Result', j.resultImageUrl),
+        jobPhoto('Result 2', j.resultImage2Url),
       ].join('');
 
       return `
-        <div class="tryon-session">
-          <div class="tryon-session-head">
+        <div class="creation-session">
+          <div class="creation-session-head">
             <span>
               <span class="badge ${statusClass}">${j.status}</span>
               <span class="badge ${j.isPrivate ? 'badge-muted' : 'badge-info'}">${j.isPrivate ? 'Private' : 'Public'}</span>
@@ -1981,7 +1981,7 @@
             <span style="font-family:monospace; font-size:0.7rem; cursor:copy;" title="Click to copy job ID"
                   onclick="navigator.clipboard.writeText('${j.id}')">${j.id}</span>
           </div>
-          <div class="tryon-photos">${photos}</div>
+          <div class="creation-photos">${photos}</div>
           ${j.errorMessage ? `<div style="color:#ffa502; font-size:0.78rem; margin-top:8px;">${esc(j.errorMessage)}</div>` : ''}
         </div>`;
     }
@@ -1999,12 +1999,12 @@
           { headers: { 'X-Admin-Key': apiKey } },
         );
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to load try-on sessions');
+        if (!res.ok) throw new Error(data.error || 'Failed to load creation sessions');
         userJobsState.total = data.total;
         countEl.textContent = data.total ? `(${data.total})` : '';
-        const html = data.jobs.map(renderTryOnSession).join('');
+        const html = data.jobs.map(renderCreationSession).join('');
         if (userJobsState.skip === 0) {
-          galleryEl.innerHTML = html || '<p style="color:#666;">No try-on sessions yet.</p>';
+          galleryEl.innerHTML = html || '<p style="color:#666;">No creation sessions yet.</p>';
         } else {
           galleryEl.insertAdjacentHTML('beforeend', html);
         }
@@ -2012,7 +2012,7 @@
         moreBtn.style.display = userJobsState.skip < userJobsState.total ? 'inline-block' : 'none';
         moreBtn.textContent = `Show more (${userJobsState.total - userJobsState.skip} remaining)`;
       } catch (e) {
-        galleryEl.innerHTML = `<p class="error">Failed to load try-on sessions: ${esc(e.message)}</p>`;
+        galleryEl.innerHTML = `<p class="error">Failed to load creation sessions: ${esc(e.message)}</p>`;
         moreBtn.style.display = 'none';
       }
     }
@@ -2463,9 +2463,9 @@
       html += `<div class="stat-card"><div class="value" style="font-size:1.3rem;">${fmtUptime(sys.uptimeSeconds)}</div><div class="label">Process uptime</div></div>`;
       html += `<div class="stat-card"><div class="value" style="font-size:1.3rem;">${sys.memoryMb.rss}</div><div class="label">RSS (MB)</div></div>`;
       html += `<div class="stat-card"><div class="value" style="font-size:1.3rem;">${sys.memoryMb.heapUsed}/${sys.memoryMb.heapTotal}</div><div class="label">Heap used/total (MB)</div></div>`;
-      const tq = d.queues.find(q => q.name === 'tryon');
+      const tq = d.queues.find(q => q.name === 'transform');
       const tqFailed = tq && tq.counts ? (tq.counts.failed || 0) : '—';
-      html += `<div class="stat-card" style="border-left:3px solid ${tqFailed ? '#ff4757' : '#333'};"><div class="value" style="font-size:1.3rem;">${tqFailed}</div><div class="label">Try-on queue · failed</div></div>`;
+      html += `<div class="stat-card" style="border-left:3px solid ${tqFailed ? '#ff4757' : '#333'};"><div class="value" style="font-size:1.3rem;">${tqFailed}</div><div class="label">Creation queue · failed</div></div>`;
       html += '</div>';
 
       // System
@@ -2522,8 +2522,8 @@
       }
       html += '</div>';
 
-      // Try-on jobs (24h)
-      html += '<div class="section"><h2>Try-on jobs — last 24h</h2>';
+      // Creation jobs (24h)
+      html += '<div class="section"><h2>Creation jobs — last 24h</h2>';
       if (!d.jobs24h.ok) {
         html += `<p class="error">${esc(d.jobs24h.error || 'unavailable')}</p>`;
       } else {

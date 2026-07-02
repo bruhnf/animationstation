@@ -22,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
 import { useConfigStore } from '../store/useConfigStore';
-import { shareTryOn } from '../utils/share';
+import { shareCreation } from '../utils/share';
 import { saveLook, unsaveLook } from '../utils/looks';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams, MainTabParams } from '../navigation';
@@ -107,7 +107,7 @@ export default function HomeScreen() {
         const togglePrivacy = async () => {
           const newVal = !job.isPrivate;
           try {
-            await api.patch(`/tryon/${job.id}/privacy`, { isPrivate: newVal });
+            await api.patch(`/creations/${job.id}/privacy`, { isPrivate: newVal });
             setJobs((prev) =>
               newVal
                 ? prev.filter((j) => j.id !== job.id)
@@ -129,7 +129,7 @@ export default function HomeScreen() {
                 style: 'destructive',
                 onPress: async () => {
                   try {
-                    await api.post('/tryon/bulk-delete', { jobIds: [job.id] });
+                    await api.post('/creations/bulk-delete', { jobIds: [job.id] });
                     setJobs((prev) => prev.filter((j) => j.id !== job.id));
                   } catch {
                     Alert.alert('Error', 'Could not delete. Please try again.');
@@ -142,7 +142,7 @@ export default function HomeScreen() {
 
         const runOwn = (index: number) => {
           if (index === 0) void togglePrivacy();
-          else if (index === 1) void shareTryOn(job.id);
+          else if (index === 1) void shareCreation(job.id);
           else if (index === 2) confirmDelete();
         };
 
@@ -172,7 +172,7 @@ export default function HomeScreen() {
 
       const handleSelection = async (index: number) => {
         if (index === cancelButtonIndex) return;
-        if (index === 0) setReportTarget({ type: 'TRYON_JOB', id: job.id });
+        if (index === 0) setReportTarget({ type: 'CREATION', id: job.id });
         else if (index === 1) setReportTarget({ type: 'USER', id: job.userId });
         else if (index === 2) {
           Alert.alert(
@@ -332,7 +332,7 @@ export default function HomeScreen() {
         onUsernamePress={() => handleUsernamePress(item)}
         onLikePress={() => toggleLike(item)}
         onSavePress={() => handleSavePress(item)}
-        onSharePress={() => shareTryOn(item.id)}
+        onSharePress={() => shareCreation(item.id)}
         onMorePress={() => handleMoreActions(item)}
       />
     ),
@@ -450,7 +450,7 @@ export default function HomeScreen() {
 
       <ReportSheet
         visible={reportTarget !== null}
-        targetType={reportTarget?.type ?? 'TRYON_JOB'}
+        targetType={reportTarget?.type ?? 'CREATION'}
         targetId={reportTarget?.id ?? ''}
         onClose={() => setReportTarget(null)}
       />

@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CONTRIBUTING — TryOn Docs</title>
+<title>CONTRIBUTING — AnimationStation Docs</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="topbar">
-  <a href="index.html" class="brand">TryOn Docs</a>
-  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html">CLAUDE</a><a href="deployment.html">DEPLOYMENT</a><a href="contributing.html" class="active">CONTRIBUTING</a><a href="todos.html">TODOS</a><a href="release-notes.html">RELEASE NOTES</a><a href="testflight-checklist.html">TESTFLIGHT CHECKLIST</a></nav>
+  <a href="index.html" class="brand">AnimationStation Docs</a>
+  <nav class="docnav"><a href="index.html">Index</a><a href="claude.html">CLAUDE</a><a href="deployment.html">DEPLOYMENT</a><a href="contributing.html" class="active">CONTRIBUTING</a></nav>
 </header>
 <div class="layout">
   <aside class="sidebar">
@@ -18,7 +18,7 @@
   </aside>
   <main class="content">
 <h1 id="contributing-git-workflow" tabindex="-1"><a class="header-anchor" href="#contributing-git-workflow" aria-hidden="true">#</a> Contributing — Git Workflow</h1>
-<p>This file is the quick-reference for making changes to the TryOn codebase. It assumes you're a solo developer with a GitHub remote for hosting and review, using a <strong>two-line branch model</strong>: <code>develop</code> (dev) and <code>main</code> (production).</p>
+<p>This file is the quick-reference for making changes to the AnimationStation codebase. It assumes you're a solo developer with a GitHub remote for hosting and review, using a <strong>two-line branch model</strong>: <code>develop</code> (dev) and <code>main</code> (production).</p>
 <blockquote>
 <p><strong>Related docs:</strong></p>
 <ul>
@@ -99,7 +99,7 @@ git push origin main
 <li><strong>Isolation from <code>main</code>'s state.</strong> If <code>main</code> is in App Store review and you don't want any new commits affecting production, branches keep your work staged.</li>
 </ol>
 <blockquote>
-<p><strong>TryOn-specific:</strong> Deploys to Lightsail are <strong>manual</strong> (<code>ssh + git pull + docker compose up</code>). Merging to <code>develop</code> or <code>main</code> does NOT auto-deploy. Feature work branches off <strong><code>develop</code></strong> and merges back into <code>develop</code> (the dev line); <code>main</code> only changes when you promote a verified <code>develop</code>. Neither line reaches a server until you SSH and pull.</p>
+<p><strong>AnimationStation-specific:</strong> Deploys to Lightsail are <strong>manual</strong> (<code>ssh + git pull + docker compose up</code>). Merging to <code>develop</code> or <code>main</code> does NOT auto-deploy. Feature work branches off <strong><code>develop</code></strong> and merges back into <code>develop</code> (the dev line); <code>main</code> only changes when you promote a verified <code>develop</code>. Neither line reaches a server until you SSH and pull.</p>
 </blockquote>
 <blockquote>
 <p><strong>Base-branch note:</strong> the diff/merge commands below are written against <code>main</code> for generality. When you're working a feature off <code>develop</code>, substitute <code>develop</code> for <code>main</code> in the <code>git diff develop...HEAD</code> / <code>git log develop..HEAD</code> comparisons. The promotion step (<code>develop → main</code>) is the one place you really do compare against <code>main</code>.</p>

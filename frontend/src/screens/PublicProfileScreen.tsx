@@ -20,7 +20,7 @@ import api from '../config/api';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams } from '../navigation';
 import FullScreenImageModal, { OriginalImageBadge } from '../components/FullScreenImageModal';
-import { buildTryOnCarousel } from '../utils/tryonCarousel';
+import { buildCreationCarousel } from '../utils/creationCarousel';
 import { requireRealUser } from '../utils/guestGate';
 import ReportSheet, { ReportTargetType } from '../components/ReportSheet';
 import RetryableImage from '../components/RetryableImage';
@@ -35,7 +35,7 @@ interface PublicProfileData {
   lastName?: string;
   bio?: string;
   avatarUrl?: string;
-  tryOnCount: number;
+  creationCount: number;
   followingCount: number;
   followersCount: number;
   likesCount: number;
@@ -45,10 +45,10 @@ interface PublicProfileData {
   viewerHasBlocked?: boolean;
   jobs: {
     id: string;
-    resultFullBodyUrl?: string;
-    resultMediumUrl?: string;
-    clothingPhoto1Url?: string;
-    bodyPhotoUrl?: string;
+    resultImageUrl?: string;
+    resultImage2Url?: string;
+    refImage1Url?: string;
+    sourceImageUrl?: string;
     likesCount: number;
     createdAt: string;
   }[];
@@ -266,7 +266,7 @@ export default function PublicProfileScreen() {
 
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{profile.tryOnCount}</Text>
+            <Text style={styles.statValue}>{profile.creationCount}</Text>
             <Text style={styles.statLabel}>Creations</Text>
           </View>
           <View style={styles.stat}>
@@ -330,7 +330,7 @@ export default function PublicProfileScreen() {
                 scrollEnabled={false}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => {
-                  const slides = buildTryOnCarousel(item);
+                  const slides = buildCreationCarousel(item);
                   if (slides.length === 0) return <View style={styles.gridItem} />;
                   const thumbUrl = slides[0].url;
                   return (

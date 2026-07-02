@@ -40,8 +40,8 @@ router.post('/reports', blockGuests, async (req: Request, res: Response) => {
   }
 
   // Verify target exists.
-  if (targetType === 'TRYON_JOB') {
-    const job = await prisma.tryOnJob.findUnique({ where: { id: targetId }, select: { id: true } });
+  if (targetType === 'CREATION') {
+    const job = await prisma.creation.findUnique({ where: { id: targetId }, select: { id: true } });
     if (!job) {
       res.status(404).json({ error: 'Reported content not found' });
       return;

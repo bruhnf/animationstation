@@ -1,5 +1,5 @@
 {
-  "name": "tryon-frontend",
+  "name": "animationstation-frontend",
   "version": "1.4.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {

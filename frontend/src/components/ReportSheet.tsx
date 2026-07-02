@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 
-export type ReportTargetType = 'TRYON_JOB' | 'USER' | 'COMMENT';
+export type ReportTargetType = 'CREATION' | 'USER' | 'COMMENT';
 export type ReportReason =
   | 'INAPPROPRIATE'
   | 'HARASSMENT'

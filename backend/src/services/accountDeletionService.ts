@@ -7,7 +7,7 @@ const log = createChildLogger('AccountDeletion');
 
 /**
  * Notification types that are meaningless once their ACTOR is gone: "Someone
- * liked your try-on / followed you / liked your comment." The schema's
+ * liked your creation / followed you / liked your comment." The schema's
  * `actor onDelete: SetNull` would otherwise null `actorId` and leave the inbox
  * rendering a useless, un-clickable "Someone" tombstone. We delete these on
  * account deletion instead. Durable types (COMMENT / COMMENT_REPLY) are
@@ -40,9 +40,9 @@ export async function deleteActorOrphanedNotifications(userId: string): Promise<
  * stay in sync.
  *
  * Gathers all S3 keys BEFORE deleting the row — once the User row is gone Prisma
- * cascades the TryOnJob rows and the keys are lost. Deletes the DB row first
+ * cascades the Creation rows and the keys are lost. Deletes the DB row first
  * (cascades clean up Likes, Follows, Comments, CommentLikes, CreditTransactions,
- * ApplePurchases, Notifications, RefreshTokens, UserLocations, TryOnJobs,
+ * ApplePurchases, Notifications, RefreshTokens, UserLocations, Creations,
  * Reports, UserBlocks), then fires async S3 deletes so the account is
  * unreachable even if S3 partially fails. Failures are logged for an orphan
  * sweep rather than blocking deletion.
@@ -57,14 +57,14 @@ export async function deleteUserAndAssets(
       where: { id: userId },
       select: { avatarUrl: true, fullBodyUrl: true, mediumBodyUrl: true },
     }),
-    prisma.tryOnJob.findMany({
+    prisma.creation.findMany({
       where: { userId },
       select: {
-        clothingPhoto1Url: true,
-        clothingPhoto2Url: true,
-        resultFullBodyUrl: true,
-        resultMediumUrl: true,
-        // bodyPhotoUrl points at the same object as user.fullBodyUrl /
+        refImage1Url: true,
+        refImage2Url: true,
+        resultImageUrl: true,
+        resultImage2Url: true,
+        // sourceImageUrl points at the same object as user.fullBodyUrl /
         // mediumBodyUrl — already covered by the user select above.
       },
     }),
@@ -81,10 +81,10 @@ export async function deleteUserAndAssets(
   if (user.fullBodyUrl) s3Keys.add(keyFromUrl(user.fullBodyUrl));
   if (user.mediumBodyUrl) s3Keys.add(keyFromUrl(user.mediumBodyUrl));
   for (const j of jobs) {
-    if (j.clothingPhoto1Url) s3Keys.add(keyFromUrl(j.clothingPhoto1Url));
-    if (j.clothingPhoto2Url) s3Keys.add(keyFromUrl(j.clothingPhoto2Url));
-    if (j.resultFullBodyUrl) s3Keys.add(keyFromUrl(j.resultFullBodyUrl));
-    if (j.resultMediumUrl) s3Keys.add(keyFromUrl(j.resultMediumUrl));
+    if (j.refImage1Url) s3Keys.add(keyFromUrl(j.refImage1Url));
+    if (j.refImage2Url) s3Keys.add(keyFromUrl(j.refImage2Url));
+    if (j.resultImageUrl) s3Keys.add(keyFromUrl(j.resultImageUrl));
+    if (j.resultImage2Url) s3Keys.add(keyFromUrl(j.resultImage2Url));
   }
   for (const c of closetItems) {
     s3Keys.add(keyFromUrl(c.imageUrl));

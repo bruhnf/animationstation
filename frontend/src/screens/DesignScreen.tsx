@@ -149,11 +149,11 @@ export default function DesignScreen() {
   }
 
   // Keep + hand off to the Video screen with this creation pre-selected.
-  function handleTryOn() {
+  function handleTransform() {
     if (!result) return;
     // Seed the Video screen's source box with this image. VideoScreen consumes
     // `useVideoSourceStore` on focus — writing the closet store + navigating to
-    // the (body-photo-gated) TryOn screen dropped the image and dead-ended.
+    // the (body-photo-gated) Transform screen dropped the image and dead-ended.
     setPendingSource({ imageUrl: result.imageUrl });
     setResult(null);
     setDescription('');
@@ -205,7 +205,12 @@ export default function DesignScreen() {
               onPress={handleKeep}
             />
             <View style={{ height: Spacing.sm }} />
-            <AppButton title="Make a Video Now" variant="outline" fullWidth onPress={handleTryOn} />
+            <AppButton
+              title="Make a Video Now"
+              variant="outline"
+              fullWidth
+              onPress={handleTransform}
+            />
             <TouchableOpacity style={styles.rejectBtn} onPress={handleReject} hitSlop={8}>
               <Ionicons name="trash-outline" size={16} color={Colors.danger} />
               <Text style={styles.rejectText}>Reject this image</Text>
