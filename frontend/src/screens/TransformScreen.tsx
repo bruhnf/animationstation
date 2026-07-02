@@ -660,8 +660,8 @@ function ResultView({ job, onReset }: { job: Creation; onReset: () => void }) {
   }
 
   const images = [
-    job.resultImageUrl && { label: 'Full Body', url: job.resultImageUrl },
-    job.resultImage2Url && { label: 'Waist Up', url: job.resultImage2Url },
+    job.resultImageUrl && { label: 'Result', url: job.resultImageUrl },
+    job.resultImage2Url && { label: 'Variation', url: job.resultImage2Url },
   ].filter(Boolean) as Array<{ label: string; url: string }>;
 
   const allUrls = images.map((img) => img.url);

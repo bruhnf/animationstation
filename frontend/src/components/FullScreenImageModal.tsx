@@ -75,7 +75,7 @@ export default function FullScreenImageModal({
     }
   };
 
-  const effectiveLabels = labels ?? ['Full Body', 'Medium'];
+  const effectiveLabels = labels ?? ['Result', 'Variation'];
 
   return (
     <Modal

@@ -76,7 +76,7 @@ export default function CreationDetailModal({
 
   // Build the same 4-slide carousel used everywhere else (HomeScreen feed
   // taps, PublicProfileScreen). Slots that aren't present are dropped.
-  // Order: Full Body (AI) → Medium (AI) → Original Clothing → Original Body.
+  // Order: Result (AI) → Variation (AI) → Original reference → Original photo.
   const slides = buildCreationCarousel(job);
   const aiSlides = slides.filter((s) => s.aiGenerated);
 

@@ -23,8 +23,8 @@ export interface CarouselSource {
 
 /**
  * Build the canonical 4-slide creation carousel. Order is fixed:
- *   1. Full body (AI result)
- *   2. Medium (AI result)
+ *   1. Result (AI result)
+ *   2. Variation (second AI result, when present)
  *   3. Original reference image
  *   4. Original photo used as input
  *
@@ -43,14 +43,14 @@ export function buildCreationCarousel(source: CarouselSource): CarouselSlide[] {
     {
       url: source.resultImageUrl,
       aiGenerated: true,
-      label: 'Full Body',
+      label: 'Result',
       badge: null,
       slot: 'full',
     },
     {
       url: source.resultImage2Url,
       aiGenerated: true,
-      label: 'Medium',
+      label: 'Variation',
       badge: null,
       slot: 'medium',
     },
