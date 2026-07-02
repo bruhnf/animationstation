@@ -16,13 +16,15 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../config/api';
 import { PublicUser } from '../types';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
-import { RootStackParams } from '../navigation';
+import { RootStackParams, MainTabParams } from '../navigation';
 import { requireRealUser } from '../utils/guestGate';
 import RetryableImage from '../components/RetryableImage';
 import CreditDisplay from '../components/CreditDisplay';
 
 type Tab = 'following' | 'followers';
-type FriendsRouteProp = RouteProp<RootStackParams, 'Friends'>;
+// Friends is a bottom tab; nav stays typed as the root stack so it can push
+// PublicProfile / Purchase, but the ROUTE (its params) lives on the tab params.
+type FriendsRouteProp = RouteProp<MainTabParams, 'Friends'>;
 
 export default function FriendsScreen() {
   const insets = useSafeAreaInsets();
@@ -41,6 +43,14 @@ export default function FriendsScreen() {
   useEffect(() => {
     loadFriends();
   }, []);
+
+  // As a persistent tab this screen stays mounted, so react to param changes
+  // from links (Profile's Following/Followers stats, the feed's search icon)
+  // rather than only reading them on first mount.
+  useEffect(() => {
+    if (route.params?.initialTab) setTab(route.params.initialTab);
+    if (route.params?.openSearch) setSearchMode(true);
+  }, [route.params?.initialTab, route.params?.openSearch]);
 
   async function loadFriends() {
     setLoading(true);

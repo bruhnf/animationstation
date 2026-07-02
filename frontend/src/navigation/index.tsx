@@ -58,9 +58,11 @@ export type MainTabParams = {
   // creations. (The neon hub that used to live here is now the admin-toggleable
   // welcome splash.)
   Home: undefined;
-  Library: { picker?: boolean } | undefined;
+  // Friends tab — following / followers lists + user search. Optional params let
+  // a link (Profile stats, feed search icon) open a specific tab / focus search.
+  Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean } | undefined;
   // Center FAB → the Create hub, the single landing spot for every creation
-  // feature (Image, Design, Video, Clean-Up, Library).
+  // feature (Text-to-Image, Image-to-Video, Transform, Clean-Up).
   Create: undefined;
   Inbox: undefined;
   Profile: undefined;
@@ -85,7 +87,6 @@ export type RootStackParams = {
   EditProfile: undefined;
   AdminConsole: undefined;
   Purchase: undefined;
-  Friends: { initialTab?: 'following' | 'followers'; openSearch?: boolean };
   PublicProfile: { username: string };
   BlockedUsers: undefined;
   ChangePassword: undefined;
@@ -208,10 +209,10 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Library"
-        component={ClosetScreen}
+        name="Friends"
+        component={FriendsScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <Ionicons name="images" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -343,13 +344,6 @@ export default function AppNavigator() {
         <Stack.Screen
           name="TryOnComments"
           component={TryOnCommentsScreen}
-          options={{ presentation: 'card', headerShown: false }}
-        />
-        {/* Friends (following/followers) lives off the tab bar — reached from the
-            feed and Profile links. Inbox is a tab again (see MainTabs). */}
-        <Stack.Screen
-          name="Friends"
-          component={FriendsScreen}
           options={{ presentation: 'card', headerShown: false }}
         />
         <Stack.Screen

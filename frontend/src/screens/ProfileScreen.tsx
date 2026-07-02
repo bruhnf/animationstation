@@ -289,14 +289,18 @@ export default function ProfileScreen() {
         <View style={styles.statsRow}>
           <TouchableOpacity
             style={styles.stat}
-            onPress={() => navigation.navigate('Friends', { initialTab: 'following' })}
+            onPress={() =>
+              navigation.navigate('Main', { screen: 'Friends', params: { initialTab: 'following' } })
+            }
           >
             <Text style={styles.statValue}>{user.followingCount}</Text>
             <Text style={styles.statLabel}>Following</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.stat}
-            onPress={() => navigation.navigate('Friends', { initialTab: 'followers' })}
+            onPress={() =>
+              navigation.navigate('Main', { screen: 'Friends', params: { initialTab: 'followers' } })
+            }
           >
             <Text style={styles.statValue}>{user.followersCount}</Text>
             <Text style={styles.statLabel}>Followers</Text>

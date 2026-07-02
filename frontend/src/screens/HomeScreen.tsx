@@ -371,7 +371,10 @@ export default function HomeScreen() {
         rightComponent={
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate('Friends', { initialTab: 'following', openSearch: true })
+              navigation.navigate('Main', {
+                screen: 'Friends',
+                params: { initialTab: 'following', openSearch: true },
+              })
             }
             style={styles.searchIconButton}
             accessibilityLabel="Search users"

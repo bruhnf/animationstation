@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '../store/useUserStore';
-import { useConfigStore } from '../store/useConfigStore';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams } from '../navigation';
 import FeatureCard from '../components/ui/FeatureCard';
@@ -23,7 +22,6 @@ export default function CreateHubScreen() {
   const user = useUserStore((s) => s.user);
   const isGuest = user?.isGuest === true;
   const credits = user?.credits ?? 0;
-  const videoCost = useConfigStore((s) => s.videoCreditCost);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,8 +51,8 @@ export default function CreateHubScreen() {
         <Text style={styles.sectionLabel}>Most loved</Text>
         <FeatureCard
           icon="sparkles"
-          title="Generate from a Prompt"
-          subtitle="Describe anything and let AI create an image for you."
+          title="Text-to-Image"
+          subtitle="Generate an image from a prompt. Describe anything and let AI create an image for you."
           highlight
           tag="Popular"
           onPress={() => navigation.navigate('Design')}
@@ -62,8 +60,8 @@ export default function CreateHubScreen() {
         <View style={{ height: Spacing.md }} />
         <FeatureCard
           icon="videocam"
-          title="Make a Video"
-          subtitle={`Animate an image into a short AI clip · ${videoCost} credits`}
+          title="Image-to-Video"
+          subtitle="Make a Video. Animate an image into a short AI clip. Use a second image as a reference."
           highlight
           onPress={() => navigation.navigate('Video')}
         />
@@ -80,17 +78,9 @@ export default function CreateHubScreen() {
         <FeatureCard
           icon="image"
           title="Clean Up a Photo"
-          subtitle="Turn a messy screenshot into a clean, polished image."
+          subtitle="Remove the background. Turn a messy photo into a clean polished image."
           highlight
           onPress={() => navigation.navigate('CleanUp')}
-        />
-        <View style={{ height: Spacing.md }} />
-        <FeatureCard
-          icon="images"
-          title="My Library"
-          subtitle="Your saved creations, ready to revisit anytime."
-          highlight
-          onPress={() => navigation.navigate('Closet', undefined)}
         />
 
         {isGuest ? (
