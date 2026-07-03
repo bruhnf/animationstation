@@ -27,6 +27,8 @@ import AiConsentModal from '../components/AiConsentModal';
 import AiGeneratedBadge from '../components/AiGeneratedBadge';
 import VideoPlayerModal from '../components/VideoPlayerModal';
 import RetryableImage from '../components/RetryableImage';
+import { downloadImageToGallery } from '../utils/imageUtils';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { Creation } from '../types';
 
 // ── Unified Create screen (Grok-Imagine-style) ────────────────────────────────
@@ -38,6 +40,20 @@ import { Creation } from '../types';
 // Home feed and the user's Profile grid automatically.
 
 type Mode = 'image' | 'video';
+
+// Inputs captured at submit time so "Regenerate" can re-run the exact same
+// request even after the composer is cleared on completion.
+type SubmitInput = {
+  mode: Mode;
+  prompt: string;
+  attached: string[];
+  aspect: string;
+  durationSec: number;
+};
+
+// Max characters allowed in the prompt box. Kept in lockstep with the backend
+// (TRANSFORM_PROMPT_MAX_LENGTH / MOTION_PROMPT_MAX) and the DB VARCHAR width.
+const PROMPT_MAX = 1000;
 
 const ASPECTS: Array<{ value: string; label: string; hint: string }> = [
   { value: '2:3', label: '2:3', hint: 'Tall' },
@@ -67,13 +83,31 @@ export default function CreateScreen() {
   const [activeJob, setActiveJob] = useState<Creation | null>(null);
   const [queueSecondsLeft, setQueueSecondsLeft] = useState<number | null>(null);
   const [videoPlayerUri, setVideoPlayerUri] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastSubmitRef = useRef<SubmitInput | null>(null);
 
   useEffect(() => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
   }, []);
+
+  // Reset the preview + composer whenever the signed-in user changes — including
+  // logout → guest → a DIFFERENT login on the same device. Create is a
+  // persistent tab, so without this a new user would still see the previous
+  // user's generated image/video in the preview window.
+  useEffect(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    setActiveJob(null);
+    setPrompt('');
+    setAttached([]);
+    setVideoPlayerUri(null);
+    lastSubmitRef.current = null;
+  }, [user?.id]);
 
   // Live "starts in M:SS" countdown while the soft queue delays the job.
   useEffect(() => {
@@ -174,13 +208,16 @@ export default function CreateScreen() {
     await performSubmit();
   }
 
-  async function performSubmit() {
+  async function performSubmit(input?: SubmitInput) {
+    // Regenerate passes the captured inputs; a normal submit uses live state.
+    const p: SubmitInput = input ?? { mode, prompt, attached, aspect, durationSec };
+    lastSubmitRef.current = p;
     setSubmitting(true);
     setActiveJob(null);
     try {
       const formData = new FormData();
-      const fileField = mode === 'video' ? 'photo' : 'photos';
-      for (const uri of attached) {
+      const fileField = p.mode === 'video' ? 'photo' : 'photos';
+      for (const uri of p.attached) {
         const processed = await processImageForUpload(uri, {
           maxWidth: 1536,
           maxHeight: 2048,
@@ -188,15 +225,15 @@ export default function CreateScreen() {
         });
         formData.append(fileField, processed as unknown as Blob);
       }
-      formData.append('aspectRatio', aspect);
-      if (mode === 'video') {
-        formData.append('motionPrompt', prompt.trim());
-        formData.append('durationSec', String(durationSec));
+      formData.append('aspectRatio', p.aspect);
+      if (p.mode === 'video') {
+        formData.append('motionPrompt', p.prompt.trim());
+        formData.append('durationSec', String(p.durationSec));
       } else {
-        formData.append('prompt', prompt.trim());
+        formData.append('prompt', p.prompt.trim());
       }
 
-      const endpoint = mode === 'video' ? '/video' : '/transform';
+      const endpoint = p.mode === 'video' ? '/video' : '/transform';
       const { data } = await api.post<{
         jobId: string;
         status: string;
@@ -207,7 +244,7 @@ export default function CreateScreen() {
       setActiveJob({
         id: data.jobId,
         status: 'PENDING',
-        kind: mode === 'video' ? 'VIDEO' : 'IMAGE',
+        kind: p.mode === 'video' ? 'VIDEO' : 'IMAGE',
         scheduledStartAt: data.scheduledStartAt ?? null,
       } as Creation);
       void refreshUser();
@@ -254,12 +291,58 @@ export default function CreateScreen() {
     }, 3000);
   }
 
+  // ── Actions on a finished result ────────────────────────────────────────────
+  async function handleSaveToPhotos() {
+    const job = activeJob;
+    if (!job || saving) return;
+    const url = job.kind === 'VIDEO' ? job.videoUrl : (job.resultImageUrl ?? job.resultImage2Url);
+    if (!url) return;
+    setSaving(true);
+    try {
+      const ext = job.kind === 'VIDEO' ? 'mp4' : 'jpg';
+      const res = await downloadImageToGallery(url, `AnimationStation_${Date.now()}.${ext}`);
+      Alert.alert(res.success ? 'Saved' : 'Could not save', res.message);
+    } catch {
+      Alert.alert('Could not save', 'Something went wrong saving to your photos.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Hand the finished image off to the video generator (VideoScreen reads the
+  // pending source on focus). Images only — you can't animate a video.
+  function handleMakeVideo() {
+    const url = activeJob?.resultImageUrl ?? activeJob?.resultImage2Url;
+    if (!url) return;
+    if (!requireRealUser('Create a free account to make videos.')) return;
+    useVideoSourceStore.getState().setPendingSource({ imageUrl: url });
+    navigation.navigate('Video');
+  }
+
+  function handleRegenerate() {
+    if (busy || !lastSubmitRef.current) return;
+    void performSubmit(lastSubmitRef.current);
+  }
+
+  function handleClear() {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    setActiveJob(null);
+    setVideoPlayerUri(null);
+  }
+
   const aspectMeta = ASPECTS.find((a) => a.value === aspect) ?? ASPECTS[0];
 
   function renderPreview() {
     if (activeJob?.status === 'COMPLETE') {
-      if (activeJob.kind === 'VIDEO' && activeJob.videoUrl) {
-        return (
+      const isVideo = activeJob.kind === 'VIDEO';
+      const imageUrl = activeJob.resultImageUrl ?? activeJob.resultImage2Url;
+
+      let media: React.ReactNode = null;
+      if (isVideo && activeJob.videoUrl) {
+        media = (
           <TouchableOpacity
             style={styles.previewMedia}
             onPress={() => setVideoPlayerUri(activeJob.videoUrl!)}
@@ -276,13 +359,41 @@ export default function CreateScreen() {
             <AiGeneratedBadge placement="center" />
           </TouchableOpacity>
         );
-      }
-      const url = activeJob.resultImageUrl ?? activeJob.resultImage2Url;
-      if (url) {
-        return (
+      } else if (imageUrl) {
+        media = (
           <View style={styles.previewMedia}>
-            <RetryableImage uri={url} style={styles.previewImage} />
+            <RetryableImage uri={imageUrl} style={styles.previewImage} />
             <AiGeneratedBadge />
+          </View>
+        );
+      }
+
+      if (media) {
+        return (
+          <View style={styles.resultWrap}>
+            {media}
+            <View style={styles.actionsRow}>
+              <ActionButton
+                icon="download-outline"
+                label={saving ? 'Saving…' : 'Save'}
+                onPress={handleSaveToPhotos}
+                disabled={saving}
+              />
+              {!isVideo && (
+                <ActionButton
+                  icon="videocam-outline"
+                  label="Make Video"
+                  onPress={handleMakeVideo}
+                />
+              )}
+              <ActionButton
+                icon="refresh-outline"
+                label="Regenerate"
+                onPress={handleRegenerate}
+                disabled={busy || !lastSubmitRef.current}
+              />
+              <ActionButton icon="trash-outline" label="Clear" onPress={handleClear} />
+            </View>
           </View>
         );
       }
@@ -351,7 +462,7 @@ export default function CreateScreen() {
               value={prompt}
               onChangeText={setPrompt}
               multiline
-              maxLength={300}
+              maxLength={PROMPT_MAX}
               editable={!busy}
             />
           </View>
@@ -480,6 +591,30 @@ export default function CreateScreen() {
   );
 }
 
+function ActionButton({
+  icon,
+  label,
+  onPress,
+  disabled,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <TouchableOpacity
+      style={[styles.actionButton, disabled && styles.actionDisabled]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityLabel={label}
+    >
+      <Ionicons name={icon} size={22} color={Colors.textPrimary} />
+      <Text style={styles.actionLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
@@ -517,6 +652,20 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  resultWrap: { width: '100%', alignItems: 'center', gap: Spacing.md },
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.lg,
+  },
+  actionButton: { alignItems: 'center', gap: 4, minWidth: 60 },
+  actionDisabled: { opacity: 0.4 },
+  actionLabel: {
+    fontSize: Typography.fontSizeXS,
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
   composer: {
     backgroundColor: Colors.backgroundElevated,

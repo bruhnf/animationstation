@@ -370,10 +370,10 @@ model Creation {
   // VIDEO only: S3 key of the generated .mp4 result. Null for image creations.
   videoUrl          String?
   // VIDEO only: the user's motion/animation prompt (e.g. "wave and smile").
-  motionPrompt      String?   @db.VarChar(300)
+  motionPrompt      String?   @db.VarChar(1000)
   // IMAGE (multi-image compose) only: the user's optional free-form prompt that
   // drives the composition. Null/empty = neutral combine/enhance.
-  promptText        String?   @db.VarChar(300)
+  promptText        String?   @db.VarChar(1000)
   // which user body photo perspectives were used as inputs
   perspectivesUsed  String[]
   // denormalized like count for feed performance

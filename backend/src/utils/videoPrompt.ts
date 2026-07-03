@@ -7,10 +7,10 @@
 // moderation is the safety layer (the worker maps a moderation block to the
 // same strike/grace policy as a creation). We still sanitize: trim, strip control
 // characters, and enforce a sane length so junk/oversized input can't reach the
-// API or the DB column (VARCHAR 300).
+// API or the DB column (VARCHAR 1000).
 
 export const MOTION_PROMPT_MIN = 2;
-export const MOTION_PROMPT_MAX = 300;
+export const MOTION_PROMPT_MAX = 1000;
 
 export interface MotionPromptResult {
   ok: boolean;

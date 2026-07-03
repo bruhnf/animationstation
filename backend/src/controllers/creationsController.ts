@@ -38,12 +38,12 @@ export function sanitizeCreationTitle(raw: unknown): string | null {
 }
 
 // Max length of the optional free-form multi-image compose prompt. Mirrors the
-// schema's promptText VARCHAR(300).
-export const TRANSFORM_PROMPT_MAX_LENGTH = 300;
+// schema's promptText VARCHAR(1000).
+export const TRANSFORM_PROMPT_MAX_LENGTH = 1000;
 
 // Normalize + moderate the optional user prompt for the multi-image compose
 // path. Control chars stripped, whitespace collapsed, trimmed, hard-capped at
-// 300. Returns { ok:true, value } where value is null for empty input, or
+// 1000. Returns { ok:true, value } where value is null for empty input, or
 // { ok:false } when it trips the relaxed (sexual-content-only) banned-term
 // screen so the caller can reject with 400 + OUTFIT_POLICY_MESSAGE.
 export function sanitizeTransformPrompt(

@@ -49,7 +49,7 @@ const TITLE_MAX = 140;
 
 // Optional free-form prompt describing how to transform the reference image.
 // Kept in sync with the backend's 300-char cap on the `prompt` field.
-const PROMPT_MAX = 300;
+const PROMPT_MAX = 1000;
 
 export default function TransformScreen() {
   const insets = useSafeAreaInsets();

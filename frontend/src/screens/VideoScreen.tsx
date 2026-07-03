@@ -36,7 +36,7 @@ import { processImageForUpload } from '../utils/imageUtils';
 
 const POLL_INTERVAL_MS = 4000; // video gen is slow; poll a bit slower than image gen
 const MAX_POLL_ERRORS = 4;
-const MOTION_PROMPT_MAX = 300;
+const MOTION_PROMPT_MAX = 1000;
 
 // Quick-start motion ideas. Tapping one fills the box (still fully editable).
 const MOTION_IDEAS = [
