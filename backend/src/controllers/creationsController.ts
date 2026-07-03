@@ -9,6 +9,7 @@ import { MAX_CLOTHING_ITEMS } from '../middleware/subscription';
 import { TIER_CONFIG } from '../services/tierService';
 import { computeQueueDelayMs } from '../services/throttleService';
 import { resizeImageForGeneration } from '../utils/imageProcessor';
+import { screenGenerationImages, INPUT_MODERATION_MESSAGE } from '../services/imageScreenService';
 import { createChildLogger } from '../services/logger';
 import { OUTFIT_POLICY_MESSAGE, containsBannedTerm } from '../utils/outfitPrompt';
 import { VALID_IMAGE_ASPECTS } from '../services/grokService';
@@ -286,6 +287,20 @@ export async function submitTransform(req: Request, res: Response): Promise<void
       delayMs: throttle.delayMs,
       jobId,
     });
+  }
+
+  // Input pre-screen (Rekognition) — block egregious reference images before the
+  // credit charge / paying Grok. No-op for text-to-image (no reference images).
+  const screen = await screenGenerationImages(clothingKeys);
+  if (screen.blocked) {
+    for (const key of clothingKeys) deleteFromS3(key).catch(() => {});
+    log.warn('Transform blocked by input pre-screen', {
+      userId,
+      reason: screen.reason,
+      detail: screen.detail,
+    });
+    res.status(400).json({ error: 'INPUT_MODERATION_BLOCKED', message: INPUT_MODERATION_MESSAGE });
+    return;
   }
 
   // Create the job row and — when the creation is paid with a credit — deduct

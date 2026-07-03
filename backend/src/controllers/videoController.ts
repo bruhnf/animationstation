@@ -12,6 +12,7 @@ import { computeQueueDelayMs } from '../services/throttleService';
 import { sanitizeMotionPrompt } from '../utils/videoPrompt';
 import { selectVideoSources, VideoSourceInput, VideoRequestFiles } from '../utils/videoSource';
 import { sanitizeCreationTitle, CREATION_STORAGE_LIMIT } from './creationsController';
+import { screenGenerationImages, INPUT_MODERATION_MESSAGE } from '../services/imageScreenService';
 import { createChildLogger } from '../services/logger';
 
 const log = createChildLogger('VideoController');
@@ -223,6 +224,21 @@ export async function submitVideo(req: Request, res: Response): Promise<void> {
     res
       .status(500)
       .json({ error: 'SOURCE_FAILED', message: 'Could not prepare your image. Please try again.' });
+    return;
+  }
+
+  // Input pre-screen (AWS Rekognition): block obviously-egregious source images
+  // BEFORE charging the user or paying Grok to generate. Conservative + fail-open
+  // (see imageScreenService); Grok's output moderation remains the backstop.
+  const screen = await screenGenerationImages([sourceImageKey, secondImageKey]);
+  if (screen.blocked) {
+    for (const k of createdKeys) deleteFromS3(k).catch(() => {});
+    log.warn('Video blocked by input pre-screen', {
+      userId,
+      reason: screen.reason,
+      detail: screen.detail,
+    });
+    res.status(400).json({ error: 'INPUT_MODERATION_BLOCKED', message: INPUT_MODERATION_MESSAGE });
     return;
   }
 

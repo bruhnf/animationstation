@@ -187,6 +187,12 @@ export default function CreateScreen() {
       case 'PROMPT_REQUIRED':
         Alert.alert('Prompt Issue', error.message ?? 'Please adjust your prompt and try again.');
         return;
+      case 'INPUT_MODERATION_BLOCKED':
+        Alert.alert(
+          'Image not allowed',
+          error.message ?? "This image can't be used. Please choose a different one.",
+        );
+        return;
       default:
         Alert.alert('Error', error?.message ?? 'Something went wrong. Please try again.');
     }
