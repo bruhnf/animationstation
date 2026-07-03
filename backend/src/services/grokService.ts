@@ -649,6 +649,21 @@ export async function generateVideo(
     if (!status.toString().startsWith('2')) {
       // Non-2xx poll — treat 4xx as terminal, otherwise keep trying.
       if (status >= 400 && status < 500) {
+        // Grok returns an OUTPUT-moderation rejection as a 4xx whose body reads
+        // e.g. "Generated video rejected by content moderation." Detect it so it
+        // flows through the real moderation path (strike + grace-based refund +
+        // clean user message), not the generic-error path that always refunds
+        // and shows the raw Grok JSON. Substring-matching is safe HERE: this is
+        // an error body, not the success body that carries the normal
+        // `respect_moderation` field (that path is handled by classifyVideoPoll).
+        if (/moderat/i.test(body)) {
+          log.warn('Grok content moderation block (video, 4xx poll)', {
+            requestId,
+            statusCode: status,
+            body: body.substring(0, 1000),
+          });
+          throw new ContentModeratedError(`Grok moderated the video (HTTP ${status})`);
+        }
         throw new Error(`Grok video poll error ${status}: ${body.substring(0, 200)}`);
       }
       continue;
