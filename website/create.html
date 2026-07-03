@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="description" content="Create AI images and videos on AnimationStation">
+  <title>Create | AnimationStation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .create-wrap { max-width: 860px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    .create-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; gap:.75rem; flex-wrap:wrap; }
+    .top-actions { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+    .btn-ghost { background:var(--glass); border:1px solid var(--border-strong); color:var(--text); }
+    .btn-ghost:hover { border-color:var(--cyan); }
+    .credits-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .7rem; border-radius:999px; font-size:.85rem; font-weight:600; background:rgba(34,211,238,.12); color:var(--cyan); border:1px solid var(--border-strong); }
+    .hidden { display:none !important; }
+
+    /* ---- Preview / result stage ---- */
+    .stage {
+      position:relative; width:100%; min-height:340px;
+      border:1px solid var(--border); border-radius:20px;
+      background:linear-gradient(160deg, var(--surface), var(--bg-elev));
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden; margin-bottom:1.1rem; padding:1.5rem;
+    }
+    .stage-idle { text-align:center; color:var(--text-2); max-width:420px; }
+    .brandline { font-size:1.5rem; font-weight:800; color:var(--text); margin:0 0 .5rem; letter-spacing:-.01em; }
+    .stage-hint { color:var(--text-3); font-size:.95rem; line-height:1.55; margin:0; }
+    .stage-busy { text-align:center; color:var(--text-2); }
+    .spinner {
+      width:46px; height:46px; margin:0 auto 1rem; border-radius:50%;
+      border:3px solid var(--border-strong); border-top-color:var(--cyan);
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .stage-status { color:var(--text); font-weight:600; margin:.25rem 0; }
+
+    .result-media { max-width:100%; max-height:62vh; border-radius:14px; display:block; box-shadow:var(--shadow-md); }
+    .result-ai-badge { position:absolute; left:16px; bottom:16px; background:rgba(8,11,22,.72); color:var(--text); font-size:.72rem; font-weight:600; padding:.24rem .6rem; border-radius:999px; border:1px solid var(--border-strong); pointer-events:none; }
+
+    .result-actions { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:1.25rem; }
+    .result-actions button {
+      font-size:.88rem; padding:.5rem .9rem; border-radius:10px; cursor:pointer;
+      background:var(--glass); border:1px solid var(--border-strong); color:var(--text);
+      transition:border-color .15s ease, color .15s ease; display:inline-flex; align-items:center; gap:.35rem;
+    }
+    .result-actions button:hover { border-color:var(--cyan); color:#fff; }
+    .result-actions button:disabled { opacity:.5; cursor:default; }
+
+    /* ---- Composer ---- */
+    .composer {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:18px; padding:1rem; box-shadow:var(--shadow-sm);
+    }
+    .thumb-row { display:flex; gap:.6rem; margin-bottom:.75rem; flex-wrap:wrap; }
+    .thumb-wrap { position:relative; }
+    .thumb-wrap img { width:64px; height:64px; object-fit:cover; border-radius:10px; border:1px solid var(--border-strong); display:block; }
+    .thumb-remove {
+      position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%;
+      background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text);
+      font-size:.9rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    }
+    .thumb-remove:hover { border-color:var(--danger); color:var(--danger); }
+
+    .input-row { display:flex; align-items:flex-end; gap:.6rem; }
+    .attach-btn {
+      flex:0 0 auto; width:42px; height:42px; border-radius:12px;
+      background:var(--glass); border:1px solid var(--border-strong); color:var(--text-2);
+      font-size:1.4rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    }
+    .attach-btn:hover { border-color:var(--cyan); color:var(--text); }
+    .attach-btn:disabled { opacity:.5; cursor:default; }
+    #promptInput {
+      flex:1 1 auto; resize:none; min-height:44px; max-height:160px;
+      background:var(--bg-elev); border:1px solid var(--border); border-radius:12px;
+      color:var(--text); font:inherit; font-size:1rem; padding:.6rem .8rem; line-height:1.4;
+    }
+    #promptInput:focus { outline:none; border-color:var(--cyan); }
+    .char-count { text-align:right; font-size:.72rem; color:var(--text-3); margin:.3rem .2rem 0; }
+
+    .controls-row { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-top:.85rem; }
+    .mode-toggle { display:inline-flex; border:1px solid var(--border-strong); border-radius:999px; overflow:hidden; }
+    .mode-btn {
+      display:inline-flex; align-items:center; gap:.35rem; padding:.45rem .9rem;
+      background:transparent; border:none; color:var(--text-2); font:inherit; font-size:.88rem; font-weight:600; cursor:pointer;
+    }
+    .mode-btn.active { background:var(--cyan); color:var(--bg); }
+    .seg {
+      display:inline-flex; align-items:center; gap:.35rem; padding:.45rem .8rem;
+      background:var(--glass); border:1px solid var(--border-strong); border-radius:999px;
+      color:var(--text-2); font-size:.85rem; font-weight:600; cursor:pointer;
+    }
+    .seg select {
+      background:transparent; border:none; color:var(--text); font:inherit; font-weight:600; font-size:.85rem; cursor:pointer; outline:none;
+    }
+    .seg select option { background:var(--surface); color:var(--text); }
+    .spacer { flex:1 1 auto; }
+    .submit-btn {
+      width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
+      background:var(--cyan); color:var(--bg); font-size:1.4rem; line-height:1;
+      display:flex; align-items:center; justify-content:center; transition:opacity .15s ease;
+    }
+    .submit-btn:disabled { opacity:.4; cursor:default; }
+    .cost-hint { text-align:right; font-size:.78rem; color:var(--text-3); margin-top:.6rem; }
+
+    /* ---- Consent modal ---- */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(4,6,14,.78); backdrop-filter:blur(4px); z-index:60; display:flex; align-items:center; justify-content:center; padding:1.25rem; }
+    .modal-card { background:var(--surface); border:1px solid var(--border-strong); border-radius:18px; max-width:480px; width:100%; padding:1.5rem; box-shadow:var(--shadow-lg); }
+    .modal-card h2 { margin:0 0 .75rem; font-size:1.25rem; }
+    .modal-card p { color:var(--text-2); line-height:1.6; font-size:.95rem; margin:0 0 1rem; }
+    .modal-actions { display:flex; gap:.6rem; justify-content:flex-end; flex-wrap:wrap; }
+
+    @media (max-width:560px) {
+      .brandline { font-size:1.25rem; }
+      .stage { min-height:280px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="create-wrap">
+    <div class="create-top">
+      <a href="/" class="nav-logo"><span class="logo-evo">Animation</span><span class="logo-face">Station</span></a>
+      <div class="top-actions">
+        <span class="credits-chip" id="creditsChip" title="Your credit balance">✨ <span id="creditsValue">—</span></span>
+        <a class="btn btn-ghost" href="/creations.html">My Creations</a>
+        <a class="btn btn-ghost" href="/account.html">Account</a>
+        <button class="btn btn-ghost" onclick="logout()">Log out</button>
+      </div>
+    </div>
+
+    <h1 style="margin:0 0 .3rem;">Create</h1>
+    <p class="stage-hint" style="margin:0 0 1.25rem;">
+      Generate AI images and videos right here — everything you create appears in
+      <a href="/creations.html" style="color:var(--cyan);">My Creations</a> and, if public, on the in-app community feed.
+    </p>
+
+    <div class="auth-error" id="errorMsg"></div>
+    <div class="auth-success" id="successMsg"></div>
+
+    <!-- Preview / result stage -->
+    <div class="stage" id="stage"></div>
+
+    <!-- Result actions (shown when a creation completes) -->
+    <div class="result-actions hidden" id="resultActions"></div>
+
+    <!-- Composer -->
+    <div class="composer">
+      <div class="thumb-row hidden" id="thumbRow"></div>
+
+      <div class="input-row">
+        <button class="attach-btn" id="attachBtn" title="Attach a reference photo" onclick="pickImage()">+</button>
+        <textarea id="promptInput" placeholder="Type to imagine…" maxlength="1000" rows="1"></textarea>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/heic" class="hidden">
+      </div>
+      <div class="char-count"><span id="charCount">0</span> / 1000</div>
+
+      <div class="controls-row">
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="modeImage" onclick="setMode('image')">🖼️ Image</button>
+          <button class="mode-btn" id="modeVideo" onclick="setMode('video')">🎬 Video</button>
+        </div>
+
+        <label class="seg" title="Aspect ratio">
+          <span>▭</span>
+          <select id="aspectSelect">
+            <option value="2:3">2:3 · Tall</option>
+            <option value="3:2">3:2 · Wide</option>
+            <option value="1:1">1:1 · Square</option>
+            <option value="9:16">9:16 · Vertical</option>
+            <option value="16:9">16:9 · Widescreen</option>
+          </select>
+        </label>
+
+        <label class="seg hidden" id="durationSeg" title="Video length">
+          <span>⏱</span>
+          <select id="durationSelect">
+            <option value="4">4s</option>
+            <option value="8" selected>8s</option>
+            <option value="12">12s</option>
+            <option value="15">15s</option>
+          </select>
+        </label>
+
+        <div class="spacer"></div>
+
+        <button class="submit-btn" id="submitBtn" title="Create" onclick="submitCreation()">↑</button>
+      </div>
+
+      <div class="cost-hint hidden" id="costHint"></div>
+    </div>
+  </div>
+
+  <!-- AI consent modal (shown on first AI generation / AI_CONSENT_REQUIRED) -->
+  <div class="modal-backdrop hidden" id="consentModal">
+    <div class="modal-card">
+      <h2>Before you create</h2>
+      <p id="consentBody">
+        To generate your image, the text prompt and any photo you attach will be sent to
+        <strong>xAI (Grok Imagine API)</strong> for AI processing. Your inputs are used only to
+        produce your result. Do you agree to proceed?
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="cancelConsent()">Not now</button>
+        <button class="btn btn-primary" id="consentAgreeBtn" onclick="agreeConsent()">I agree — continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ?v= cache-buster: bump when these files change, or Cloudflare (4h TTL)
+       and browsers keep serving the previous version to returning visitors. -->
+  <script src="/js/auth.js?v=20260703"></script>
+  <script src="/js/create.js?v=20260703"></script>
+</body>
+</html>

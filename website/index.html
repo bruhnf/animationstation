@@ -29,6 +29,7 @@
       </div>
       <div class="nav-user" id="navUser" style="display: none;">
         <span class="user-greeting">Hello, <span id="userName"></span></span>
+        <a href="/create.html" class="btn btn-primary">✨ Create</a>
         <a href="/creations.html" class="btn btn-secondary">My Creations</a>
         <a href="/account.html" class="btn btn-secondary">Account</a>
         <button class="btn btn-secondary" onclick="logout()">Log Out</button>
@@ -166,10 +167,14 @@
   <script src="/js/auth.js"></script>
   <script>
     // Reflect auth state (toggles navAuth / navUser). When logged in, the
-    // hero's primary CTA jumps straight into the user's creations.
+    // hero CTA and the two "Create with AI" cards jump straight into the
+    // web Create studio instead of the signup page.
     if (checkAuthState()) {
       var startBtn = document.getElementById('startCreatingBtn');
-      if (startBtn) startBtn.setAttribute('href', '/creations.html');
+      if (startBtn) startBtn.setAttribute('href', '/create.html');
+      document.querySelectorAll('.create-grid .create-card').forEach(function (card) {
+        card.setAttribute('href', '/create.html');
+      });
     }
   </script>
 </body>
