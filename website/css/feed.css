@@ -9,6 +9,14 @@
   --footer-h: 30px;
 }
 
+/* Generic hide utility. Without this, elements marked `.hidden` that aren't
+   `.overlay` (e.g. the reply hint) stay visible. Overlay/viewer hides are also
+   declared right after their base `display:flex` rules below so the hide wins
+   on source order in every engine, not only via !important. */
+.hidden {
+  display: none !important;
+}
+
 /* Lock the page to the viewport — the feed area scroll-snaps internally. */
 html,
 body {
@@ -788,6 +796,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+}
+.viewer.hidden {
+  display: none !important;
 }
 .viewer img,
 .viewer video {
