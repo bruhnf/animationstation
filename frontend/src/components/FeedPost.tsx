@@ -8,6 +8,7 @@ import { Creation } from '../types';
 import RetryableImage from './RetryableImage';
 import AiGeneratedBadge from './AiGeneratedBadge';
 import FeedComments from './FeedComments';
+import { useFeedAudioStore } from '../store/useFeedAudioStore';
 
 export interface FeedJob extends Creation {
   user: { username: string; firstName?: string; lastName?: string; avatarUrl?: string };
@@ -67,15 +68,20 @@ export default function FeedPost({
   const fullName = [job.user.firstName, job.user.lastName].filter(Boolean).join(' ');
   const contentHeight = expanded ? Math.round(height * EXPANDED_CONTENT_FRACTION) : height;
 
-  const [muted, setMuted] = useState(true);
+  // Feed-wide mute preference (shared across every post) so un-muting one video
+  // keeps audio on as the viewer scrolls, instead of resetting per clip.
+  const muted = useFeedAudioStore((s) => s.muted);
+  const toggleMuted = useFeedAudioStore((s) => s.toggleMuted);
   // Whether the viewer manually paused this video by tapping it. Reset whenever
   // the post scrolls back into view so a fresh view always autoplays.
   const [userPaused, setUserPaused] = useState(false);
-  // One player per video post. Muted + looping; only the on-screen (active) post
-  // plays — the rest pause so we never play several clips at once.
+  // One player per video post. Looping; only the on-screen (active) post plays —
+  // the rest pause so we never play several clips at once. Seed muted from the
+  // shared preference (via getState so we don't re-run the factory on toggle);
+  // the effect below keeps it in sync afterwards.
   const player = useVideoPlayer(isVideo ? (job.videoUrl ?? null) : null, (p) => {
     p.loop = true;
-    p.muted = true;
+    p.muted = useFeedAudioStore.getState().muted;
   });
 
   useEffect(() => {
@@ -92,14 +98,21 @@ export default function FeedPost({
     }
   }, [isActive, isVideo, player]);
 
-  function toggleMute() {
-    const next = !muted;
-    setMuted(next);
+  // Apply the shared mute preference to this player — on mount (a freshly
+  // scrolled-in video adopts the current setting) and whenever it changes
+  // (toggling on one post updates every mounted player live).
+  useEffect(() => {
+    if (!isVideo) return;
     try {
-      player.muted = next;
+      player.muted = muted;
     } catch {
       // ignore if released
     }
+  }, [muted, isVideo, player]);
+
+  function toggleMute() {
+    // Flip the shared preference; the effect above pushes it to the player.
+    toggleMuted();
   }
 
   // Tapping the content pauses/resumes a video; images do nothing.
