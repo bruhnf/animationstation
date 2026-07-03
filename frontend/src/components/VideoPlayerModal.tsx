@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Colors, Typography, Spacing } from '../constants/theme';
@@ -18,10 +18,23 @@ export default function VideoPlayerModal({
   motionPrompt?: string | null;
   onClose: () => void;
 }) {
-  const player = useVideoPlayer(visible && uri ? uri : null, (p) => {
+  const player = useVideoPlayer(uri, (p) => {
     p.loop = true;
-    if (visible && uri) p.play();
   });
+
+  // Play only while the modal is actually on screen. Without an explicit pause,
+  // closing the modal (or navigating away) leaves the player running in the
+  // background — the audio keeps going because expo-video doesn't stop just
+  // because the modal is hidden or its source arg went null.
+  useEffect(() => {
+    if (!player) return;
+    try {
+      if (visible && uri) player.play();
+      else player.pause();
+    } catch {
+      // player may already be released mid-transition — safe to ignore.
+    }
+  }, [visible, uri, player]);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
