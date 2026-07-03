@@ -16,7 +16,7 @@ Both boxes: Ubuntu 22.04, 2 GB RAM / 2 vCPU / 60 GB, 2 GB swap. SSH: `ssh ubuntu
 ## 2. Topology on each box
 
 - The co-hosted app's compose stack runs the box's single **nginx** on :80/:443 (plus its own backend/postgres/redis/fail2ban). AnimationStation's server blocks live in that stack's nginx config; certbot on the **host** manages all certs.
-- AnimationStation lives at `/opt/animationstation` (a git checkout of `github.com/bruhnf/animationstation`, branch `main`): containers `animationstation-api` (Express, port 3000, internal), `animationstation-db` (postgres 15), `animationstation-redis`. No ports are published to the host — nginx reaches the API by container name over the shared external docker network **`apps`**.
+- AnimationStation lives at `/opt/animationstation` (a git checkout of `github.com/bruhnf/animationstation` — the **dev box tracks `develop`, the prod box tracks `main`**; see the Branch model in §3): containers `animationstation-api` (Express, port 3000, internal), `animationstation-db` (postgres 15), `animationstation-redis`. No ports are published to the host — nginx reaches the API by container name over the shared external docker network **`apps`**.
 - The backend serves BOTH `/api/*` and the static website (bind-mounted `./website`), so one server block per hostname is enough.
 
 ## 3. Deploy
@@ -31,6 +31,7 @@ docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
 - **Website-only changes**: `git pull` + `docker restart animationstation-api` (bind mount, no rebuild).
 - **Secrets** (`.env` + `backend/.env`) are gitignored and survive `git pull`; backup copies in `/home/ubuntu/animationstation-secrets-backup/`.
 - **Build memory caution:** the boxes are 2 GB and shared — build ONE app at a time (never rebuild AnimationStation and the co-hosted app simultaneously).
+- **Branch model:** the **dev box checks out `develop`**, the **prod box checks out `main`**, so each box's `git pull` pulls its own branch. Do active work on `develop` → deploy to dev to test; when it's good, `git checkout main && git merge --ff-only develop && git push`, then deploy to prod. `main` stays release-stable because it's what the App Store / TestFlight build tracks.
 
 ## 4. Zero-gap migrations (additive)
 

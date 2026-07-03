@@ -105,3 +105,5 @@ See [backend/.env.example](backend/.env.example) for the full annotated list: `D
 ## Git workflow
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). A husky pre-push hook runs prettier + backend lint/types/tests + frontend types/tests; CI re-runs the same on GitHub. Note: `bullmq` pins `ioredis` to an exact version — keep `backend/package.json`'s ioredis in lockstep (save-exact) or the duplicated tree breaks tsc.
+
+**Branch model:** `develop` = active development, deployed to the **dev box** (dev.animationstation.ai). `main` = release-stable, deployed to the **prod box** (animationstation.ai) and tracked by the App Store / TestFlight build. Work on `develop`, deploy to dev to verify, then fast-forward `main` from `develop` and deploy to prod. Keep `main` clean (green + release-ready) at all times.
