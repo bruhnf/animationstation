@@ -758,3 +758,20 @@ h4 { font-size: 1.25rem; }
 .auth-success.visible { display: block; }
 
 .auth-error a, .auth-success a { color: inherit; text-decoration: underline; }
+
+/* Shared site footer (account / creations / create pages). The immersive feed
+   uses its own slim .feed-footer in feed.css instead. */
+.site-footer {
+  text-align: center;
+  padding: 1.75rem 1rem;
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 0.82rem;
+}
+.site-footer a {
+  color: var(--text-2);
+  text-decoration: none;
+}
+.site-footer a:hover { color: var(--cyan); }
+.site-footer .dot { margin: 0 0.5rem; opacity: 0.5; }
