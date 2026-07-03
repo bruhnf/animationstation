@@ -347,15 +347,18 @@ const websiteDir = path.join(__dirname, '../website');
 // Helmet's strict default CSP — script-src 'self'; script-src-attr 'none' — blocks
 // both, so the inline handlers never run: clicking "Log In" silently does nothing
 // (the form falls back to a native submit that just clears the inputs). Relax
-// script-src for the site the same way /admin does above; every other directive
-// stays as strict as the API's. Runs after Helmet set the strict header, and only
+// script-src for the site the same way /admin does above, and additionally allow
+// img-src/media-src/connect-src over https so the feed + account pages can load
+// and download AI results from presigned S3 URLs (else images/videos are blocked
+// and the feed shows blank black boxes). Runs after Helmet set the strict header,
+// and only
 // for GETs that fell through every /api and system route to the static site.
 // Skipped in dev (Helmet CSP is disabled there, mirroring that intent).
 if (!env.isDev) {
   app.use((_req, res, next) => {
     res.setHeader(
       'Content-Security-Policy',
-      "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self' 'unsafe-inline';script-src-attr 'unsafe-inline';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+      "default-src 'self';base-uri 'self';connect-src 'self' https:;font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data: https:;media-src 'self' data: blob: https:;object-src 'none';script-src 'self' 'unsafe-inline';script-src-attr 'unsafe-inline';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
     );
     next();
   });
