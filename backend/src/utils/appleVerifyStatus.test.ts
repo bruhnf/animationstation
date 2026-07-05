@@ -12,6 +12,7 @@ import {
   isEnvironmentMismatch,
   describeAppleVerifyError,
   decodeJwsShape,
+  runWithEnvFallback,
 } from './appleVerifyStatus';
 
 // Mimics @apple/app-store-server-library's VerificationException: an Error
@@ -112,4 +113,80 @@ test('decodeJwsShape rejects non-JWS input without throwing', () => {
   assert.equal(decodeJwsShape('a.b'), null);
   assert.equal(decodeJwsShape(`x.${Buffer.from('not json').toString('base64url')}.y`), null);
   assert.equal(decodeJwsShape(undefined as unknown as string), null);
+});
+
+test('runWithEnvFallback returns the primary result without touching the fallback', async () => {
+  let fallbackCalls = 0;
+  const out = await runWithEnvFallback(
+    'Production',
+    async () => 'primary',
+    async () => {
+      fallbackCalls += 1;
+      return 'fallback';
+    },
+  );
+  assert.deepEqual(out, { result: 'primary', environment: 'Production' });
+  assert.equal(fallbackCalls, 0);
+});
+
+test('runWithEnvFallback retries the opposite environment ONLY on INVALID_ENVIRONMENT', async () => {
+  let retried = false;
+  const out = await runWithEnvFallback(
+    'Production',
+    async () => {
+      throw new FakeVerificationException(3); // INVALID_ENVIRONMENT
+    },
+    async () => 'fallback',
+    { onRetry: () => (retried = true) },
+  );
+  // A Production-configured box accepting a Sandbox payload — labeled Sandbox.
+  assert.deepEqual(out, { result: 'fallback', environment: 'Sandbox' });
+  assert.equal(retried, true);
+});
+
+test('runWithEnvFallback labels the fallback env correctly from a Sandbox primary', async () => {
+  const out = await runWithEnvFallback(
+    'Sandbox',
+    async () => {
+      throw new FakeVerificationException(3);
+    },
+    async () => 'fallback',
+  );
+  assert.deepEqual(out, { result: 'fallback', environment: 'Production' });
+});
+
+test('runWithEnvFallback does NOT retry non-environment errors (e.g. bad signature)', async () => {
+  let fallbackCalls = 0;
+  await assert.rejects(
+    runWithEnvFallback(
+      'Production',
+      async () => {
+        throw new FakeVerificationException(1); // VERIFICATION_FAILURE
+      },
+      async () => {
+        fallbackCalls += 1;
+        return 'fallback';
+      },
+    ),
+    (err: unknown) => err instanceof FakeVerificationException && err.status === 1,
+  );
+  assert.equal(fallbackCalls, 0);
+});
+
+test('runWithEnvFallback rethrows the fallback error and fires onFallbackFailure', async () => {
+  let failureSeen: unknown = null;
+  await assert.rejects(
+    runWithEnvFallback(
+      'Production',
+      async () => {
+        throw new FakeVerificationException(3);
+      },
+      async () => {
+        throw new Error('fallback boom');
+      },
+      { onFallbackFailure: (e) => (failureSeen = e) },
+    ),
+    (err: unknown) => err instanceof Error && err.message === 'fallback boom',
+  );
+  assert.ok(failureSeen instanceof Error);
 });

@@ -41,6 +41,38 @@ export function isEnvironmentMismatch(err: unknown): boolean {
   );
 }
 
+/**
+ * Environment-fallback orchestration for Apple JWS verification. PURE — no
+ * @apple/app-store-server-library, cert, env, or logger dependency — so it
+ * unit-tests without any of them. Runs the primary-environment attempt; ONLY on
+ * an INVALID_ENVIRONMENT VerificationException (status 3) does it retry the
+ * fallback environment. Any other error (bad signature, wrong bundle id, cert
+ * failure) propagates immediately — we never retry those. Returns which
+ * environment actually verified so callers can label the grant. Optional hooks
+ * let callers log the retry / fallback failure without coupling this to a logger.
+ */
+export async function runWithEnvFallback<T>(
+  primaryEnv: 'Production' | 'Sandbox',
+  attemptPrimary: () => Promise<T>,
+  attemptFallback: () => Promise<T>,
+  hooks: { onRetry?: () => void; onFallbackFailure?: (err: unknown) => void } = {},
+): Promise<{ result: T; environment: 'Production' | 'Sandbox' }> {
+  const fallbackEnv: 'Production' | 'Sandbox' =
+    primaryEnv === 'Production' ? 'Sandbox' : 'Production';
+  try {
+    return { result: await attemptPrimary(), environment: primaryEnv };
+  } catch (err) {
+    if (!isEnvironmentMismatch(err)) throw err;
+    hooks.onRetry?.();
+    try {
+      return { result: await attemptFallback(), environment: fallbackEnv };
+    } catch (fallbackErr) {
+      hooks.onFallbackFailure?.(fallbackErr);
+      throw fallbackErr;
+    }
+  }
+}
+
 /** Loggable summary of any Apple verification error. Never throws. */
 export function describeAppleVerifyError(err: unknown): {
   name: string;
