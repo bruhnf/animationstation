@@ -24,6 +24,7 @@ import { buildCreationCarousel } from '../utils/creationCarousel';
 import { requireRealUser } from '../utils/guestGate';
 import ReportSheet, { ReportTargetType } from '../components/ReportSheet';
 import RetryableImage from '../components/RetryableImage';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 
 type Nav = NativeStackNavigationProp<RootStackParams, 'PublicProfile'>;
 type Route = RouteProp<RootStackParams, 'PublicProfile'>;
@@ -211,6 +212,17 @@ export default function PublicProfileScreen() {
     }
   }
 
+  // Hand the currently-viewed profile image off to the Make Video workflow.
+  // Close the viewer first, then navigate to Video (which consumes the source
+  // store on focus and seeds the source box). Any user can animate another
+  // user's public image — the URL is fetched + re-uploaded at submit. Video is
+  // not guest-gated; AI consent + credits are enforced on VideoScreen.
+  function handleMakeVideo(imageUrl: string) {
+    setFullScreenImages([]);
+    useVideoSourceStore.getState().setPendingSource({ imageUrl });
+    navigation.navigate('Video');
+  }
+
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
@@ -362,6 +374,7 @@ export default function PublicProfileScreen() {
         aiGenerated={fullScreenAi}
         labels={fullScreenLabels}
         originalBadges={fullScreenBadges}
+        onMakeVideo={handleMakeVideo}
         onClose={() => setFullScreenImages([])}
       />
       <ReportSheet

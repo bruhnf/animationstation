@@ -23,6 +23,8 @@ import api from '../config/api';
 import { useUserStore } from '../store/useUserStore';
 import { useConfigStore } from '../store/useConfigStore';
 import { shareCreation } from '../utils/share';
+import { animatableImageUrl } from '../utils/animate';
+import { useVideoSourceStore } from '../store/useVideoSourceStore';
 import { saveLook, unsaveLook } from '../utils/looks';
 import { Colors, Typography, Spacing, Radius } from '../constants/theme';
 import { RootStackParams, MainTabParams } from '../navigation';
@@ -320,6 +322,51 @@ export default function HomeScreen() {
     }
   }, []);
 
+  // Hand this creation's image off to the Make Video workflow: park it in the
+  // shared source store (VideoScreen consumes it on focus and seeds the source
+  // box) and jump to the Video screen. Anyone can animate anyone's public image
+  // — the seeded URL is fetched + re-uploaded at submit, so cross-user works
+  // with no backend change. Consent + credit gating stay on VideoScreen.
+  const handleMakeVideo = useCallback(
+    (job: FeedJob) => {
+      const imageUrl = animatableImageUrl(job);
+      if (!imageUrl) return;
+      useVideoSourceStore.getState().setPendingSource({ imageUrl });
+      navigation.navigate('Video');
+    },
+    [navigation],
+  );
+
+  // The Share arrow opens a small menu. For an image post it offers "Make Video"
+  // (animate this image) alongside Share; a video post can't be animated, so it
+  // shares directly with no menu.
+  const handleSharePress = useCallback(
+    (job: FeedJob) => {
+      const imageUrl = animatableImageUrl(job);
+      if (!imageUrl) {
+        void shareCreation(job.id);
+        return;
+      }
+      const runShare = () => void shareCreation(job.id);
+      if (Platform.OS === 'ios') {
+        ActionSheetIOS.showActionSheetWithOptions(
+          { options: ['Make Video', 'Share…', 'Cancel'], cancelButtonIndex: 2 },
+          (index) => {
+            if (index === 0) handleMakeVideo(job);
+            else if (index === 1) runShare();
+          },
+        );
+      } else {
+        Alert.alert('Post options', '', [
+          { text: 'Make Video', onPress: () => handleMakeVideo(job) },
+          { text: 'Share', onPress: runShare },
+          { text: 'Cancel', style: 'cancel' },
+        ]);
+      }
+    },
+    [handleMakeVideo],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: FeedJob }) => (
       <FeedPost
@@ -332,7 +379,7 @@ export default function HomeScreen() {
         onUsernamePress={() => handleUsernamePress(item)}
         onLikePress={() => toggleLike(item)}
         onSavePress={() => handleSavePress(item)}
-        onSharePress={() => shareCreation(item.id)}
+        onSharePress={() => handleSharePress(item)}
         onMorePress={() => handleMoreActions(item)}
       />
     ),
@@ -345,6 +392,7 @@ export default function HomeScreen() {
       handleUsernamePress,
       toggleLike,
       handleSavePress,
+      handleSharePress,
       handleMoreActions,
     ],
   );

@@ -44,6 +44,10 @@ interface FullScreenImageModalProps {
   // image that should not get an overlay. AI-generated slots take the AI
   // disclosure badge instead and ignore this prop.
   originalBadges?: (OriginalImageBadge | null | undefined)[];
+  // When provided, renders a "Make Video" action that hands the CURRENTLY-viewed
+  // image off to the image-to-video workflow (the caller navigates to Video).
+  // Omitted → no button (default), so existing viewers are unaffected.
+  onMakeVideo?: (imageUrl: string) => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -56,6 +60,7 @@ export default function FullScreenImageModal({
   aiGenerated = false,
   labels,
   originalBadges,
+  onMakeVideo,
 }: FullScreenImageModalProps) {
   function isAiAt(index: number): boolean {
     if (Array.isArray(aiGenerated)) return !!aiGenerated[index];
@@ -133,11 +138,16 @@ export default function FullScreenImageModal({
           })}
         </ScrollView>
 
-        {/* Bottom spacer so the image doesn't sit underneath the pagination dots */}
-        <View style={{ height: insets.bottom + (imageUrls.length > 1 ? 80 : 20) }} />
+        {/* Bottom spacer so the image doesn't sit underneath the controls (dots
+            + optional Make Video button). */}
+        <View
+          style={{
+            height: insets.bottom + (imageUrls.length > 1 ? 80 : 20) + (onMakeVideo ? 64 : 0),
+          }}
+        />
 
         {imageUrls.length > 1 && (
-          <View style={[styles.pagination, { bottom: insets.bottom + 40 }]}>
+          <View style={[styles.pagination, { bottom: insets.bottom + (onMakeVideo ? 104 : 40) }]}>
             <Text style={styles.paginationLabel}>
               {effectiveLabels[currentIndex] || `${currentIndex + 1} of ${imageUrls.length}`}
             </Text>
@@ -150,6 +160,18 @@ export default function FullScreenImageModal({
               ))}
             </View>
           </View>
+        )}
+
+        {onMakeVideo && (
+          <TouchableOpacity
+            style={[styles.makeVideoBtn, { bottom: insets.bottom + 40 }]}
+            onPress={() => onMakeVideo(imageUrls[currentIndex])}
+            activeOpacity={0.85}
+            accessibilityLabel="Make a video from this image"
+          >
+            <Ionicons name="videocam" size={18} color={Colors.textInverse} />
+            <Text style={styles.makeVideoText}>Make Video</Text>
+          </TouchableOpacity>
         )}
 
         <TouchableOpacity style={styles.tapArea} onPress={onClose} activeOpacity={1} />
@@ -222,5 +244,23 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     backgroundColor: Colors.surface,
+  },
+  makeVideoBtn: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: Colors.accent,
+    zIndex: 20,
+  },
+  makeVideoText: {
+    color: Colors.textInverse,
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
