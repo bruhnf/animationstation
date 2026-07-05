@@ -84,7 +84,7 @@ export const env = {
   },
 
   email: {
-    fromAddress: optional('SES_FROM_ADDRESS', 'noreply@animationstation.bruhnfreeman.com'),
+    fromAddress: optional('SES_FROM_ADDRESS', 'noreply@animationstation.ai'),
     smtpHost: optional('SMTP_HOST'),
     smtpPort: parseInt(optional('SMTP_PORT', '587'), 10),
     smtpUser: optional('SMTP_USER'),

@@ -82,4 +82,4 @@ docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/animatio
 
 - Docker build caches grow unbounded on 60 GB disks — a monthly cron runs `docker builder prune --keep-storage 5GB` on both boxes. Manual: `docker system df` to inspect, `docker image prune -a` for dangling images.
 - DB user/database: `animationstation` / `animationstation_db` (see box `.env`).
-- Email: SMTP sender `noreply@animationstation.bruhnfreeman.com` (moving to `@animationstation.ai` requires SES/SMTP domain verification — tracked as follow-up).
+- Email: outbound sender is `noreply@animationstation.ai` (set `SES_FROM_ADDRESS` in each box `.env`). **Prerequisite:** the `animationstation.ai` domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (`support@`, `privacy@`, `dmca@animationstation.ai`) are inbound mailboxes/aliases and are independent of SES.

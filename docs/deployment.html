@@ -52,7 +52,7 @@
 <h2 id="2-topology-on-each-box" tabindex="-1"><a class="header-anchor" href="#2-topology-on-each-box" aria-hidden="true">#</a> 2. Topology on each box</h2>
 <ul>
 <li>The co-hosted app's compose stack runs the box's single <strong>nginx</strong> on :80/:443 (plus its own backend/postgres/redis/fail2ban). AnimationStation's server blocks live in that stack's nginx config; certbot on the <strong>host</strong> manages all certs.</li>
-<li>AnimationStation lives at <code>/opt/animationstation</code> (a git checkout of <code>github.com/bruhnf/animationstation</code>, branch <code>main</code>): containers <code>animationstation-api</code> (Express, port 3000, internal), <code>animationstation-db</code> (postgres 15), <code>animationstation-redis</code>. No ports are published to the host — nginx reaches the API by container name over the shared external docker network <strong><code>apps</code></strong>.</li>
+<li>AnimationStation lives at <code>/opt/animationstation</code> (a git checkout of <code>github.com/bruhnf/animationstation</code> — the <strong>dev box tracks <code>develop</code>, the prod box tracks <code>main</code></strong>; see the Branch model in §3): containers <code>animationstation-api</code> (Express, port 3000, internal), <code>animationstation-db</code> (postgres 15), <code>animationstation-redis</code>. No ports are published to the host — nginx reaches the API by container name over the shared external docker network <strong><code>apps</code></strong>.</li>
 <li>The backend serves BOTH <code>/api/*</code> and the static website (bind-mounted <code>./website</code>), so one server block per hostname is enough.</li>
 </ul>
 <h2 id="3-deploy" tabindex="-1"><a class="header-anchor" href="#3-deploy" aria-hidden="true">#</a> 3. Deploy</h2>
@@ -65,6 +65,7 @@ docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy
 <li><strong>Website-only changes</strong>: <code>git pull</code> + <code>docker restart animationstation-api</code> (bind mount, no rebuild).</li>
 <li><strong>Secrets</strong> (<code>.env</code> + <code>backend/.env</code>) are gitignored and survive <code>git pull</code>; backup copies in <code>/home/ubuntu/animationstation-secrets-backup/</code>.</li>
 <li><strong>Build memory caution:</strong> the boxes are 2 GB and shared — build ONE app at a time (never rebuild AnimationStation and the co-hosted app simultaneously).</li>
+<li><strong>Branch model:</strong> the <strong>dev box checks out <code>develop</code></strong>, the <strong>prod box checks out <code>main</code></strong>, so each box's <code>git pull</code> pulls its own branch. Do active work on <code>develop</code> → deploy to dev to test; when it's good, <code>git checkout main &amp;&amp; git merge --ff-only develop &amp;&amp; git push</code>, then deploy to prod. <code>main</code> stays release-stable because it's what the App Store / TestFlight build tracks.</li>
 </ul>
 <h2 id="4-zero-gap-migrations-additive" tabindex="-1"><a class="header-anchor" href="#4-zero-gap-migrations-additive" aria-hidden="true">#</a> 4. Zero-gap migrations (additive)</h2>
 <p>When NEW code reads a NEW column, plain <code>up -d --build</code> → <code>migrate deploy</code> leaves a window where the new container 500s until the migration lands. For additive (nullable) migrations, apply the migration from a throwaway new-image container first, then swap:</p>
@@ -122,7 +123,7 @@ docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/animatio
 <ul>
 <li>Docker build caches grow unbounded on 60 GB disks — a monthly cron runs <code>docker builder prune --keep-storage 5GB</code> on both boxes. Manual: <code>docker system df</code> to inspect, <code>docker image prune -a</code> for dangling images.</li>
 <li>DB user/database: <code>animationstation</code> / <code>animationstation_db</code> (see box <code>.env</code>).</li>
-<li>Email: SMTP sender <code>noreply@animationstation.bruhnfreeman.com</code> (moving to <code>@animationstation.ai</code> requires SES/SMTP domain verification — tracked as follow-up).</li>
+<li>Email: outbound sender is <code>noreply@animationstation.ai</code> (set <code>SES_FROM_ADDRESS</code> in each box <code>.env</code>). <strong>Prerequisite:</strong> the <code>animationstation.ai</code> domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (<code>support@</code>, <code>privacy@</code>, <code>dmca@animationstation.ai</code>) are inbound mailboxes/aliases and are independent of SES.</li>
 </ul>
 
   </main>

@@ -3,5 +3,5 @@
 
 export const PRIVACY_POLICY_URL = 'https://animationstation.ai/privacy.html';
 export const TERMS_OF_SERVICE_URL = 'https://animationstation.ai/terms.html';
-export const SUPPORT_EMAIL = 'support@animationstation.bruhnfreeman.com';
-export const PRIVACY_EMAIL = 'privacy@animationstation.bruhnfreeman.com';
+export const SUPPORT_EMAIL = 'support@animationstation.ai';
+export const PRIVACY_EMAIL = 'privacy@animationstation.ai';
