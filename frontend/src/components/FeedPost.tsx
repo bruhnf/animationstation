@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable, TouchableOpacity, StyleSheet } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -75,6 +76,12 @@ export default function FeedPost({
   // Whether the viewer manually paused this video by tapping it. Reset whenever
   // the post scrolls back into view so a fresh view always autoplays.
   const [userPaused, setUserPaused] = useState(false);
+  // Whether the Home feed screen is actually on top. Screens in a tab navigator
+  // stay MOUNTED when you switch tabs, and pushing a stack screen (Create,
+  // Video, a profile…) over the tabs doesn't unmount them either — so without
+  // this gate the active post's player would keep playing audio underneath the
+  // page you navigated to. Goes false for both cases.
+  const isFocused = useIsFocused();
   // One player per video post. Looping; only the on-screen (active) post plays —
   // the rest pause so we never play several clips at once. Seed muted from the
   // shared preference (via getState so we don't re-run the factory on toggle);
@@ -84,10 +91,14 @@ export default function FeedPost({
     p.muted = useFeedAudioStore.getState().muted;
   });
 
+  // Play only when this post is the on-screen one AND the feed is focused;
+  // pause otherwise. Gating on focus (not just isActive) is what stops the
+  // video's audio from continuing to play after navigating to another tab or
+  // screen.
   useEffect(() => {
     if (!isVideo) return;
     try {
-      if (isActive) {
+      if (isActive && isFocused) {
         player.play();
         setUserPaused(false);
       } else {
@@ -96,7 +107,7 @@ export default function FeedPost({
     } catch {
       // player may be released mid-transition; ignore.
     }
-  }, [isActive, isVideo, player]);
+  }, [isActive, isFocused, isVideo, player]);
 
   // Apply the shared mute preference to this player — on mount (a freshly
   // scrolled-in video adopts the current setting) and whenever it changes
