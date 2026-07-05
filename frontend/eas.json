@@ -13,13 +13,14 @@
       }
     },
     "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "autoIncrement": true,
+      "distribution": "internal",
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
+    },
+    "production": {
+      "autoIncrement": true,
+      "environment": "production"
     }
   },
   "submit": {
