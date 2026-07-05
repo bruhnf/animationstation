@@ -253,7 +253,20 @@ export default function PurchaseScreen() {
         if (purchaseResolved.current) return;
         purchaseResolved.current = true;
 
-        if (result.fastPathSkipped) {
+        if (result.rejected) {
+          // The backend DEFINITIVELY refused this receipt (4xx). Polling won't
+          // help — surface a clear reason. A 403 means the Apple ID's purchase
+          // is registered to a DIFFERENT AnimationStation account (common in
+          // sandbox when one Apple ID was used across several test accounts).
+          Alert.alert(
+            result.rejected.status === 403
+              ? 'Registered to Another Account'
+              : "Purchase Couldn't Be Verified",
+            result.rejected.status === 403
+              ? "This Apple ID's subscription is registered to a different AnimationStation account, so it can't be applied here. Use the account that originally subscribed, or subscribe with a different Apple ID."
+              : `The App Store couldn't verify this purchase. If you were charged, tap Restore Purchases or contact ${SUPPORT_EMAIL}.`,
+          );
+        } else if (result.fastPathSkipped) {
           // The backend could not verify the receipt on the spot (or no JWS
           // was present), leaving the App Store Server webhook as the only
           // remaining grant path. Do NOT claim success yet — poll for the
@@ -394,14 +407,21 @@ export default function PurchaseScreen() {
   async function handleRestore() {
     setRestoring(true);
     try {
-      const { restoredCount } = await restorePurchases();
+      const { restoredCount, rejectedCount } = await restorePurchases();
       await refreshUser();
-      Alert.alert(
-        restoredCount > 0 ? 'Purchases Restored' : 'No Purchases Found',
-        restoredCount > 0
-          ? `Restored ${restoredCount} purchase${restoredCount === 1 ? '' : 's'}.`
-          : 'We did not find any prior purchases for this Apple ID.',
-      );
+      if (restoredCount > 0) {
+        Alert.alert(
+          'Purchases Restored',
+          `Restored ${restoredCount} purchase${restoredCount === 1 ? '' : 's'}.`,
+        );
+      } else if (rejectedCount > 0) {
+        Alert.alert(
+          'Nothing to Restore Here',
+          "This Apple ID's purchase is registered to a different AnimationStation account, so it can't be added to this one. Sign in to the account that originally purchased it.",
+        );
+      } else {
+        Alert.alert('No Purchases Found', 'We did not find any prior purchases for this Apple ID.');
+      }
     } catch (err) {
       Alert.alert('Restore failed', err instanceof Error ? err.message : 'Unknown error.');
     } finally {

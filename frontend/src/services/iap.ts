@@ -207,20 +207,27 @@ function extractReceipt(purchase: PurchaseLike): string | null {
  * backend is the safety net that grants entitlement either way; we still
  * finish the transaction so StoreKit doesn't keep retrying.
  */
-export async function verifyAndFinish(purchase: PurchaseLike): Promise<{
+export interface VerifyReceiptResult {
   tier?: string;
   credits?: number;
   alreadyProcessed?: boolean;
+  // Transient/offline failure (network or 5xx) — the receipt wasn't applied on
+  // the spot, but the App Store Server webhook may still reconcile it. Safe to
+  // poll/refresh and treat as "pending".
   fastPathSkipped?: boolean;
-}> {
+  // The backend DEFINITIVELY rejected the receipt (HTTP 4xx). The common case is
+  // a 403 when the receipt's appAccountToken belongs to a DIFFERENT
+  // AnimationStation account — e.g. this Apple ID first subscribed while signed
+  // in as another account. Polling/the webhook won't grant it to THIS account,
+  // so it must NOT be reported as a successful restore, and the user should be
+  // told why.
+  rejected?: { status: number; code?: string };
+}
+
+export async function verifyAndFinish(purchase: PurchaseLike): Promise<VerifyReceiptResult> {
   const jwsRepresentation = extractReceipt(purchase);
 
-  let result: {
-    tier?: string;
-    credits?: number;
-    alreadyProcessed?: boolean;
-    fastPathSkipped?: boolean;
-  } = {};
+  let result: VerifyReceiptResult = {};
 
   if (jwsRepresentation) {
     try {
@@ -231,10 +238,21 @@ export async function verifyAndFinish(purchase: PurchaseLike): Promise<{
         credits?: number;
       }>('/credits/verify-receipt', { jwsRepresentation });
       result = data;
-    } catch {
-      // Backend verification failed — fall through to finishTransaction so
-      // StoreKit doesn't retry forever. The webhook will reconcile state.
-      result.fastPathSkipped = true;
+    } catch (err) {
+      const response = (err as { response?: { status?: number; data?: { error?: string } } })
+        ?.response;
+      const status = response?.status;
+      const code = response?.data?.error;
+      if (typeof status === 'number' && status >= 400 && status < 500) {
+        // Permanent rejection (foreign/duplicate/malformed receipt). Surface it —
+        // the webhook won't grant it to this account either.
+        result.rejected = { status, code };
+      } else {
+        // Transient (network / 5xx) — fall through to finishTransaction so
+        // StoreKit doesn't retry forever; the webhook reconciles state.
+        result.fastPathSkipped = true;
+      }
+      console.warn('[iap] verify-receipt failed', { status, code });
     }
   } else {
     // Surface what fields ARE on the object so we can update the extractor.
@@ -300,20 +318,32 @@ export async function flushPendingTransactions(): Promise<void> {
  * flow. We re-verify each available purchase against our backend so the user
  * lands in the correct tier even on a fresh install.
  */
-export async function restorePurchases(): Promise<{ restoredCount: number }> {
-  if (!IAP_AVAILABLE) return { restoredCount: 0 };
+export async function restorePurchases(): Promise<{
+  // Entitlements the backend actually applied to THIS account (success or
+  // already-on-file).
+  restoredCount: number;
+  // Purchases the backend refused for this account — almost always because the
+  // Apple ID's purchase is registered to a different AnimationStation account.
+  // Surfaced so the UI can explain instead of falsely claiming a restore.
+  rejectedCount: number;
+}> {
+  if (!IAP_AVAILABLE) return { restoredCount: 0, rejectedCount: 0 };
   await initIap();
   const purchases = (await IAP.getAvailablePurchases()) as unknown as PurchaseLike[];
   let restoredCount = 0;
+  let rejectedCount = 0;
   for (const purchase of purchases) {
-    try {
-      await verifyAndFinish(purchase);
+    // verifyAndFinish never throws — it captures verify/finish errors on the
+    // result — so a single bad receipt can't abort the loop.
+    const result = await verifyAndFinish(purchase);
+    if (result.rejected) {
+      rejectedCount += 1;
+    } else if (!result.fastPathSkipped) {
+      // Backend applied it: fresh success OR alreadyProcessed (already on file).
       restoredCount += 1;
-    } catch {
-      // Continue restoring others even if one fails
     }
   }
-  return { restoredCount };
+  return { restoredCount, rejectedCount };
 }
 
 /**

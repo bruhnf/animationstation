@@ -70,14 +70,23 @@ export default function SettingsScreen() {
   async function handleRestorePurchases() {
     setRestoring(true);
     try {
-      const { restoredCount } = await restorePurchases();
+      const { restoredCount, rejectedCount } = await restorePurchases();
       await refreshUser();
-      Alert.alert(
-        restoredCount > 0 ? 'Purchases Restored' : 'No Purchases Found',
-        restoredCount > 0
-          ? `Restored ${restoredCount} purchase${restoredCount === 1 ? '' : 's'}.`
-          : 'We did not find any prior purchases for this Apple ID.',
-      );
+      if (restoredCount > 0) {
+        Alert.alert(
+          'Purchases Restored',
+          `Restored ${restoredCount} purchase${restoredCount === 1 ? '' : 's'}.`,
+        );
+      } else if (rejectedCount > 0) {
+        // A purchase exists on this Apple ID, but it belongs to a different
+        // AnimationStation account — don't pretend it was restored.
+        Alert.alert(
+          'Nothing to Restore Here',
+          "This Apple ID's purchase is registered to a different AnimationStation account, so it can't be added to this one. Sign in to the account that originally purchased it.",
+        );
+      } else {
+        Alert.alert('No Purchases Found', 'We did not find any prior purchases for this Apple ID.');
+      }
     } catch (err) {
       Alert.alert('Error', err instanceof Error ? err.message : 'Could not restore purchases.');
     } finally {
