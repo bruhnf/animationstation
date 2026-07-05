@@ -24,11 +24,13 @@ Both boxes: Ubuntu 22.04, 2 GB RAM / 2 vCPU / 60 GB, 2 GB swap. SSH: `ssh ubuntu
 ```bash
 ssh ubuntu@34.227.203.230        # prod (54.173.136.56 for dev)
 cd /opt/animationstation && git pull
+chmod -R o+r website             # ⚠️ REQUIRED — see "website file permissions" below
 docker compose -f docker-compose.prod.yml up -d --build          # dev: docker-compose.dev.yml
 docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy   # ⚠️ REQUIRED after any schema change
 ```
 
-- **Website-only changes**: `git pull` + `docker restart animationstation-api` (bind mount, no rebuild).
+- **Website-only changes**: `git pull && chmod -R o+r website` (bind mount, served live by `express.static` — no rebuild or restart needed).
+- **⚠️ Website file permissions:** the deploy user's umask is `0007`, so files that `git pull` *rewrites* land as `-rw-rw----` (no world-read). The backend container runs as a non-root user and reads the bind-mounted `./website` via "other" perms — so any page a pull touched then returns **HTTP 500** (`EACCES ... open '/app/website/<file>.html'`) until it's world-readable again. Always run `chmod -R o+r website` after a `git pull` that changed website files. (Untouched files keep their existing `664` and are fine.)
 - **Secrets** (`.env` + `backend/.env`) are gitignored and survive `git pull`; backup copies in `/home/ubuntu/animationstation-secrets-backup/`.
 - **Build memory caution:** the boxes are 2 GB and shared — build ONE app at a time (never rebuild AnimationStation and the co-hosted app simultaneously).
 - **Branch model:** the **dev box checks out `develop`**, the **prod box checks out `main`**, so each box's `git pull` pulls its own branch. Do active work on `develop` → deploy to dev to test; when it's good, `git checkout main && git merge --ff-only develop && git push`, then deploy to prod. `main` stays release-stable because it's what the App Store / TestFlight build tracks.

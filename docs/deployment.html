@@ -58,11 +58,13 @@
 <h2 id="3-deploy" tabindex="-1"><a class="header-anchor" href="#3-deploy" aria-hidden="true">#</a> 3. Deploy</h2>
 <pre><code class="language-bash">ssh ubuntu@34.227.203.230        # prod (54.173.136.56 for dev)
 cd /opt/animationstation &amp;&amp; git pull
+chmod -R o+r website             # ⚠️ REQUIRED — see &quot;website file permissions&quot; below
 docker compose -f docker-compose.prod.yml up -d --build          # dev: docker-compose.dev.yml
 docker compose -f docker-compose.prod.yml exec backend npx prisma migrate deploy   # ⚠️ REQUIRED after any schema change
 </code></pre>
 <ul>
-<li><strong>Website-only changes</strong>: <code>git pull</code> + <code>docker restart animationstation-api</code> (bind mount, no rebuild).</li>
+<li><strong>Website-only changes</strong>: <code>git pull &amp;&amp; chmod -R o+r website</code> (bind mount, served live by <code>express.static</code> — no rebuild or restart needed).</li>
+<li><strong>⚠️ Website file permissions:</strong> the deploy user's umask is <code>0007</code>, so files that <code>git pull</code> <em>rewrites</em> land as <code>-rw-rw----</code> (no world-read). The backend container runs as a non-root user and reads the bind-mounted <code>./website</code> via &quot;other&quot; perms — so any page a pull touched then returns <strong>HTTP 500</strong> (<code>EACCES ... open '/app/website/&lt;file&gt;.html'</code>) until it's world-readable again. Always run <code>chmod -R o+r website</code> after a <code>git pull</code> that changed website files. (Untouched files keep their existing <code>664</code> and are fine.)</li>
 <li><strong>Secrets</strong> (<code>.env</code> + <code>backend/.env</code>) are gitignored and survive <code>git pull</code>; backup copies in <code>/home/ubuntu/animationstation-secrets-backup/</code>.</li>
 <li><strong>Build memory caution:</strong> the boxes are 2 GB and shared — build ONE app at a time (never rebuild AnimationStation and the co-hosted app simultaneously).</li>
 <li><strong>Branch model:</strong> the <strong>dev box checks out <code>develop</code></strong>, the <strong>prod box checks out <code>main</code></strong>, so each box's <code>git pull</code> pulls its own branch. Do active work on <code>develop</code> → deploy to dev to test; when it's good, <code>git checkout main &amp;&amp; git merge --ff-only develop &amp;&amp; git push</code>, then deploy to prod. <code>main</code> stays release-stable because it's what the App Store / TestFlight build tracks.</li>
