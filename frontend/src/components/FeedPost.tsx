@@ -25,9 +25,10 @@ const EXPANDED_CONTENT_FRACTION = 0.42;
 
 /**
  * One full-screen post in the immersive feed. The AI result fills the page:
- * videos (muted, looping, autoplaying) and images are shown edge-to-edge, and
- * an image that isn't the phone's aspect ratio is letterboxed (resizeMode
- * "contain") against black rather than cropped. The creator, caption, and the
+ * videos (muted, looping, autoplaying) and images both preserve their aspect
+ * ratio — anything that isn't the phone's aspect ratio is letterboxed
+ * (contentFit / resizeMode "contain") against black rather than cropped. The
+ * creator, caption, and the
  * like / comment / share / save / more actions are overlays on top of it (the
  * ✨AI-generated badge stays visible per Guideline 4.0; the ⋯ menu keeps
  * Report/Block reachable per Guideline 1.2).
@@ -151,11 +152,11 @@ export default function FeedPost({
             <VideoView
               player={player}
               style={styles.media}
-              contentFit="cover"
+              contentFit="contain"
               nativeControls={false}
             />
           ) : videoPoster ? (
-            <RetryableImage uri={videoPoster} style={styles.media} resizeMode="cover" />
+            <RetryableImage uri={videoPoster} style={styles.media} resizeMode="contain" />
           ) : (
             <View style={[styles.media, styles.placeholder]} />
           )
