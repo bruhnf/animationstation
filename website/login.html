@@ -62,13 +62,14 @@
     </div>
   </div>
 
-  <script src="/js/auth.js"></script>
+  <script src="/js/auth.js?v=20260709"></script>
   <script>
-    // Check if already logged in
+    // Only a real signed-in user gets bounced home. A browsing guest holds a
+    // token too, and must be able to reach this page to log in.
     if (checkAuthState()) {
       window.location.href = '/';
     }
-    
+
     // Check for verification success from URL params
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('verified') === 'true') {
@@ -88,24 +89,35 @@
       submitBtn.textContent = 'Logging in...';
       
       try {
-        const data = await login(email, password);
-        
-        // Check if email is verified
-        if (!data.user.verified) {
-          showError('Please verify your email before logging in. <a href="#" onclick="handleResend(\'' + email + '\');return false">Resend verification email</a>');
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Log In';
-          clearTokens();
-          return;
-        }
-        
+        await login(email, password);
+
         // Redirect to home
         window.location.href = '/';
       } catch (err) {
-        showError(err.message);
+        // The API rejects an unverified account with 403 EMAIL_NOT_VERIFIED
+        // rather than issuing tokens, so offer the resend link here.
+        if (err.code === 'EMAIL_NOT_VERIFIED') {
+          showError(
+            'Please verify your email before logging in. ' +
+            '<a href="#" onclick="handleResend(\'' + escapeAttr(email) + '\');return false">Resend verification email</a>'
+          );
+        } else {
+          showError(escapeHtml(err.message));
+        }
         submitBtn.disabled = false;
         submitBtn.textContent = 'Log In';
       }
+    }
+
+    // The error box renders HTML (for the resend link), so anything derived from
+    // user input has to be escaped on its way in.
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/\\/g, '\\\\');
     }
     
     async function handleResend(email) {

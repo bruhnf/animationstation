@@ -1,11 +1,12 @@
 // AnimationStation — Account-management page logic.
 // Reuses helpers from auth.js (API_BASE, authFetch [auto-refreshes on 401],
-// getProfile, getAccessToken, getUser, setUser, clearTokens, logout).
+// getProfile, isRealUser, getUser, setUser, clearTokens, logout).
 (function () {
   'use strict';
 
-  // ---- Auth guard: bounce to login if there's no session ----
-  if (!getAccessToken() || !getUser()) {
+  // ---- Auth guard: bounce to login unless a real account is signed in ----
+  // (a feed guest carries a token, but has no account to manage)
+  if (!isRealUser()) {
     window.location.href = '/login.html';
     return;
   }

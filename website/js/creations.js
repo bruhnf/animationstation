@@ -19,8 +19,9 @@
 (function () {
   'use strict';
 
-  // ---- Auth guard: bounce to login if there's no session ----
-  if (!getAccessToken() || !getUser()) {
+  // ---- Auth guard: bounce to login unless a real account is signed in ----
+  // (a feed guest carries a token, but owns no creations)
+  if (!isRealUser()) {
     window.location.href = '/login.html';
     return;
   }

@@ -33,16 +33,56 @@ function getUser() {
   return user ? JSON.parse(user) : null;
 }
 
-// Check if user is logged in and update UI
+// The feed mints an anonymous guest session on first visit (POST /auth/guest),
+// which puts a token + user into the same localStorage keys a real login uses.
+// So "is there a token?" is NOT the same question as "is this a signed-in user?"
+// — every auth gate on the site must ask isRealUser(), or a browsing guest looks
+// logged in and gets bounced away from the login/signup pages.
+function isGuestSession() {
+  const user = getUser();
+  return !!(user && user.isGuest && getAccessToken());
+}
+
+function isRealUser() {
+  const user = getUser();
+  return !!(user && !user.isGuest && getAccessToken());
+}
+
+// Turn an error response body into something a human can read. The API returns
+// either { error: '<message or CODE>' }, { error: <zod flatten object> } for a
+// 400, or { error: 'CODE', message: '<human text>' }.
+function errorMessage(data, fallback) {
+  if (!data) return fallback;
+  const err = data.error;
+  if (err && typeof err === 'object') {
+    const parts = [];
+    const fieldErrors = err.fieldErrors || {};
+    Object.keys(fieldErrors).forEach((field) => {
+      (fieldErrors[field] || []).forEach((msg) => parts.push(`${field}: ${msg}`));
+    });
+    (err.formErrors || []).forEach((msg) => parts.push(msg));
+    if (parts.length) return parts.join('. ');
+  }
+  return data.message || (typeof err === 'string' ? err : null) || fallback;
+}
+
+// Build an Error carrying the machine-readable API code, so callers can branch
+// on it (e.g. EMAIL_NOT_VERIFIED) instead of string-matching the display text.
+function apiError(data, fallback) {
+  const error = new Error(errorMessage(data, fallback));
+  if (data && typeof data.error === 'string') error.code = data.error;
+  return error;
+}
+
+// Check if a real (non-guest) user is signed in, and update UI to match.
 function checkAuthState() {
   const user = getUser();
-  const accessToken = getAccessToken();
-  
+
   const navAuth = document.getElementById('navAuth');
   const navUser = document.getElementById('navUser');
   const userName = document.getElementById('userName');
-  
-  if (user && accessToken) {
+
+  if (isRealUser()) {
     if (navAuth) navAuth.style.display = 'none';
     if (navUser) {
       navUser.style.display = 'flex';
@@ -88,20 +128,58 @@ async function login(email, password) {
   });
   
   const data = await response.json();
-  
+
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Login failed');
+    throw apiError(data, 'Login failed');
   }
-  
+
   setTokens(data.accessToken, data.refreshToken);
   setUser(data.user);
-  
+
   return data;
 }
 
 // Signup — email + password only; the backend generates a user####### handle
 // the user can change later in the app's Edit Profile.
+//
+// A visitor who browsed the feed already owns an anonymous guest row. Upgrading
+// that row in place (POST /auth/claim, authenticated as the guest) keeps their
+// id, handle, and any pending referral, rather than orphaning the guest and
+// creating a second account. A first-time visitor takes the plain signup path.
 async function signup(email, password) {
+  if (isGuestSession()) {
+    const response = await fetch(`${API_BASE}/auth/claim`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAccessToken()}`,
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Claim deletes the guest's refresh tokens server-side, so the session we
+      // hold is dead. Drop it: the visitor is now an unverified real account and
+      // must verify their email, then log in.
+      clearTokens();
+      return data;
+    }
+
+    // The stored guest session was stale (expired, already claimed, or the row
+    // was pruned). Fall through to a plain signup rather than dead-ending.
+    if (response.status === 401 || data.error === 'ALREADY_REAL_USER') {
+      clearTokens();
+    } else {
+      throw apiError(data, 'Signup failed');
+    }
+  }
+
+  return signupNewAccount(email, password);
+}
+
+async function signupNewAccount(email, password) {
   const response = await fetch(`${API_BASE}/auth/signup`, {
     method: 'POST',
     headers: {
@@ -109,13 +187,13 @@ async function signup(email, password) {
     },
     body: JSON.stringify({ email, password }),
   });
-  
+
   const data = await response.json();
-  
+
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Signup failed');
+    throw apiError(data, 'Signup failed');
   }
-  
+
   return data;
 }
 
@@ -203,10 +281,10 @@ async function resendVerification(email) {
   });
   
   const data = await response.json();
-  
+
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Failed to resend verification');
+    throw apiError(data, 'Failed to resend verification');
   }
-  
+
   return data;
 }

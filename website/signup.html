@@ -50,7 +50,7 @@
             minlength="8"
           >
           <small style="color: var(--color-gray-500); display: block; margin-top: 0.25rem;">
-            At least 8 characters
+            At least 8 characters, with an uppercase letter, a number, and a special character
           </small>
         </div>
         
@@ -77,13 +77,14 @@
     </div>
   </div>
 
-  <script src="/js/auth.js"></script>
+  <script src="/js/auth.js?v=20260709"></script>
   <script>
-    // Check if already logged in
+    // Only a real signed-in user gets bounced home. A browsing guest holds a
+    // token too, and must be able to reach this page to create an account.
     if (checkAuthState()) {
       window.location.href = '/';
     }
-    
+
     async function handleSignup(e) {
       e.preventDefault();
       
@@ -111,21 +112,28 @@
         document.getElementById('signupForm').style.display = 'none';
         showSuccess(`
           <strong>Account created!</strong><br><br>
-          We've sent a verification email to <strong>${email}</strong>.<br><br>
+          We've sent a verification email to <strong>${escapeHtml(email)}</strong>.<br><br>
           Please check your inbox and click the verification link to activate your account.
         `);
-        
+
         // Add link to login page
         document.querySelector('.auth-footer').innerHTML = `
           <p>Already verified? <a href="/login.html">Log in</a></p>
         `;
       } catch (err) {
-        showError(err.message);
+        showError(escapeHtml(err.message));
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create Account';
       }
     }
-    
+
+    // Both message boxes render HTML, so echo user input through this first.
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
     function showError(msg) {
       const el = document.getElementById('errorMsg');
       el.innerHTML = msg;
