@@ -153,7 +153,11 @@ body {
   justify-content: center;
   overflow: hidden;
 }
-/* Media: images letterbox (contain), videos cover — matching the app. */
+/* Media: images and videos both letterbox (contain) against the post's black
+   background, matching the app's FeedPost. A clip animated from a square or a
+   16:9 source does not share the viewport's aspect ratio, and "cover" cropped
+   its edges away; "contain" keeps the whole frame. A <video>'s poster is
+   painted with the same object-fit, so the still and the clip line up. */
 .feed-media {
   max-width: 100%;
   max-height: 100%;
@@ -161,9 +165,6 @@ body {
   height: 100%;
   object-fit: contain;
   display: block;
-}
-.feed-media.video {
-  object-fit: cover;
 }
 
 .post-scrim {
