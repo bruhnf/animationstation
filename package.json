@@ -7,12 +7,14 @@
     "build:docs": "node scripts/build-docs.js",
     "format": "prettier --write \"backend/src/**/*.ts\" \"frontend/**/*.{ts,tsx}\" \"*.{js,json}\" \".github/**/*.yml\"",
     "format:check": "prettier --check \"backend/src/**/*.ts\" \"frontend/**/*.{ts,tsx}\" \"*.{js,json}\" \".github/**/*.yml\"",
+    "test:web": "node tests/web/run.mjs",
     "prepare": "husky"
   },
   "devDependencies": {
     "husky": "^9.1.7",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.2.0",
+    "playwright": "^1.61.1",
     "prettier": "^3.8.4"
   }
 }
