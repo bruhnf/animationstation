@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="description" content="Buy AnimationStation credits or subscribe">
+  <title>Buy Credits &amp; Subscriptions | AnimationStation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .account-wrap { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    .account-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+    .account-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:var(--shadow-sm); }
+    .account-card h2 { font-size:1.1rem; margin:0 0 .25rem; }
+    .muted { color:var(--text-3); font-size:.9rem; line-height:1.5; margin:0 0 1rem; }
+    .plan-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:.75rem; }
+    .plan-card { border:1px solid var(--border-strong); border-radius:12px; padding:1rem; text-align:center; background:var(--surface-2); }
+    .plan-card.current { border-color: var(--cyan); }
+    .plan-card .amount { font-size:1.4rem; font-weight:700; margin:.25rem 0; }
+    .plan-card .sub { color:var(--text-3); font-size:.8rem; margin-bottom:.75rem; }
+    .pill-current { display:inline-block; padding:.15rem .6rem; border-radius:999px; font-size:.75rem; font-weight:600; background:rgba(52,211,153,.15); color:var(--success); margin-bottom:.5rem; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="account-wrap">
+    <div class="account-top">
+      <a href="/" class="nav-logo"><span class="logo-evo">Animation</span><span class="logo-face">Station</span></a>
+      <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+        <a class="btn btn-ghost" href="/account.html">My Account</a>
+        <a class="btn btn-ghost" href="/creations.html">My Creations</a>
+      </div>
+    </div>
+
+    <h1 style="margin:0 0 .25rem;">Buy Credits &amp; Subscriptions</h1>
+    <p class="muted">Payments are processed securely by Stripe. Prices match the AnimationStation iOS app.</p>
+
+    <div class="auth-error" id="errorMsg"></div>
+    <div class="auth-success" id="successMsg"></div>
+
+    <!-- Current plan -->
+    <div class="account-card">
+      <h2>Your plan</h2>
+      <p class="muted">Current plan: <strong id="curTier">—</strong> · Credits: <strong id="curCredits">—</strong></p>
+      <button class="btn btn-ghost hidden" id="portalBtn" onclick="openPortal()">Manage billing</button>
+    </div>
+
+    <!-- Subscriptions -->
+    <div class="account-card">
+      <h2>Subscribe</h2>
+      <p class="muted">Includes weekly creations at no extra cost, plus cheaper credit-pack pricing.</p>
+      <div class="plan-grid">
+        <div class="plan-card" id="planCardBasic">
+          <div>Basic</div>
+          <div class="amount">$9.99<span style="font-size:.8rem;">/mo</span></div>
+          <div class="sub">12 creations/week</div>
+          <button class="btn btn-primary" onclick="checkout('subscription.basic')">Subscribe</button>
+        </div>
+        <div class="plan-card" id="planCardPremium">
+          <div>Premium</div>
+          <div class="amount">$19.99<span style="font-size:.8rem;">/mo</span></div>
+          <div class="sub">24 creations/week</div>
+          <button class="btn btn-primary" onclick="checkout('subscription.premium')">Subscribe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credit packs -->
+    <div class="account-card">
+      <h2>Buy credits</h2>
+      <p class="muted">Per-credit price depends on your current plan (subscribers pay less).</p>
+      <div class="plan-grid">
+        <div class="plan-card"><div>10 credits</div><div class="amount" id="price10">—</div><button class="btn btn-primary" onclick="checkout('credits.10')">Buy</button></div>
+        <div class="plan-card"><div>25 credits</div><div class="amount" id="price25">—</div><button class="btn btn-primary" onclick="checkout('credits.25')">Buy</button></div>
+        <div class="plan-card"><div>50 credits</div><div class="amount" id="price50">—</div><button class="btn btn-primary" onclick="checkout('credits.50')">Buy</button></div>
+        <div class="plan-card"><div>100 credits</div><div class="amount" id="price100">—</div><button class="btn btn-primary" onclick="checkout('credits.100')">Buy</button></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <a href="/privacy.html">Privacy Policy</a><span class="dot">·</span>
+    <a href="/terms.html">Terms of Service</a><span class="dot">·</span>
+    <a href="/welcome.html">About</a><span class="dot">·</span>
+    <span>© 2026 AnimationStation</span>
+  </footer>
+
+  <script src="/js/auth.js?v=20260710"></script>
+  <script src="/js/buy.js?v=20260710"></script>
+</body>
+</html>

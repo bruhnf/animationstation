@@ -34,6 +34,11 @@ enum UserTier {
   PREMIUM
 }
 
+enum StripeProductKind {
+  CREDITS
+  SUBSCRIPTION
+}
+
 enum NotificationType {
   FOLLOW
   LIKE
@@ -148,6 +153,10 @@ model User {
   // Stable share code for the referral program (the user's username can change;
   // this can't). Generated lazily the first time the user opens Invite Friends.
   referralCode             String?   @unique
+  // Stripe Customer id (cus_...) for web purchases. Created lazily on first
+  // checkout so a user who only ever buys via Apple never gets one. Null =
+  // no web purchase yet.
+  stripeCustomerId         String?   @unique
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
@@ -163,6 +172,7 @@ model User {
   notifications      Notification[]      @relation("NotificationRecipient")
   actorNotifications Notification[]      @relation("NotificationActor")
   applePurchases     ApplePurchase[]
+  stripePurchases    StripePurchase[]
   reportsFiled       Report[]            @relation("ReportReporter")
   blocking           UserBlock[]         @relation("BlockerUser")
   blockedBy          UserBlock[]         @relation("BlockedUser")
@@ -319,6 +329,44 @@ model ApplePurchase {
   @@index([userId])
   @@index([originalTransactionId])
   @@map("apple_purchases")
+}
+
+// Records of web purchases made through Stripe Checkout — the web-only
+// counterpart to ApplePurchase. One row per Checkout Session (credit packs)
+// or per billing event we've acted on (subscriptions), keyed so retried
+// webhook deliveries are idempotent.
+model StripePurchase {
+  id                      String    @id @default(uuid())
+  userId                  String
+  // Stripe Checkout Session id (cs_...). Unique per session; the webhook uses
+  // this to make checkout.session.completed idempotent under retry.
+  stripeCheckoutSessionId String    @unique
+  stripeCustomerId        String
+  // Set for subscription-mode sessions (sub_...); null for one-time credit packs.
+  stripeSubscriptionId    String?
+  // Our internal catalog key from config/stripeProducts.ts (e.g. "credits.50",
+  // "subscription.basic") — NOT a Stripe Price id, since we price via price_data
+  // rather than pre-created Stripe Prices.
+  productKey              String
+  type                    StripeProductKind
+  // Subscription tier granted (subscription purchases only).
+  tier                    UserTier?
+  // Credits granted (credit-pack purchases only).
+  credits                 Int?
+  // Latest subscription status Stripe has reported (active/canceled/past_due/...).
+  // Null for one-time credit packs.
+  subscriptionStatus      String?
+  // Current billing period end for an active subscription, kept in sync by
+  // customer.subscription.updated events.
+  currentPeriodEnd        DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+  @@map("stripe_purchases")
 }
 
 model RefreshToken {

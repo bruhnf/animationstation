@@ -29,6 +29,10 @@
     setText('ovCredits', String(u.credits != null ? u.credits : 0));
     setText('ovVerified', u.verified ? 'Yes' : 'No');
     setText('subTier', tierLabel(u.tier));
+    // Only a paid tier COULD have a Stripe subscription to manage — avoid
+    // showing the button to FREE users where /api/billing/portal would 404
+    // (no Stripe customer on file yet).
+    if (u.tier === 'BASIC' || u.tier === 'PREMIUM') show('portalBtn');
     setVal('firstName', u.firstName || '');
     setVal('lastName', u.lastName || '');
     setVal('bio', u.bio || '');
@@ -85,6 +89,16 @@
       clearTokens();
       setTimeout(() => (window.location.href = '/login.html'), 1500);
     } catch (err) { showError(err.message); unbusy(btn, 'Update password'); }
+  };
+
+  // ---- Manage billing (GET /api/billing/portal → Stripe Billing Portal) ----
+  window.openBillingPortal = async function () {
+    try {
+      const res = await authFetch(`${API_BASE}/billing/portal`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
+      window.location.href = data.url;
+    } catch (err) { showError(err.message); }
   };
 
   // ---- Revoke AI consent (DELETE /profile/me/ai-consent) ----

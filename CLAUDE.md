@@ -58,7 +58,7 @@ node scripts/build-docs.js  # regenerate docs/*.html from the md docs
 ```
 
 ### Backend API surface (mounted in `backend/src/index.ts`)
-`/api/auth` (signup/login/refresh/guest/claim), `/api/transform` (submit a transform), `/api/creations` (history / `:jobId` status / privacy / title / bulk-delete + `/creations/:jobId/comments`), `/api/upload`, `/api/profile`, `/api/friends`, `/api/feed`, `/api/likes`, `/api/looks` (saved looks), `/api/closet` (text-to-image designs + cleanup), `/api/video` (image-to-video), `/api/credits` (+ Apple IAP verify-receipt), `/api/webhooks/apple`, `/api/admin` (X-Admin-Key), `/api/notifications`, `/api/referral`, `/api/share` + `/t/:jobId` (public share pages), `/api/splash`, `/api/config`, `/api/sms`.
+`/api/auth` (signup/login/refresh/guest/claim), `/api/transform` (submit a transform), `/api/creations` (history / `:jobId` status / privacy / title / bulk-delete + `/creations/:jobId/comments`), `/api/upload`, `/api/profile`, `/api/friends`, `/api/feed`, `/api/likes`, `/api/looks` (saved looks), `/api/closet` (text-to-image designs + cleanup), `/api/video` (image-to-video), `/api/credits` (+ Apple IAP verify-receipt), `/api/billing` (web Stripe checkout + billing portal), `/api/webhooks/apple`, `/api/webhooks/stripe`, `/api/admin` (X-Admin-Key), `/api/notifications`, `/api/referral`, `/api/share` + `/t/:jobId` (public share pages), `/api/splash`, `/api/config`, `/api/sms`.
 
 ## Architecture Notes
 
@@ -66,6 +66,7 @@ node scripts/build-docs.js  # regenerate docs/*.html from the md docs
 - **S3 prefixes** (bucket private, presigned reads via `services/imageUrlService.ts`): `source-images/`, `ref-images/`, `results/`, `videos/`, `closet/`, `splash/`. The DB stores bare S3 keys, never URLs.
 - **Guest mode:** first app open mints an anonymous guest (`POST /auth/guest`, device-scoped reuse). Guests browse everything; social writes are blocked by `blockGuests`; their creations are forced private. `POST /auth/claim` upgrades the same row to a real account.
 - **Credits & tiers:** `FREE/BASIC/PREMIUM` (`services/tierService.ts`); weekly included generations for subscribers, credits otherwise. Admin-tunable runtime settings live in the `app_settings` table (guest/signup/referral grants, video cost, soft-throttle config) via the admin dashboard `/admin`.
+- **Web purchases (Stripe):** mobile buys via Apple IAP (`routes/credits.ts` `verify-receipt` + `routes/appleWebhook.ts`); the website buys via Stripe Checkout instead (`routes/billing.ts` creates the session, `routes/stripeWebhook.ts` grants credits/tier on `checkout.session.completed` and keeps subscriptions in sync via `customer.subscription.updated/deleted`). Catalog + pricing: `config/stripeProducts.ts` (kept in dollar-parity with `TIER_CONFIG` and the Apple subscription prices — Checkout Sessions price via inline `price_data`, no pre-created Stripe Products needed). `website/buy.html` + `website/js/buy.js` are the purchase UI; `website/account.html` links out to it and to the Stripe Billing Portal (`GET /api/billing/portal`) for self-serve subscription management.
 - **Soft throttle:** bursts beyond a tier-scaled free quota get a short BullMQ delay + client countdown (`services/throttleService.ts`) — shared budget across image + video generations.
 - **Moderation:** Grok's content filters + a 3-warning refund grace on fully-blocked generations (`utils/moderationGrace.ts`, `services/moderationService.ts`); user reports + blocks (`/api/reports`, `/api/users/:id/block`) satisfy App Store Guideline 1.2. Every AI result carries an `AiGeneratedBadge` (Guideline 4.0).
 - **AI consent:** `User.aiProcessingConsentAt` gates every generation endpoint (403 `AI_CONSENT_REQUIRED`); the app surfaces `AiConsentModal` naming xAI (Guidelines 5.1.1(i)/5.1.2(i)).
@@ -96,11 +97,11 @@ The committed `frontend/src/config/api.ts` `ENV` must stay `'prod'` — CI enfor
 
 ## Database
 
-PostgreSQL 15 via Prisma. Schema: [backend/prisma/schema.prisma](backend/prisma/schema.prisma) (the authoritative reference — models `User`, `Creation`, `ClosetItem`, `Comment`, `CommentLike`, `Like`, `SavedLook`, `Follow`, `Notification`, `Report`, `UserBlock`, `Referral`, `ApplePurchase`, `CreditTransaction`, `RefreshToken`, `UserLocation`, `AppSetting`, `VulnerabilityReport`, `SmsOptIn`). Migrations were squashed to a single init migration when the app got its own identity (2026-07-01); the DB uses the `citext` extension for case-insensitive usernames/emails.
+PostgreSQL 15 via Prisma. Schema: [backend/prisma/schema.prisma](backend/prisma/schema.prisma) (the authoritative reference — models `User`, `Creation`, `ClosetItem`, `Comment`, `CommentLike`, `Like`, `SavedLook`, `Follow`, `Notification`, `Report`, `UserBlock`, `Referral`, `ApplePurchase`, `StripePurchase`, `CreditTransaction`, `RefreshToken`, `UserLocation`, `AppSetting`, `VulnerabilityReport`, `SmsOptIn`). Migrations were squashed to a single init migration when the app got its own identity (2026-07-01); the DB uses the `citext` extension for case-insensitive usernames/emails.
 
 ## Environment Variables
 
-See [backend/.env.example](backend/.env.example) for the full annotated list: `DATABASE_URL`, `JWT_SECRET`/`JWT_REFRESH_SECRET`, `REFRESH_TOKEN_ROTATION`, `ADMIN_API_KEY`/`ADMIN_EMAILS`, AWS + `AWS_S3_BUCKET`, `REDIS_URL`, `GROK_API_KEY`, `ALLOWED_ORIGINS`, `APP_URL`, SMTP/SES sender config, Apple IAP config (`APPLE_BUNDLE_ID` = `ai.animationstation.app`, root certs dir, Server API key), `SENTRY_*`, `WORKER_ENABLED`.
+See [backend/.env.example](backend/.env.example) for the full annotated list: `DATABASE_URL`, `JWT_SECRET`/`JWT_REFRESH_SECRET`, `REFRESH_TOKEN_ROTATION`, `ADMIN_API_KEY`/`ADMIN_EMAILS`, AWS + `AWS_S3_BUCKET`, `REDIS_URL`, `GROK_API_KEY`, `ALLOWED_ORIGINS`, `APP_URL`, SMTP/SES sender config, Apple IAP config (`APPLE_BUNDLE_ID` = `ai.animationstation.app`, root certs dir, Server API key), `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` (web purchases — see [DEPLOYMENT.md](DEPLOYMENT.md) §9), `SENTRY_*`, `WORKER_ENABLED`.
 
 ## Git workflow
 

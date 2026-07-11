@@ -74,9 +74,14 @@
 
     <!-- Subscription -->
     <div class="account-card">
-      <h2>Subscription</h2>
+      <h2>Subscription &amp; credits</h2>
       <div class="account-row"><span class="label">Current plan</span><span class="value" id="subTier">—</span></div>
-      <p class="muted">Subscriptions and credits are purchased and managed through the App Store on your iPhone. To change or cancel, open <a href="https://apps.apple.com/account/subscriptions" target="_blank" rel="noopener">Apple&nbsp;→&nbsp;Subscriptions</a> or the AnimationStation app. (Web purchases aren't offered, per App&nbsp;Store policy.)</p>
+      <p class="muted">Buy credits or subscribe right here on the web, or in the AnimationStation iOS app — either way, your plan and credits stay in sync on your account.</p>
+      <div class="row-actions">
+        <a class="btn btn-primary" href="/buy.html">Buy credits / subscribe</a>
+        <button class="btn btn-ghost hidden" id="portalBtn" onclick="openBillingPortal()">Manage billing</button>
+      </div>
+      <p class="muted" style="margin-top:.75rem;">Subscribed via the App Store instead? Manage that from <a href="https://apps.apple.com/account/subscriptions" target="_blank" rel="noopener">Apple&nbsp;→&nbsp;Subscriptions</a> or the AnimationStation app.</p>
     </div>
 
     <!-- Change password -->

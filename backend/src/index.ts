@@ -37,6 +37,8 @@ import shareRoutes, { pageRouter as sharePageRouter } from './routes/share';
 import referralRoutes from './routes/referral';
 import looksRoutes from './routes/looks';
 import videoRoutes from './routes/video';
+import billingRoutes from './routes/billing';
+import stripeWebhookRoutes from './routes/stripeWebhook';
 
 // BullMQ workers (consumers) + their schedulers are started below, AFTER the
 // server is listening, and ONLY when env.workerEnabled (WORKER_ENABLED !==
@@ -95,6 +97,12 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
   }),
 );
+
+// Stripe webhook signature verification needs the EXACT raw request body
+// bytes, so its raw-body parser must run before the global express.json()
+// below swallows the stream. Must be registered on the specific path, not
+// globally, or every other route would receive a Buffer instead of parsed JSON.
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
 // Body parsing with size limits
 app.use(express.json({ limit: '1mb' }));
@@ -275,7 +283,9 @@ app.use('/api/referral', referralRoutes);
 app.use('/api/looks', looksRoutes);
 app.use('/api/closet', closetRoutes);
 app.use('/api/video', videoRoutes);
+app.use('/api/billing', billingRoutes);
 app.use('/api/webhooks', appleWebhookRoutes);
+app.use('/api/webhooks', stripeWebhookRoutes);
 app.use('/api', moderationRoutes);
 // Mounted at /api so paths can be `/creations/:jobId/comments` (extending the
 // existing /api/creations namespace without modifying creationsRoutes) and

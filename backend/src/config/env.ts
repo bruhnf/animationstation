@@ -122,6 +122,16 @@ export const env = {
     serverApiIssuerId: optional('APPLE_API_KEY_ISSUER_ID'), // UUID from App Store Connect
     serverApiKeyPath: optional('APPLE_API_KEY_PATH'), // absolute or relative path to the .p8 file
   },
+
+  // Stripe — web-only credit/subscription purchases (mobile stays Apple IAP;
+  // see config/stripeProducts.ts). Both empty in dev unless you're testing
+  // against a real Stripe test-mode account.
+  stripe: {
+    secretKey: optional('STRIPE_SECRET_KEY'),
+    // Signing secret for the /api/webhooks/stripe endpoint (Stripe CLI or
+    // Dashboard → Webhooks → the endpoint's "Signing secret").
+    webhookSecret: optional('STRIPE_WEBHOOK_SECRET'),
+  },
 };
 
 // Fail loud at boot if obvious misconfigurations are present in production.

@@ -85,3 +85,20 @@ docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/animatio
 - Docker build caches grow unbounded on 60 GB disks — a monthly cron runs `docker builder prune --keep-storage 5GB` on both boxes. Manual: `docker system df` to inspect, `docker image prune -a` for dangling images.
 - DB user/database: `animationstation` / `animationstation_db` (see box `.env`).
 - Email: outbound sender is `noreply@animationstation.ai` (set `SES_FROM_ADDRESS` in each box `.env`). **Prerequisite:** the `animationstation.ai` domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (`support@`, `privacy@`, `dmca@animationstation.ai`) are inbound mailboxes/aliases and are independent of SES.
+
+## 9. Stripe web purchases
+
+Web-only credit/subscription purchases (mobile stays Apple IAP). Catalog + pricing live in `backend/src/config/stripeProducts.ts`; routes are `backend/src/routes/billing.ts` (checkout + billing portal) and `backend/src/routes/stripeWebhook.ts`.
+
+- **Set per box**, in that box's `backend/.env`:
+  - `STRIPE_SECRET_KEY` — a Stripe secret key. If this Stripe account is shared with another project, use a **restricted key** scoped to Checkout Sessions, Billing Portal, Customers, and Subscriptions only.
+  - `STRIPE_WEBHOOK_SECRET` — the signing secret for this box's webhook endpoint.
+- **Webhook endpoint** (Dashboard → Developers → Webhooks → Add endpoint): `https://<box-host>/api/webhooks/stripe`, subscribed to `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`. Dev and prod need **separate** endpoints (separate signing secrets) since they're separate hostnames.
+- **Local dev without a real endpoint**: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` prints a `whsec_...` — use that as `STRIPE_WEBHOOK_SECRET`.
+- Test-mode vs live-mode keys are entirely separate in Stripe — use test keys on the dev box, live keys only on prod, once you're ready to accept real charges.
+- No products/prices need to be pre-created in the Stripe Dashboard — Checkout Sessions are created with inline `price_data`, so the catalog file above is the single source of truth for pricing.
+- If this Stripe account is shared with another business: every Checkout Session and Subscription is tagged with `metadata.productKey` from our catalog, and the webhook only acts on events carrying one of those keys — events for the other business's products are ignored, not double-processed. Payouts and Dashboard-level revenue reports are NOT separated by product automatically; that reconciliation is manual.
+
+- Docker build caches grow unbounded on 60 GB disks — a monthly cron runs `docker builder prune --keep-storage 5GB` on both boxes. Manual: `docker system df` to inspect, `docker image prune -a` for dangling images.
+- DB user/database: `animationstation` / `animationstation_db` (see box `.env`).
+- Email: outbound sender is `noreply@animationstation.ai` (set `SES_FROM_ADDRESS` in each box `.env`). **Prerequisite:** the `animationstation.ai` domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (`support@`, `privacy@`, `dmca@animationstation.ai`) are inbound mailboxes/aliases and are independent of SES.
