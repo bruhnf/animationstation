@@ -25,6 +25,7 @@
     muted: true, // shared across all feed videos this session (starts muted)
     posts: [], // rendered job objects (for lookup by id)
     me: null, // current user (real or guest)
+    unreadCount: 0, // notifications badge — mirrors useNotificationStore on mobile
   };
   var players = {}; // jobId -> <video> element
   var activeId = null;
@@ -54,6 +55,8 @@
         state.me = await getProfile();
         renderBanner();
       } catch (e) { /* keep cached state.me */ }
+      loadUnreadCount();
+      setInterval(loadUnreadCount, 45000);
     }
     bindEndSentinel();
     await loadMore();
@@ -117,6 +120,9 @@
       var u = getUser();
       var credits = typeof u.credits === 'number' ? u.credits : 0;
       var low = credits <= LOW_CREDITS_THRESHOLD;
+      var notifBadge = state.unreadCount > 0
+        ? '<span class="notif-badge">' + (state.unreadCount > 9 ? '9+' : state.unreadCount) + '</span>'
+        : '';
       right.innerHTML =
         '<a class="banner-link banner-hide-sm" href="/creations.html">My Creations</a>' +
         '<a class="credits-pill' + (low ? ' low' : '') + '" href="/buy.html" title="Buy credits / subscribe">' +
@@ -124,6 +130,7 @@
           '<span class="credits-pill-tier">' + tierLabel(u.tier) + '</span>' +
         '</a>' +
         '<button class="banner-icon-btn" title="Search" onclick="Feed.openSearch()">&#128269;</button>' +
+        '<button class="banner-icon-btn" title="Notifications" onclick="Feed.openNotifications()">&#128276;' + notifBadge + '</button>' +
         '<a class="banner-avatar-link" href="/account.html" title="My Account">' + avatarBadgeHtml(u.avatarUrl, u.firstName || u.username) + '</a>' +
         '<button class="banner-ghost banner-hide-sm" onclick="logout()">Log out</button>';
     } else {
@@ -735,6 +742,142 @@
     } catch (e) { toast('Could not update follow.'); }
     finally { btn.disabled = false; }
   }
+
+  // ---- Notifications panel ---- (mirrors mobile InboxScreen.tsx)
+  async function loadUnreadCount() {
+    try {
+      var res = await authFetch(API_BASE + '/notifications/unread-count');
+      if (!res.ok) return;
+      var data = await res.json();
+      state.unreadCount = data.unreadCount || 0;
+      renderBanner();
+    } catch (e) { /* non-fatal — badge just stays as last known */ }
+  }
+
+  window.Feed.openNotifications = function () {
+    $('notificationsOverlay').classList.remove('hidden');
+    // Mirrors mobile: opening the inbox optimistically clears the badge (a
+    // local "seen" signal), independent of the per-item `read` flag each row
+    // still shows until tapped or "Mark all read" is used.
+    state.unreadCount = 0;
+    renderBanner();
+    loadNotifications();
+  };
+  window.Feed.closeNotifications = function () { $('notificationsOverlay').classList.add('hidden'); };
+
+  async function loadNotifications() {
+    var body = $('notificationsBody');
+    body.innerHTML = '<div class="feed-status"><div class="spinner"></div></div>';
+    try {
+      var res = await authFetch(API_BASE + '/notifications?page=1');
+      if (!res.ok) throw new Error();
+      var data = await res.json();
+      var list = data.notifications || [];
+      renderNotifications(list);
+      $('markAllReadBtn').classList.toggle('hidden', !list.some(function (n) { return !n.read; }));
+    } catch (e) {
+      body.innerHTML = '<div class="comment-empty">Could not load notifications.</div>';
+    }
+  }
+
+  function notifMessage(type) {
+    return ({
+      FOLLOW: 'started following you',
+      LIKE: 'liked your creation',
+      COMMENT: 'commented on your creation',
+      COMMENT_REPLY: 'replied to your comment',
+      COMMENT_LIKE: 'liked your comment',
+      CREATION_COMPLETE: 'Your creation is ready',
+    })[type] || '';
+  }
+
+  function renderNotifications(list) {
+    var body = $('notificationsBody');
+    body.innerHTML = '';
+    if (!list.length) {
+      body.innerHTML = '<div class="comment-empty">No notifications yet. When people follow or like your creations, you\'ll see them here.</div>';
+      return;
+    }
+    list.forEach(function (n) { body.appendChild(notifRow(n)); });
+  }
+
+  function notifRow(n) {
+    var row = document.createElement('div');
+    row.className = 'notif-row' + (n.read ? '' : ' unread');
+    row.appendChild(avatarEl(n.actor && n.actor.avatarUrl, n.actor && n.actor.username, 'u-avatar'));
+
+    var main = document.createElement('div');
+    main.className = 'notif-main';
+    var actorName = n.actor ? (fullName(n.actor) || ('@' + n.actor.username)) : 'Someone';
+    main.innerHTML = '<div class="notif-text"><strong>' + escapeHtml(actorName) + '</strong> ' +
+      escapeHtml(notifMessage(n.type)) + '</div>' +
+      '<div class="notif-time">' + timeAgo(n.createdAt) + '</div>';
+    row.appendChild(main);
+
+    var thumbUrl = n.job && (n.job.resultImageUrl || n.job.resultImage2Url);
+    if (thumbUrl) {
+      var img = document.createElement('img');
+      img.className = 'notif-thumb';
+      img.src = thumbUrl;
+      img.alt = '';
+      row.appendChild(img);
+    }
+    row.onclick = function () { handleNotificationClick(n, row); };
+    return row;
+  }
+
+  async function handleNotificationClick(n, row) {
+    if (!n.read) {
+      n.read = true;
+      if (row) row.classList.remove('unread');
+      authFetch(API_BASE + '/notifications/' + n.id + '/read', { method: 'PATCH' }).catch(function () {});
+    }
+    // Same targets as mobile's handlePress: a job-linked interaction opens
+    // that creation's comment thread (deep-linking to the specific comment
+    // when one is referenced); FOLLOW (or anything without a job) opens the
+    // actor's profile. CREATION_COMPLETE has no actor and isn't handled here
+    // on mobile either — matching that rather than inventing new behavior.
+    if ((n.type === 'COMMENT' || n.type === 'COMMENT_REPLY' || n.type === 'COMMENT_LIKE' || n.type === 'LIKE') && n.jobId) {
+      window.Feed.closeNotifications();
+      // openComments()/canDeleteComment() need the full job (esp. job.user,
+      // to know if the viewer owns the post) — a notification only carries
+      // the jobId, so fetch the real job first rather than passing a stub.
+      try {
+        var res = await authFetch(API_BASE + '/creations/' + n.jobId);
+        if (!res.ok) throw new Error();
+        var job = await res.json();
+        await openComments(job);
+        if (n.commentId) highlightComment(n.commentId);
+      } catch (e) {
+        toast('Could not open that creation.');
+      }
+      return;
+    }
+    if (n.actor && n.actor.username) {
+      window.Feed.closeNotifications();
+      openProfile(n.actor.username);
+    }
+  }
+
+  function highlightComment(commentId) {
+    setTimeout(function () {
+      var el = $('commentsBody').querySelector('[data-comment-id="' + cssEsc(commentId) + '"]');
+      if (!el) return;
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      el.classList.add('comment-highlight');
+      setTimeout(function () { el.classList.remove('comment-highlight'); }, 2000);
+    }, 150);
+  }
+
+  window.Feed.markAllNotificationsRead = async function () {
+    try {
+      await authFetch(API_BASE + '/notifications/read-all', { method: 'POST' });
+      Array.prototype.forEach.call($('notificationsBody').querySelectorAll('.notif-row.unread'), function (el) {
+        el.classList.remove('unread');
+      });
+      $('markAllReadBtn').classList.add('hidden');
+    } catch (e) { toast('Could not mark all as read.'); }
+  };
 
   // ---- Profile panel ----
   async function openProfile(username) {
