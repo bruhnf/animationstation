@@ -33,6 +33,31 @@
     .blocked-list { list-style:none; padding:0; margin:.5rem 0 0; }
     .blocked-list li { display:flex; justify-content:space-between; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border); }
     .hidden { display:none; }
+
+    /* Credits/tier — prominent and clickable, not a buried row in the account
+       list. The .low variant (see account.js) pulses to nudge toward Buy more. */
+    .credits-banner {
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+      text-decoration:none; margin-bottom:1.25rem; padding:.9rem 1.25rem; border-radius:14px;
+      background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(168,85,247,.18));
+      border:1px solid rgba(34,211,238,.5);
+    }
+    .credits-banner-info { display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; }
+    .credits-banner-icon { font-size:1.3rem; }
+    .credits-banner-count { font-size:1.5rem; font-weight:800; color:var(--cyan); }
+    .credits-banner-word { color:var(--text-2); font-size:.9rem; }
+    .credits-banner-tier { padding:.15rem .55rem; border-radius:999px; background:var(--glass); border:1px solid var(--border-strong); font-size:.78rem; font-weight:700; color:var(--text); }
+    .credits-banner-cta { color:var(--text); font-weight:700; font-size:.9rem; white-space:nowrap; }
+    .credits-banner.low {
+      background:linear-gradient(135deg, rgba(255,92,114,.22), rgba(255,176,32,.22));
+      border-color:var(--danger);
+      animation: creditsBannerPulse 2.2s ease-in-out infinite;
+    }
+    .credits-banner.low .credits-banner-count { color:var(--danger); }
+    @keyframes creditsBannerPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255,92,114,.4); }
+      50% { box-shadow: 0 0 0 8px rgba(255,92,114,0); }
+    }
   </style>
 </head>
 <body>
@@ -51,13 +76,23 @@
     <div class="auth-error" id="errorMsg"></div>
     <div class="auth-success" id="successMsg"></div>
 
+    <!-- Credits/tier — prominent, not buried in the list below -->
+    <a class="credits-banner" id="creditsBanner" href="/buy.html" title="Buy credits / subscribe">
+      <span class="credits-banner-info">
+        <span class="credits-banner-icon">&#9889;</span>
+        <span class="credits-banner-count" id="cbCredits">—</span>
+        <span class="credits-banner-word">credits</span>
+        <span class="credits-banner-tier" id="cbTier">—</span>
+      </span>
+      <span class="credits-banner-cta">Buy more &rarr;</span>
+    </a>
+
     <!-- Overview -->
     <div class="account-card">
       <h2>Account</h2>
       <div class="account-row"><span class="label">Username</span><span class="value" id="ovUsername">—</span></div>
       <div class="account-row"><span class="label">Email</span><span class="value" id="ovEmail">—</span></div>
       <div class="account-row"><span class="label">Plan</span><span class="value" id="ovTier">—</span></div>
-      <div class="account-row"><span class="label">Credits</span><span class="value" id="ovCredits">—</span></div>
       <div class="account-row"><span class="label">Email verified</span><span class="value" id="ovVerified">—</span></div>
     </div>
 
@@ -132,7 +167,7 @@
     <span>© 2026 AnimationStation</span>
   </footer>
 
-  <script src="/js/auth.js?v=20260709"></script>
-  <script src="/js/account.js?v=20260709"></script>
+  <script src="/js/auth.js?v=20260711"></script>
+  <script src="/js/account.js?v=20260711"></script>
 </body>
 </html>

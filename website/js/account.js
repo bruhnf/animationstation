@@ -22,13 +22,19 @@
     }
   }
 
+  var LOW_CREDITS_THRESHOLD = 3;
+
   function populate(u) {
     setText('ovUsername', u.username || '—');
     setText('ovEmail', u.email || '—');
     setText('ovTier', tierLabel(u.tier));
-    setText('ovCredits', String(u.credits != null ? u.credits : 0));
     setText('ovVerified', u.verified ? 'Yes' : 'No');
     setText('subTier', tierLabel(u.tier));
+
+    const credits = u.credits != null ? u.credits : 0;
+    setText('cbCredits', String(credits));
+    setText('cbTier', tierLabel(u.tier));
+    document.getElementById('creditsBanner')?.classList.toggle('low', credits <= LOW_CREDITS_THRESHOLD);
     // Only a paid tier COULD have a Stripe subscription to manage — avoid
     // showing the button to FREE users where /api/billing/portal would 404
     // (no Stripe customer on file yet).

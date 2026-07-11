@@ -45,6 +45,16 @@
     }
     state.me = getUser();
     renderBanner();
+    // Refresh from the server once real (avatarUrl is a presigned URL that can
+    // expire, and credits/tier drift after a purchase) — cached localStorage
+    // user is only ever as fresh as the last login. Non-fatal: keep the cached
+    // banner if this fails.
+    if (isRealUser()) {
+      try {
+        state.me = await getProfile();
+        renderBanner();
+      } catch (e) { /* keep cached state.me */ }
+    }
     bindEndSentinel();
     await loadMore();
   }
@@ -87,18 +97,35 @@
   }
 
   // ---- Top banner (auth-aware) ----
+  // Credits are surfaced as a pill (not buried text) so a user always sees
+  // their balance without digging into Account — mirrors the credits-chip on
+  // create.html. "low" styling below a threshold nudges toward /buy.html.
+  var LOW_CREDITS_THRESHOLD = 3;
+  function tierLabel(t) { return ({ FREE: 'Free', BASIC: 'Basic', PREMIUM: 'Premium' })[t] || 'Free'; }
+
+  function avatarBadgeHtml(url, username) {
+    if (url) {
+      return '<img class="banner-avatar" src="' + escapeHtml(url) + '" alt="' + escapeHtml(username || 'Account') + '">';
+    }
+    return '<span class="banner-avatar banner-avatar-fallback">' + escapeHtml((username || '?').charAt(0).toUpperCase()) + '</span>';
+  }
+
   function renderBanner() {
     var right = $('bannerRight');
     if (!right) return;
     if (isRealUser()) {
       var u = getUser();
+      var credits = typeof u.credits === 'number' ? u.credits : 0;
+      var low = credits <= LOW_CREDITS_THRESHOLD;
       right.innerHTML =
-        '<a class="banner-link banner-hide-sm" href="/create.html">Create</a>' +
         '<a class="banner-link banner-hide-sm" href="/creations.html">My Creations</a>' +
+        '<a class="credits-pill' + (low ? ' low' : '') + '" href="/buy.html" title="Buy credits / subscribe">' +
+          '<span class="credits-pill-amt">&#9889; ' + credits + '</span>' +
+          '<span class="credits-pill-tier">' + tierLabel(u.tier) + '</span>' +
+        '</a>' +
         '<button class="banner-icon-btn" title="Search" onclick="Feed.openSearch()">&#128269;</button>' +
-        '<span class="banner-greeting">Hi, ' + escapeHtml(u.firstName || u.username) + '</span>' +
-        '<a class="banner-ghost banner-hide-sm" href="/account.html">Account</a>' +
-        '<button class="banner-ghost" onclick="logout()">Log out</button>';
+        '<a class="banner-avatar-link" href="/account.html" title="My Account">' + avatarBadgeHtml(u.avatarUrl, u.firstName || u.username) + '</a>' +
+        '<button class="banner-ghost banner-hide-sm" onclick="logout()">Log out</button>';
     } else {
       right.innerHTML =
         '<button class="banner-icon-btn" title="Search" onclick="Feed.openSearch()">&#128269;</button>' +
@@ -236,12 +263,36 @@
     return wrap;
   }
 
+  // Inline SVG icons for the action rail. Text/emoji glyphs (♡, ↪, 🔖) render
+  // wildly inconsistently across OS emoji fonts — on some systems the outline
+  // heart falls back to an unrelated glyph that looks nothing like a heart
+  // until "liked" swaps it for the (universally supported) solid ❤. SVG is
+  // rendered the same everywhere, so the icon means the same thing at rest
+  // and when active.
+  function svgIcon(name, active) {
+    switch (name) {
+      case 'heart':
+        return active
+          ? '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21.35s-7.6-4.6-10.2-9.28C.4 9.02 1.6 5.3 5.2 4.5c2.1-.47 4.2.44 5.5 2.2 1.3-1.76 3.4-2.67 5.5-2.2 3.6.8 4.8 4.52 3.4 7.57C19.6 16.75 12 21.35 12 21.35z"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21.35s-7.6-4.6-10.2-9.28C.4 9.02 1.6 5.3 5.2 4.5c2.1-.47 4.2.44 5.5 2.2 1.3-1.76 3.4-2.67 5.5-2.2 3.6.8 4.8 4.52 3.4 7.57C19.6 16.75 12 21.35 12 21.35z"/></svg>';
+      case 'share':
+        // Upward arrow out of a tray — the standard cross-platform "share/export" mark.
+        return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M7.5 7.5L12 3l4.5 4.5"/><path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/></svg>';
+      case 'bookmark':
+        return active
+          ? '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 3a1 1 0 0 0-1 1v17l7-4.2 7 4.2V4a1 1 0 0 0-1-1H6z"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3a1 1 0 0 0-1 1v17l7-4.2 7 4.2V4a1 1 0 0 0-1-1H6z"/></svg>';
+      default:
+        return '';
+    }
+  }
+
   function renderRail(job) {
     var rail = document.createElement('div');
     rail.className = 'post-rail';
 
     // Like
-    var like = railBtn(job.liked ? '❤' : '♡', job.likesCount, 'like-btn');
+    var like = railBtn(svgIcon('heart', !!job.liked), job.likesCount, 'like-btn');
     if (job.liked) like.classList.add('liked');
     like.onclick = function () { toggleLike(job, like); };
     rail.appendChild(like);
@@ -252,14 +303,13 @@
     rail.appendChild(comment);
 
     // Share
-    var share = railBtn('↪', null, 'share-btn');
+    var share = railBtn(svgIcon('share'), null, 'share-btn');
     share.onclick = function () { shareJob(job); };
     rail.appendChild(share);
 
     // Save
-    var save = railBtn(job.saved ? '🔖' : '🤍', null, 'save-btn');
+    var save = railBtn(svgIcon('bookmark', !!job.saved), null, 'save-btn');
     if (job.saved) save.classList.add('saved');
-    save.querySelector('.rail-icon').innerHTML = job.saved ? '&#128278;' : '&#128278;';
     save.onclick = function () { toggleSave(job, save); };
     rail.appendChild(save);
 
@@ -275,7 +325,7 @@
     b.className = 'rail-btn ' + (cls || '');
     var ic = document.createElement('span');
     ic.className = 'rail-icon';
-    ic.textContent = icon;
+    ic.innerHTML = icon; // icon is always a static string we author (emoji or the svgIcon() markup above), never user data
     b.appendChild(ic);
     var c = document.createElement('span');
     c.className = 'rail-count';
@@ -369,7 +419,7 @@
   }
   function paintLike(job, btn) {
     btn.classList.toggle('liked', job.liked);
-    btn.querySelector('.rail-icon').textContent = job.liked ? '❤' : '♡';
+    btn.querySelector('.rail-icon').innerHTML = svgIcon('heart', job.liked);
     btn.querySelector('.rail-count').textContent = job.likesCount > 0 ? String(job.likesCount) : '';
   }
   function revertLike(job, btn, wasTarget) {
@@ -378,22 +428,27 @@
     paintLike(job, btn);
   }
 
+  function paintSave(job, btn) {
+    btn.classList.toggle('saved', job.saved);
+    btn.querySelector('.rail-icon').innerHTML = svgIcon('bookmark', job.saved);
+  }
+
   async function toggleSave(job, btn) {
     if (!requireReal('Sign up to save creations.')) return;
     var target = !job.saved;
     job.saved = target;
-    btn.classList.toggle('saved', target);
+    paintSave(job, btn);
     try {
       var res = await authFetch(API_BASE + '/looks/' + job.id, { method: target ? 'POST' : 'DELETE' });
       if (!res.ok) {
         var d = await res.json().catch(function () { return {}; });
-        if (d.error === 'GUEST_SIGNUP_REQUIRED') { job.saved = !target; btn.classList.toggle('saved', !target); return requireReal('Sign up to save creations.'); }
+        if (d.error === 'GUEST_SIGNUP_REQUIRED') { job.saved = !target; paintSave(job, btn); return requireReal('Sign up to save creations.'); }
         throw new Error();
       }
       toast(target ? 'Saved' : 'Removed from saved');
     } catch (e) {
       job.saved = !target;
-      btn.classList.toggle('saved', !target);
+      paintSave(job, btn);
       toast('Could not update saved.');
     }
   }

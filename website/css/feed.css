@@ -107,20 +107,79 @@ body {
 .banner-ghost:hover {
   border-color: var(--cyan);
 }
-.banner-greeting {
-  color: var(--text-2);
-  font-size: 0.9rem;
-  font-weight: 600;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Credits/tier pill — always visible (never hidden at small widths), so a
+   user's balance is never buried the way it was in the old account-page list.
+   The `.low` variant swaps to an amber gradient + a slow pulse to nudge
+   towards /buy.html once credits run low. */
+.credits-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
   white-space: nowrap;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(168, 85, 247, 0.22));
+  border: 1px solid rgba(34, 211, 238, 0.5);
+  color: var(--text);
 }
+.credits-pill-amt {
+  color: var(--cyan);
+}
+.credits-pill-tier {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--glass);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.credits-pill.low {
+  background: linear-gradient(135deg, rgba(255, 92, 114, 0.25), rgba(255, 176, 32, 0.25));
+  border-color: var(--danger);
+  animation: creditsPillPulse 2.2s ease-in-out infinite;
+}
+.credits-pill.low .credits-pill-amt {
+  color: var(--danger);
+}
+@keyframes creditsPillPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 92, 114, 0.45); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 92, 114, 0); }
+}
+
+/* Avatar badge replacing the old "Hi, {name}" text greeting — a profile photo
+   (or initial-letter fallback) that doubles as the link to /account.html.
+   Intentionally NOT in .banner-hide-sm: unlike the text greeting it replaces,
+   it stays visible at every width. */
+.banner-avatar-link {
+  display: inline-flex;
+  line-height: 0;
+}
+.banner-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.banner-avatar-link:hover .banner-avatar {
+  border-color: var(--cyan);
+}
+
 @media (max-width: 640px) {
   .banner-hide-sm {
     display: none !important;
   }
-  .banner-greeting {
+  .credits-pill-tier {
     display: none;
   }
 }
@@ -303,6 +362,10 @@ body {
   font-size: 1.9rem;
   line-height: 1;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+  display: inline-flex;
+}
+.rail-btn .rail-icon svg {
+  display: block;
 }
 .rail-btn .rail-count {
   font-size: 0.72rem;

@@ -116,9 +116,12 @@ export async function run() {
     check('logged in as a real (non-guest) user', !!loggedIn.token && !loggedIn.user?.isGuest, `username=${loggedIn.user?.username}`);
     check('logged-in user is the claimed account', loggedIn.user?.id === row.id);
 
-    await page.waitForSelector('#bannerRight .banner-greeting', { timeout: 10000 });
-    const greeting = await page.textContent('#bannerRight .banner-greeting');
-    check('feed banner greets the user', /Hi,/.test(greeting), greeting.trim());
+    // The old text greeting ("Hi, {name}") was replaced by an avatar/initial
+    // badge linking to /account.html, plus a credits/tier pill linking to /buy.html.
+    await page.waitForSelector('#bannerRight .banner-avatar-link', { timeout: 10000 });
+    const avatarTitle = await page.getAttribute('#bannerRight .banner-avatar-link', 'title');
+    check('feed banner shows an account avatar instead of a text greeting', avatarTitle === 'My Account', avatarTitle);
+    check('feed banner shows a credits pill', await page.locator('#bannerRight a.credits-pill').isVisible());
     check('feed banner offers Log out', await page.locator('#bannerRight button.banner-ghost').isVisible());
 
     // 8. A signed-in user visiting /login.html *should* bounce home.
