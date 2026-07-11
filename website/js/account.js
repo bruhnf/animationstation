@@ -42,6 +42,7 @@
     setVal('firstName', u.firstName || '');
     setVal('lastName', u.lastName || '');
     setVal('bio', u.bio || '');
+    paintAvatar(u);
 
     const granted = !!u.aiProcessingConsentAt;
     const el = document.getElementById('consentStatus');
@@ -53,6 +54,67 @@
       hide('revokeConsentBtn');
     }
   }
+
+  // ---- Profile photo (POST/DELETE /api/upload/avatar) ----
+  // Same endpoint the mobile app's avatar picker uses — server-side resize to a
+  // square crop happens in uploadController regardless of which client posted it.
+  function paintAvatar(u) {
+    const el = document.getElementById('avatarPreview');
+    if (!el) return;
+    if (u.avatarUrl) {
+      el.style.backgroundImage = `url("${u.avatarUrl}")`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.textContent = '';
+      show('avatarRemoveBtn');
+    } else {
+      el.style.backgroundImage = '';
+      el.textContent = (u.firstName || u.username || '?').charAt(0).toUpperCase();
+      hide('avatarRemoveBtn');
+    }
+  }
+
+  window.uploadAvatar = async function (e) {
+    const input = e.target;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const btn = document.getElementById('avatarUploadBtn');
+    busy(btn, 'Uploading…');
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+      const res = await authFetch(`${API_BASE}/upload/avatar`, { method: 'POST', body: formData });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || data.message || 'Could not upload photo');
+      const user = Object.assign({}, getUser(), { avatarUrl: data.url });
+      setUser(user);
+      paintAvatar(user);
+      showSuccess('Profile photo updated.');
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      unbusy(btn, 'Change photo');
+      input.value = ''; // allow re-selecting the same file
+    }
+  };
+
+  window.removeAvatar = async function () {
+    if (!confirm('Remove your profile photo?')) return;
+    const btn = document.getElementById('avatarRemoveBtn');
+    busy(btn, 'Removing…');
+    try {
+      const res = await authFetch(`${API_BASE}/upload/avatar`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Could not remove photo');
+      const user = Object.assign({}, getUser(), { avatarUrl: null });
+      setUser(user);
+      paintAvatar(user);
+      showSuccess('Profile photo removed.');
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      unbusy(btn, 'Remove photo');
+    }
+  };
 
   // ---- Save profile (PATCH /profile/me) ----
   window.saveProfile = async function (e) {
