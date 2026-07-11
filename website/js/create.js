@@ -27,14 +27,16 @@
   }
 
   var PROMPT_MAX = 1000; // lockstep with backend TRANSFORM_PROMPT_MAX_LENGTH / MOTION_PROMPT_MAX
+  var CLOSET_CREDIT_COST = 1; // Design/Clean Up — matches closetController's GENERATION_CREDIT_COST
 
   // ---- State ----
-  var mode = 'image'; // 'image' | 'video'
+  var mode = 'image'; // 'image' | 'video' | 'design' | 'cleanup'
   var attachedFile = null; // File chosen from disk (reference/source image)
   var attachedUrl = null; // object URL for its thumbnail
   var pendingSourceJobId = null; // set by "Make Video" — animate a finished image by id
   var pendingSourceUrl = null; // that image's presigned URL (for the thumbnail)
-  var activeJob = null; // the job currently generating / just finished
+  var activeJob = null; // the async Creation (image/video) currently generating / just finished
+  var activeClosetItem = null; // the synchronous Design/Clean Up result awaiting Keep/Reject
   var pollTimer = null;
   var lastSubmit = null; // captured inputs so "Regenerate" can re-run verbatim
   var submitting = false;
@@ -90,17 +92,32 @@
   window.setMode = function (next) {
     if (next === mode || busy()) return;
     mode = next;
-    // Switching to image drops any pending "make video" source.
+    // Switching to image drops any pending "make video" source. Design never
+    // takes an attached photo at all — drop one if it was carried over.
     if (mode === 'image') clearPendingSource();
+    if (mode === 'design') window.removeAttachment();
+    activeClosetItem = null;
     updateModeUI();
+    renderStage();
   };
 
   function updateModeUI() {
     $('modeImage').classList.toggle('active', mode === 'image');
     $('modeVideo').classList.toggle('active', mode === 'video');
+    $('modeDesign').classList.toggle('active', mode === 'design');
+    $('modeCleanup').classList.toggle('active', mode === 'cleanup');
     $('durationSeg').classList.toggle('hidden', mode !== 'video');
-    promptInput.placeholder = mode === 'video' ? 'Describe the motion…' : 'Type to imagine…';
-    // Video animates exactly one image; if two were somehow attached, trim.
+    // Aspect ratio only applies to Transform/Video — Design/Clean Up don't take it.
+    $('aspectSeg').classList.toggle('hidden', mode === 'design' || mode === 'cleanup');
+    $('surpriseBtn').classList.toggle('hidden', mode !== 'design');
+    // Design is text-only; hide the attach control rather than let a user
+    // attach a photo that the endpoint would silently ignore.
+    $('attachBtn').classList.toggle('hidden', mode === 'design');
+    promptInput.placeholder =
+      mode === 'video' ? 'Describe the motion…' :
+      mode === 'design' ? 'e.g. "a neon cyberpunk city at night"' :
+      mode === 'cleanup' ? 'Optional styling instructions…' :
+      'Type to imagine…';
     updateCostHint();
     renderThumbs();
   }
@@ -110,10 +127,26 @@
     if (mode === 'video') {
       hint.textContent = 'Video · ' + videoCreditCost + ' credit' + (videoCreditCost === 1 ? '' : 's');
       hint.classList.remove('hidden');
+    } else if (mode === 'design' || mode === 'cleanup') {
+      hint.textContent = (mode === 'design' ? 'Design' : 'Clean Up') + ' · ' + CLOSET_CREDIT_COST + ' credit';
+      hint.classList.remove('hidden');
     } else {
       hint.classList.add('hidden');
     }
   }
+
+  window.surpriseMe = async function () {
+    if (busy()) return;
+    try {
+      var res = await authFetch(API_BASE + '/closet/surprise');
+      if (!res.ok) throw new Error();
+      var data = await res.json();
+      if (data.prompt) {
+        promptInput.value = data.prompt;
+        promptInput.dispatchEvent(new Event('input'));
+      }
+    } catch (e) { /* the button just does nothing on failure — no credit spent, nothing to refund */ }
+  };
 
   // ---- Attachments ----
   window.pickImage = function () {
@@ -184,8 +217,17 @@
     if (mode === 'video') {
       if (!hasSource) { showError('Attach a photo to animate (or use “Make Video” on a finished image).'); return; }
       if (!prompt) { showError('Describe the motion you want in the video.'); return; }
+    } else if (mode === 'design') {
+      if (prompt.length < 3) { showError('Describe what to create — e.g. "a neon cyberpunk city at night".'); return; }
+    } else if (mode === 'cleanup') {
+      if (!attachedFile) { showError('Attach a photo to clean up.'); return; }
     } else {
       if (!prompt && !attachedFile) { showError('Describe what you want to create, or attach a photo to transform.'); return; }
+    }
+
+    if (mode === 'design' || mode === 'cleanup') {
+      performClosetSubmit({ mode: mode, prompt: prompt, file: attachedFile });
+      return;
     }
 
     performSubmit({
@@ -197,6 +239,66 @@
       durationSec: parseInt($('durationSelect').value, 10) || 8,
     });
   };
+
+  // ---- Design / Clean Up (synchronous — no job queue, no polling) ----
+  async function performClosetSubmit(input) {
+    lastSubmit = input;
+    submitting = true;
+    clearMessages();
+    activeClosetItem = null;
+    renderStage();
+    updateSubmitState();
+
+    try {
+      var res, data;
+      if (input.mode === 'design') {
+        res = await authFetch(API_BASE + '/closet/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: input.prompt }),
+        });
+      } else {
+        var form = new FormData();
+        form.append('photo', input.file);
+        if (input.prompt) form.append('prompt', input.prompt);
+        res = await authFetch(API_BASE + '/closet/cleanup', { method: 'POST', body: form });
+      }
+      data = await res.json().catch(function () { return {}; });
+
+      if (!res.ok) { handleClosetSubmitError(data); return; }
+
+      activeClosetItem = data; // { id, name, description, imageUrl, createdAt, updatedAt }
+      renderStage();
+      loadCredits();
+    } catch (err) {
+      showError('Could not generate that right now. Please try again.');
+    } finally {
+      submitting = false;
+      updateSubmitState();
+    }
+  }
+
+  function handleClosetSubmitError(data) {
+    var code = data && data.error;
+    switch (code) {
+      case 'INSUFFICIENT_CREDITS':
+        showError((data.message || 'This costs 1 credit.') + ' Buy credits to continue.');
+        return;
+      case 'CONTENT_MODERATED':
+      case 'INVALID_DESCRIPTION':
+      case 'INVALID_INSTRUCTION':
+        showError(data.message || 'Please adjust your request and try again.');
+        return;
+      case 'CLOSET_FULL':
+        showError(data.message || 'Your closet is full — delete some items to make more.');
+        return;
+      case 'NO_PHOTO':
+        showError(data.message || 'Attach a photo to clean up.');
+        return;
+      default:
+        showError((data && data.message) || 'Something went wrong. Please try again.');
+    }
+  }
 
   window.handleRegenerate = function () {
     if (busy() || !lastSubmit) return;
@@ -296,10 +398,7 @@
           if (job.status === 'COMPLETE') {
             // Clear the composer for the next idea; the result stays on the
             // stage and is already in My Creations + (if public) the feed.
-            promptInput.value = '';
-            $('charCount').textContent = '0';
-            autoGrow();
-            window.removeAttachment();
+            clearComposerInputs();
             loadCredits();
           } else {
             showError(job.errorMessage || 'Generation failed. Any credit spent was refunded.');
@@ -327,6 +426,21 @@
   function renderStage() {
     resultActions.classList.add('hidden');
     resultActions.innerHTML = '';
+
+    if (activeClosetItem) {
+      stage.innerHTML = '';
+      var img = document.createElement('img');
+      img.src = activeClosetItem.imageUrl;
+      img.alt = activeClosetItem.name || 'AI creation';
+      img.className = 'result-media';
+      stage.appendChild(img);
+      var closetBadge = document.createElement('span');
+      closetBadge.className = 'result-ai-badge';
+      closetBadge.textContent = '✨ AI-generated';
+      stage.appendChild(closetBadge);
+      renderClosetResultActions();
+      return;
+    }
 
     if (activeJob && activeJob.status === 'COMPLETE') {
       var url = resultUrl(activeJob);
@@ -403,6 +517,68 @@
     return b;
   }
 
+  // Design/Clean Up auto-save on generation (mirrors mobile DesignScreen /
+  // CleanUpScreen) — "Save to Closet" is a no-op confirmation, "Reject" deletes
+  // the just-created item, matching mobile's Keep/Reject review step.
+  function renderClosetResultActions() {
+    resultActions.classList.remove('hidden');
+    resultActions.innerHTML = '';
+    resultActions.appendChild(actionBtn('✓ Save to Closet', keepClosetItem));
+    resultActions.appendChild(actionBtn('🎬 Make Video', makeVideoFromCloset));
+    resultActions.appendChild(actionBtn('🗑 Reject', rejectClosetItem));
+  }
+
+  function keepClosetItem() {
+    activeClosetItem = null;
+    clearComposerInputs();
+    renderStage();
+    showSuccess('Saved to your closet — find it anytime in My Creations.');
+  }
+
+  async function rejectClosetItem() {
+    var item = activeClosetItem;
+    if (!item) return;
+    activeClosetItem = null;
+    clearComposerInputs();
+    renderStage();
+    try { await authFetch(API_BASE + '/closet/' + item.id, { method: 'DELETE' }); }
+    catch (e) { /* best-effort — if this fails the item simply remains in the closet */ }
+  }
+
+  // Hand a Design/Clean Up result to the video generator. Unlike makeVideo()
+  // (which references a Creation by sourceJobId), closet items aren't
+  // Creations, so /api/video has no way to reference one directly — re-fetch
+  // the image and attach it as a normal file upload instead.
+  async function makeVideoFromCloset() {
+    var item = activeClosetItem;
+    if (!item) return;
+    try {
+      var res = await fetch(item.imageUrl);
+      if (!res.ok) throw new Error();
+      var blob = await res.blob();
+      var file = new File([blob], (item.id || 'closet-item') + '.jpg', { type: blob.type || 'image/jpeg' });
+      clearPendingSource();
+      if (attachedUrl) URL.revokeObjectURL(attachedUrl);
+      attachedFile = file;
+      attachedUrl = URL.createObjectURL(file);
+      mode = 'video';
+      activeClosetItem = null;
+      updateModeUI();
+      renderStage();
+      promptInput.focus();
+      showSuccess('Now describe the motion for your video, then press ↑.');
+    } catch (e) {
+      showError('Could not load that image for video. Please try downloading and re-attaching it.');
+    }
+  }
+
+  function clearComposerInputs() {
+    promptInput.value = '';
+    $('charCount').textContent = '0';
+    autoGrow();
+    window.removeAttachment();
+  }
+
   // ---- Result actions ----
   async function downloadResult() {
     if (!activeJob) return;
@@ -445,6 +621,7 @@
   function clearResult() {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     activeJob = null;
+    activeClosetItem = null;
     clearMessages();
     renderStage();
     updateSubmitState();
