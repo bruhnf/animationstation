@@ -35,8 +35,8 @@ Three real gaps were found, all caused by things the script never contemplated:
 **Everything below has since been remediated** (2026-07-18/19, both boxes — §5),
 including a fourth, worse finding made during remediation: the container
 fail2ban's web jails were tailing an unreadable stdout symlink and had been
-blind for months (§3.5). The one open follow-up is web fail2ban coverage for
-Merlin (§4 item 3).
+blind for months (§3.5). The last follow-up — web fail2ban coverage for Merlin —
+was closed 2026-07-19 (§4 item 3). No open items remain from this audit.
 
 ## 2. Item-by-item: script baseline vs. live state
 
@@ -171,9 +171,12 @@ All six were executed 2026-07-18/19 — see §5 for exactly what was done.
 1. ~~**(M, big)** Close the three sysctl overrides + disable Apport~~ — **DONE** both boxes.
 2. ~~**(M, moderate)** IP-allowlist the AnimationStation admin surface~~ — **DONE** both vhosts.
 3. ~~**(L, moderate)** Verify fail2ban log flow~~ — **DONE**; found worse (jails were
-   blind, §3.5) and fixed. **Still open: Merlin** has no web fail2ban — its nginx logs
-   only to stdout with no log volume, so the fix needs a log volume + file logging in
-   the Merlin repo, then either its own fail2ban or a mount into `tryon-fail2ban-1`.
+   blind, §3.5) and fixed. The Merlin gap was closed 2026-07-19: Merlin's nginx now
+   dual-logs to a real `host-access.log` on a `merlin_nginx_logs` volume, mounted
+   read-only into `tryon-fail2ban-1` at `/var/log/nginx-merlin` — all five web jails
+   watch both apps' logs on both boxes (rotation: `/etc/logrotate.d/merlin-nginx-logs`).
+   Within a minute of the dev deploy the new log caught a scanner probing
+   `/.aws/credentials` and `/.git/HEAD`.
 4. ~~**(L, low)** Delete stale `.env.bak.*`; adopt `install -m 600`~~ — **DONE** (deleted on
    both; practice documented in DEPLOYMENT.md §8).
 5. ~~**(L, low)** Monthly Docker CE upgrade window~~ — **DONE** (dev upgraded 29.5.3→29.6.2;
@@ -224,9 +227,17 @@ fast-forwarded to main → prod box):
   force-recreate/restart the container (documented in DEPLOYMENT.md §5, which
   already warned about this for compose files).
 - Housekeeping found on the dev box: its TryOn checkout had a local commit
-  (`c9f1e3e`, a duplicate of the pushed `f8d1ffa`); converged via merge, so the
-  box shows `ahead 2` of origin — cosmetic only (read-only deploy key, future
-  pulls merge cleanly). Reset it to origin whenever convenient.
+  (`c9f1e3e`, a duplicate of the pushed `f8d1ffa`); converged via merge at first
+  (`ahead 2`), then reset to `origin/develop` on 2026-07-19 — the checkout now
+  tracks origin exactly.
+
+Merlin coverage (2026-07-19, closing §4 item 3): Merlin repo commit `aaada21`
+(cherry-picked to main as `d8f4aaf` — develop carried unreleased features, so no
+fast-forward) gives its nginx a `merlin_nginx_logs` volume and a real
+`host-access.log`; TryOn commits `d2e496f`/`f3010f5` mount that volume into
+`tryon-fail2ban-1` and add it to every web jail's logpath. Deployed dev → prod,
+verified on both: jails list both apps' logs, zero fail2ban errors, real client
+IPs end-to-end, all four public hostnames healthy after the recreates.
 
 Post-remediation external checks: `/admin` 403 (strangers) / 200 (allowlisted IP)
 on dev and prod; `/health` 200 on all three apps' prod hostnames.
