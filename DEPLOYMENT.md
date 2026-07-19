@@ -85,6 +85,19 @@ docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/animatio
 - Docker build caches grow unbounded on 60 GB disks — a monthly cron runs `docker builder prune --keep-storage 5GB` on both boxes. Manual: `docker system df` to inspect, `docker image prune -a` for dangling images.
 - DB user/database: `animationstation` / `animationstation_db` (see box `.env`).
 - Email: outbound sender is `noreply@animationstation.ai` (set `SES_FROM_ADDRESS` in each box `.env`). **Prerequisite:** the `animationstation.ai` domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (`support@`, `privacy@`, `dmca@animationstation.ai`) are inbound mailboxes/aliases and are independent of SES.
+- **Monthly patch window (both boxes).** Ubuntu security updates apply automatically (unattended-upgrades, auto-reboot 02:00), but the **Docker CE stack comes from Docker's own apt repo and is NOT auto-patched** — containerd/runc CVEs are a recurring thing, so once a month, on each box (dev first, prod after):
+
+  ```bash
+  # On the box (ssh ubuntu@<box-ip>). Upgrades everything incl. Docker CE.
+  # Docker's daemon restarts during the upgrade; live-restore keeps containers
+  # running through it (expect at most a brief blip).
+  sudo apt-get update && sudo apt-get -y dist-upgrade && sudo apt-get -y autoremove --purge
+  # Then confirm nothing needs a reboot, and that containers are all Up:
+  [ -f /var/run/reboot-required ] && echo "REBOOT REQUIRED" || echo "no reboot needed"
+  docker ps --format '{{.Names}}	{{.Status}}'
+  ```
+
+- **Secret-file backups:** when snapshotting a box `.env` before editing, preserve the 600 mode — `sudo install -m 600 -o ubuntu -g ubuntu backend/.env backend/.env.bak.$(date +%s)` (a plain `cp` inherits the umask and leaves the copy group-readable, which is exactly what the 2026-07-18 server audit found). Delete `.env.bak.*` files once the change is verified.
 
 ## 9. Stripe web purchases
 
@@ -99,6 +112,3 @@ Web-only credit/subscription purchases (mobile stays Apple IAP). Catalog + prici
 - No products/prices need to be pre-created in the Stripe Dashboard — Checkout Sessions are created with inline `price_data`, so the catalog file above is the single source of truth for pricing.
 - If this Stripe account is shared with another business: every Checkout Session and Subscription is tagged with `metadata.productKey` from our catalog, and the webhook only acts on events carrying one of those keys — events for the other business's products are ignored, not double-processed. Payouts and Dashboard-level revenue reports are NOT separated by product automatically; that reconciliation is manual.
 
-- Docker build caches grow unbounded on 60 GB disks — a monthly cron runs `docker builder prune --keep-storage 5GB` on both boxes. Manual: `docker system df` to inspect, `docker image prune -a` for dangling images.
-- DB user/database: `animationstation` / `animationstation_db` (see box `.env`).
-- Email: outbound sender is `noreply@animationstation.ai` (set `SES_FROM_ADDRESS` in each box `.env`). **Prerequisite:** the `animationstation.ai` domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (`support@`, `privacy@`, `dmca@animationstation.ai`) are inbound mailboxes/aliases and are independent of SES.

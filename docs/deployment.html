@@ -14,7 +14,7 @@
 <div class="layout">
   <aside class="sidebar">
     <h2 class="toc-title">On this page</h2>
-    <ul class="toc"><li><a href="#1-fleet">1. Fleet</a></li><li><a href="#2-topology-on-each-box">2. Topology on each box</a></li><li><a href="#3-deploy">3. Deploy</a></li><li><a href="#4-zero-gap-migrations-additive">4. Zero-gap migrations (additive)</a></li><li><a href="#5-nginx-tls-changes-owned-by-the-co-hosted-apps-stack">5. nginx / TLS changes (owned by the co-hosted app's stack)</a></li><li><a href="#6-logs-health">6. Logs &amp;amp; health</a></li><li><a href="#7-backups-rollback">7. Backups &amp;amp; rollback</a></li><li><a href="#8-housekeeping">8. Housekeeping</a></li></ul>
+    <ul class="toc"><li><a href="#1-fleet">1. Fleet</a></li><li><a href="#2-topology-on-each-box">2. Topology on each box</a></li><li><a href="#3-deploy">3. Deploy</a></li><li><a href="#4-zero-gap-migrations-additive">4. Zero-gap migrations (additive)</a></li><li><a href="#5-nginx-tls-changes-owned-by-the-co-hosted-apps-stack">5. nginx / TLS changes (owned by the co-hosted app's stack)</a></li><li><a href="#6-logs-health">6. Logs &amp;amp; health</a></li><li><a href="#7-backups-rollback">7. Backups &amp;amp; rollback</a></li><li><a href="#8-housekeeping">8. Housekeeping</a></li><li><a href="#9-stripe-web-purchases">9. Stripe web purchases</a></li></ul>
   </aside>
   <main class="content">
 <h1 id="deploymentmd-animationstation" tabindex="-1"><a class="header-anchor" href="#deploymentmd-animationstation" aria-hidden="true">#</a> DEPLOYMENT.md — AnimationStation</h1>
@@ -123,9 +123,44 @@ docker compose -f docker-compose.prod.yml exec backend tail -f /var/log/animatio
 </table>
 <h2 id="8-housekeeping" tabindex="-1"><a class="header-anchor" href="#8-housekeeping" aria-hidden="true">#</a> 8. Housekeeping</h2>
 <ul>
-<li>Docker build caches grow unbounded on 60 GB disks — a monthly cron runs <code>docker builder prune --keep-storage 5GB</code> on both boxes. Manual: <code>docker system df</code> to inspect, <code>docker image prune -a</code> for dangling images.</li>
-<li>DB user/database: <code>animationstation</code> / <code>animationstation_db</code> (see box <code>.env</code>).</li>
-<li>Email: outbound sender is <code>noreply@animationstation.ai</code> (set <code>SES_FROM_ADDRESS</code> in each box <code>.env</code>). <strong>Prerequisite:</strong> the <code>animationstation.ai</code> domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (<code>support@</code>, <code>privacy@</code>, <code>dmca@animationstation.ai</code>) are inbound mailboxes/aliases and are independent of SES.</li>
+<li>
+<p>Docker build caches grow unbounded on 60 GB disks — a monthly cron runs <code>docker builder prune --keep-storage 5GB</code> on both boxes. Manual: <code>docker system df</code> to inspect, <code>docker image prune -a</code> for dangling images.</p>
+</li>
+<li>
+<p>DB user/database: <code>animationstation</code> / <code>animationstation_db</code> (see box <code>.env</code>).</p>
+</li>
+<li>
+<p>Email: outbound sender is <code>noreply@animationstation.ai</code> (set <code>SES_FROM_ADDRESS</code> in each box <code>.env</code>). <strong>Prerequisite:</strong> the <code>animationstation.ai</code> domain must be verified in AWS SES (us-east-1) with DKIM CNAMEs + SPF + a custom MAIL FROM subdomain + DMARC published in DNS, or SES rejects the send. Receiving addresses (<code>support@</code>, <code>privacy@</code>, <code>dmca@animationstation.ai</code>) are inbound mailboxes/aliases and are independent of SES.</p>
+</li>
+<li>
+<p><strong>Monthly patch window (both boxes).</strong> Ubuntu security updates apply automatically (unattended-upgrades, auto-reboot 02:00), but the <strong>Docker CE stack comes from Docker's own apt repo and is NOT auto-patched</strong> — containerd/runc CVEs are a recurring thing, so once a month, on each box (dev first, prod after):</p>
+<pre><code class="language-bash"># On the box (ssh ubuntu@&lt;box-ip&gt;). Upgrades everything incl. Docker CE.
+# Docker's daemon restarts during the upgrade; live-restore keeps containers
+# running through it (expect at most a brief blip).
+sudo apt-get update &amp;&amp; sudo apt-get -y dist-upgrade &amp;&amp; sudo apt-get -y autoremove --purge
+# Then confirm nothing needs a reboot, and that containers are all Up:
+[ -f /var/run/reboot-required ] &amp;&amp; echo &quot;REBOOT REQUIRED&quot; || echo &quot;no reboot needed&quot;
+docker ps --format '{{.Names}}	{{.Status}}'
+</code></pre>
+</li>
+<li>
+<p><strong>Secret-file backups:</strong> when snapshotting a box <code>.env</code> before editing, preserve the 600 mode — <code>sudo install -m 600 -o ubuntu -g ubuntu backend/.env backend/.env.bak.$(date +%s)</code> (a plain <code>cp</code> inherits the umask and leaves the copy group-readable, which is exactly what the 2026-07-18 server audit found). Delete <code>.env.bak.*</code> files once the change is verified.</p>
+</li>
+</ul>
+<h2 id="9-stripe-web-purchases" tabindex="-1"><a class="header-anchor" href="#9-stripe-web-purchases" aria-hidden="true">#</a> 9. Stripe web purchases</h2>
+<p>Web-only credit/subscription purchases (mobile stays Apple IAP). Catalog + pricing live in <code>backend/src/config/stripeProducts.ts</code>; routes are <code>backend/src/routes/billing.ts</code> (checkout + billing portal) and <code>backend/src/routes/stripeWebhook.ts</code>.</p>
+<ul>
+<li><strong>Set per box</strong>, in that box's <code>backend/.env</code>:
+<ul>
+<li><code>STRIPE_SECRET_KEY</code> — a Stripe secret key. If this Stripe account is shared with another project, use a <strong>restricted key</strong> scoped to Checkout Sessions, Billing Portal, Customers, and Subscriptions only.</li>
+<li><code>STRIPE_WEBHOOK_SECRET</code> — the signing secret for this box's webhook endpoint.</li>
+</ul>
+</li>
+<li><strong>Webhook endpoint</strong> (Dashboard → Developers → Webhooks → Add endpoint): <code>https://&lt;box-host&gt;/api/webhooks/stripe</code>, subscribed to <code>checkout.session.completed</code>, <code>customer.subscription.updated</code>, <code>customer.subscription.deleted</code>. Dev and prod need <strong>separate</strong> endpoints (separate signing secrets) since they're separate hostnames.</li>
+<li><strong>Local dev without a real endpoint</strong>: <code>stripe listen --forward-to localhost:3000/api/webhooks/stripe</code> prints a <code>whsec_...</code> — use that as <code>STRIPE_WEBHOOK_SECRET</code>.</li>
+<li>Test-mode vs live-mode keys are entirely separate in Stripe — use test keys on the dev box, live keys only on prod, once you're ready to accept real charges.</li>
+<li>No products/prices need to be pre-created in the Stripe Dashboard — Checkout Sessions are created with inline <code>price_data</code>, so the catalog file above is the single source of truth for pricing.</li>
+<li>If this Stripe account is shared with another business: every Checkout Session and Subscription is tagged with <code>metadata.productKey</code> from our catalog, and the webhook only acts on events carrying one of those keys — events for the other business's products are ignored, not double-processed. Payouts and Dashboard-level revenue reports are NOT separated by product automatically; that reconciliation is manual.</li>
 </ul>
 
   </main>
