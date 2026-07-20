@@ -5,6 +5,7 @@ import { enqueueAppleNotification } from '../queue/appleNotificationQueue';
 import { env } from '../config/env';
 import { createChildLogger } from '../services/logger';
 import { describeAppleVerifyError } from '../utils/appleVerifyStatus';
+import { classifyAppleNotification } from '../utils/appleNotificationPolicy';
 
 const router = Router();
 const log = createChildLogger('AppleWebhook');
@@ -34,22 +35,32 @@ router.post('/apple', async (req: Request, res: Response) => {
     // work and ack immediately.
     const decoded = await verifyAndDecodeNotification(signedPayload);
 
-    // Reject notifications from the wrong environment (e.g. Sandbox payload
-    // delivered to Production URL or vice versa) — usually a misconfiguration.
-    const expectedEnv = env.apple.environment;
-    if (decoded.data?.environment && decoded.data.environment !== expectedEnv) {
-      log.warn('Apple notification environment mismatch', {
-        expected: expectedEnv,
-        received: decoded.data.environment,
+    const decision = classifyAppleNotification(
+      { notificationUUID: decoded.notificationUUID, environment: decoded.data?.environment },
+      env.apple.environment,
+    );
+
+    // A notification from the environment this box is not configured for
+    // (Sandbox on a Production box during TestFlight/App Review, or vice versa)
+    // is PROCESSED, not dropped: the verifier accepts both environments and all
+    // grants/claw-backs are idempotent by transactionId. Dropping it used to
+    // silently discard sandbox refund claw-backs and missed-consumable grants.
+    // See utils/appleNotificationPolicy for the full rationale.
+    if (decision.environmentMismatch) {
+      log.info('Apple notification from non-configured environment — processing anyway', {
+        configured: env.apple.environment,
+        received: decoded.data?.environment,
         notificationUUID: decoded.notificationUUID,
       });
-      // Still 200 so Apple doesn't retry forever; we just don't process it.
-      res.status(200).end();
-      return;
     }
 
-    if (!decoded.notificationUUID) {
-      log.error('Apple notification missing notificationUUID', { decoded });
+    // The `|| !notificationUUID` is redundant with decision.reject (which already
+    // rejects a missing UUID) but narrows the type to string for the enqueue below.
+    if (decision.reject || !decoded.notificationUUID) {
+      log.error('Apple notification rejected as malformed', {
+        reason: decision.rejectReason,
+        decoded,
+      });
       res.status(400).json({ error: 'malformed notification' });
       return;
     }
